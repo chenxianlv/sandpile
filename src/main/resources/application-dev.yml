@@ -1,0 +1,25 @@
+server:
+  port: 8060
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sandpile?serverTimezone=UTC
+    username: root
+    password: 1234
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: is_deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+sand:
+  ftp:
+    host: 192.168.1.120
+    port: 21
+    path: ./
+    username: anonymous
+    password: null
