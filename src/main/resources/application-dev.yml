@@ -12,14 +12,14 @@ spring:
 mybatis-plus:
   global-config:
     db-config:
-      logic-delete-field: is_deleted
+      logic-delete-field: deleted_flag
       logic-delete-value: 1
       logic-not-delete-value: 0
 
 sand:
   ftp:
-    host: 192.168.1.120
+    host: 192.168.2.103
     port: 21
-    path: ./
+    path: ./Sandpile
     username: anonymous
     password: null

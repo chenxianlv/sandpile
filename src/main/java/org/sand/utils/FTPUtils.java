@@ -1,19 +1,15 @@
 package org.sand.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 
 @Slf4j
@@ -22,57 +18,50 @@ public class FTPUtils {
 
     @Value("${sand.ftp.host}")
     private String host;
+
     @Value("${sand.ftp.username}")
     private String username;
+
     @Value("${sand.ftp.password}")
     private String password;
-    @Value("${sand.ftp.port}")
-    private int port;
-    @Value("${sand.ftp.path}")
-    private String path;
 
-    public String getPath() {
-        return path;
-    }
+    @Value("${sand.ftp.port}")
+    private int port = 21;
+
+    @Value("${sand.ftp.path}")
+    private String path = "./";
+
 
     /**
      * 登陆FTP并获取FTPClient对象
-     *
-     * @return
      */
-    public FTPClient connectFtp() {
-        FTPClient ftpClient = null;
-        try {
-            ftpClient = new FTPClient();
-            ftpClient.setConnectTimeout(1000 * 30);//设置连接超时时间
-            ftpClient.connect(host, port);// 连接FTP服务器
-            ftpClient.login(username, password);// 登陆FTP服务器
-            ftpClient.setControlEncoding("UTF-8");// 中文支持
-            // 设置文件类型为二进制（如果从FTP下载或上传的文件是压缩文件的时候，不进行该设置可能会导致获取的压缩文件解压失败）
-            ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
-            //默认模式0
-            //模式2，查询文件失败
-            //ftpClient.enterLocalPassiveMode();//开启被动模式，否则文件上传不成功，也不报错
-            //模式0，可以查询到文件
+    public FTPClient connectFtp() throws IOException {
+        FTPClient ftpClient;
+
+        ftpClient = new FTPClient();
+        ftpClient.connect(host, port);// 连接FTP服务器
+        ftpClient.login(username, password);// 登陆FTP服务器
+        ftpClient.setControlEncoding("UTF-8");// 中文支持
+        // 设置文件类型为二进制（如果从FTP下载或上传的文件是压缩文件的时候，不进行该设置可能会导致获取的压缩文件解压失败）
+        ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
+        //默认模式0
+        //模式2，查询文件失败
+        //ftpClient.enterLocalPassiveMode();//开启被动模式，否则文件上传不成功，也不报错
+        //模式0，可以查询到文件
 //            ftpClient.enterLocalActiveMode();
-            //模式3，查询文件失败
-            //ftpClient.enterRemotePassiveMode();
-            if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
-                log.info("连接FTP失败，用户名或密码错误。");
-                ftpClient.disconnect();
-            } else {
-                log.info("FTP连接成功!");
-            }
-        } catch (Exception e) {
-            log.info("登陆FTP失败，请检查FTP相关配置信息是否正确！" + e);
-            return null;
+        //模式3，查询文件失败
+        //ftpClient.enterRemotePassiveMode();
+        if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+            log.info("连接FTP失败，用户名或密码错误。");
+            ftpClient.disconnect();
+        } else {
+            log.info("FTP连接成功!");
         }
         return ftpClient;
     }
+
     /**
      * 关闭FTP连接
-     *
-     * @param ftpClient
      */
     public void closeFtpClient(FTPClient ftpClient) {
         if (ftpClient.isConnected()) {
@@ -128,9 +117,34 @@ public class FTPUtils {
 //    }
 //
 //
-//
-//
-//    /**
+
+    public String readFile(FTPClient ftpClient, String filePath) {
+        BufferedReader br = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+            String remote = new String((path + filePath).getBytes("GBK"), StandardCharsets.ISO_8859_1);
+            br = new BufferedReader(new InputStreamReader(ftpClient.retrieveFileStream(remote)));
+            br.lines().forEach((line) -> {
+                sb.append(line);
+                sb.append('\n');
+            });
+            sb.delete(sb.length() - 1, sb.length());
+
+        } catch (Exception e) {
+            log.error("FTP文件读取失败！", e);
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException e) {
+                log.error("读取流关闭失败", e);
+            }
+        }
+        return sb.toString();
+    }
+
+    //    /**
 //     * 从FTP下载文件到本地
 //     *
 //     */
@@ -290,15 +304,15 @@ public class FTPUtils {
 //        return success;
 //    }
 //
-    //判断ftp服务器文件是否存在
-    private boolean existFile(FTPClient ftpClient, String path) throws IOException {
-        boolean flag = false;
-        FTPFile[] ftpFileArr = ftpClient.listFiles(path);
-        if (ftpFileArr.length > 0) {
-            flag = true;
-        }
-        return flag;
-    }
+//    //判断ftp服务器文件是否存在
+//    private boolean existFile(FTPClient ftpClient, String path) throws IOException {
+//        boolean flag = false;
+//        FTPFile[] ftpFileArr = ftpClient.listFiles(path);
+//        if (ftpFileArr.length > 0) {
+//            flag = true;
+//        }
+//        return flag;
+//    }
 //
 //    //创建目录
 //    private boolean makeDirectory(FTPClient ftpClient, String dir) {

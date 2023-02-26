@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -20,6 +19,10 @@ public class FTPTest {
     @Test
     public void main() throws IOException {
         FTPClient ftpClient = ftpUtils.connectFtp();
+        String text = ftpUtils.readFile(ftpClient, "./Sandpile/SSM框架.md");
+        ftpUtils.closeFtpClient(ftpClient);
+        System.out.println(text);
+//        FTPClient ftpClient = ftpUtils.connectFtp();
 //        System.out.println(ftpClient.makeDirectory("/test"));
 //        System.out.println(ftpClient.getDataConnectionMode());
 //        System.out.println(ftpClient.listFiles().length);
@@ -28,7 +31,7 @@ public class FTPTest {
 //        final List<String> zip = ftpUtils.getFileNameList(ftpClient, "/Sandpile");
 //        System.out.println(zip);
 
-        ftpUtils.closeFtpClient(ftpClient);
+//        ftpUtils.closeFtpClient(ftpClient);
 
      /*   FTPClient ftpClient = ftpUtils.loginFTP();
         final boolean zip = ftpUtils.changeWorkingDirectory(ftpClient,"zip");

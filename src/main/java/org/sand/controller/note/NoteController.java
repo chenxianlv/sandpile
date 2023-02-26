@@ -7,6 +7,7 @@ import org.sand.common.ResponseDTO;
 import org.sand.model.dto.note.NoteProjectDTO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
+import org.sand.model.vo.note.NoteDetailVO;
 import org.sand.model.vo.note.NoteProjectDetailVO;
 import org.sand.model.vo.note.NoteProjectVO;
 import org.sand.service.note.NoteProjectService;
@@ -15,11 +16,12 @@ import org.sand.utils.BeanCopyUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @Api(tags = "学习笔记模块")
 @RestController
-@RequestMapping(value = "/api/note/project")
+@RequestMapping(value = "/api/note")
 public class NoteController {
 
     private final NoteProjectService noteProjectService;
@@ -33,7 +35,7 @@ public class NoteController {
 
     // todo 适配查询条件
     @ApiOperation("列出符合查询条件的笔记项目")
-    @GetMapping("/list")
+    @GetMapping("/project/list")
     private ResponseDTO<NoteProjectVO> listProjects() {
         List<NoteProjectPO> noteProjectPOs = noteProjectService.list();
 
@@ -44,7 +46,7 @@ public class NoteController {
     }
 
     @ApiOperation("获取指定笔记项目内部的笔记信息")
-    @GetMapping("/detail")
+    @GetMapping("/project")
     private ResponseDTO<NoteProjectDetailVO> getProjectDetail(@RequestParam("id") Integer projectId) {
 
         // 获取笔记项目内的笔记
@@ -60,7 +62,7 @@ public class NoteController {
     }
 
     @ApiOperation("更新指定笔记模块信息")
-    @PutMapping
+    @PutMapping("/project")
     private Object updateProjectInfo(@RequestBody NoteProjectDTO noteProjectDTO) {
 
         NoteProjectPO noteProjectPO = new NoteProjectPO();
@@ -78,5 +80,16 @@ public class NoteController {
 //        loginDto.setUserName("chen");
 //        return loginDto;
 //    }
+    @ApiOperation("获取指定笔记的信息")
+    @GetMapping("/note")
+    private ResponseDTO<NoteDetailVO> getNoteDetail(@RequestParam Long id) {
+        NoteDetailVO noteDetailVO = new NoteDetailVO();
+        try {
+            noteDetailVO.setText(noteService.getNoteText(id));
+        } catch (IOException e) {
+            return ResponseDTO.error(50000, "FTP连接失败");
+        }
+        return ResponseDTO.success(noteDetailVO);
+    }
 
 }
