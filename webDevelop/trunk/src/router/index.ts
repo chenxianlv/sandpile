@@ -16,12 +16,14 @@ const router = createRouter({
                 {
                     path: 'select',
                     name: 'select',
-                    component: () => import('@/views/Note/NoteProjectSelect.vue'),
+                    component: () =>
+                        import('@/views/Note/NoteProjectSelect.vue'),
                 },
                 {
                     path: 'detail/:id?',
                     name: 'detail',
-                    component: () => import('@/views/Note/NoteProjectDetail.vue'),
+                    component: () =>
+                        import('@/views/Note/NoteProjectDetail.vue'),
                 },
                 {
                     path: 'edit',

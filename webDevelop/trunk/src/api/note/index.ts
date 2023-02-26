@@ -10,15 +10,23 @@ export function listProjectsAPI() {
 export function getProjectDetailAPI(params: anyObj) {
     return baseRequest({
         method: 'get',
-        url: '/note/project/detail',
+        url: '/note/project',
         params,
     });
 }
 
-export function updateProjectAPI(params: anyObj) {
+export function updateProjectAPI(data: anyObj) {
     return baseRequest({
         method: 'put',
         url: '/note/project',
+        data,
+    });
+}
+
+export function getNoteDetailAPI(params: anyObj) {
+    return baseRequest({
+        method: 'get',
+        url: '/note/note',
         params,
     });
 }

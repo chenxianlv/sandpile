@@ -1,6 +1,8 @@
 import { ref, watch } from 'vue';
-import { getProjectDetailAPI } from '@/api/note';
+import { getNoteDetailAPI, getProjectDetailAPI } from '@/api/note';
 import type { NormalResponse } from '@/common/axios';
+// @ts-ignore
+import type { TreeNode } from '@/components/FileTree/FileTree.vue';
 
 export interface NoteProject {
     id: string;
@@ -14,22 +16,22 @@ export interface NoteInfo {
     text?: string;
 }
 
-interface NoteNode {
+interface NoteNode extends TreeNode {
     name: string;
-    noteId: number;
+    fileId: number;
     text?: string;
 }
 
-interface FolderNode {
+interface FolderNode extends TreeNode {
     name: string;
     children: Array<TreeNode>;
 }
 
-export type TreeNode = NoteNode | FolderNode;
+export type TempTreeNode = NoteNode | FolderNode;
 
 export function useNoteDetail(projectId: string) {
     const noteInfoList = ref<NoteInfo[]>([]);
-    const noteTreeData = ref<TreeNode[]>([]);
+    const noteTreeData = ref<TempTreeNode[]>([]);
 
     if (projectId !== '') {
         getProjectDetailAPI({ id: Number(projectId) }).then(
@@ -40,10 +42,10 @@ export function useNoteDetail(projectId: string) {
     }
 
     watch(noteInfoList, (newVal) => {
-        const newData: TreeNode[] = [];
+        const newData: TempTreeNode[] = [];
         newVal.forEach(({ id, name, path, text }) => {
             const folder = getFolder(path, newData);
-            const noteNode = { name, noteId: id, text };
+            const noteNode = { name, fileId: id, text };
             if (!folder) {
                 newData.push(noteNode);
             } else {
@@ -65,14 +67,14 @@ export function useNoteDetail(projectId: string) {
         splits.forEach((folderName) => {
             let folderNode = children.find(
                 (node) =>
-                    !Object.prototype.hasOwnProperty.call(node, 'noteId') &&
+                    !Object.prototype.hasOwnProperty.call(node, 'fileId') &&
                     node.name === folderName
             ) as FolderNode | undefined;
 
             if (!folderNode) {
                 folderNode = { name: folderName, children: [] };
                 const insertIndex = children.findIndex((node) =>
-                    Object.prototype.hasOwnProperty.call(node, 'noteId')
+                    Object.prototype.hasOwnProperty.call(node, 'fileId')
                 );
                 // 将新创建的目录节点添加于所有笔记节点前
                 children.splice(
@@ -93,11 +95,20 @@ export function useNoteDetail(projectId: string) {
     /**
      * 获取指定节点的文本（有缓存机制）
      */
-    function getNoteText(id: number) {
+    async function getNoteText(id: number) {
         const noteInfo = noteInfoList.value.find((info) => info.id === id);
         if (!noteInfo) return;
-        if (noteInfo.text) return noteInfo.text;
+        if (noteInfo.text) {
+            return noteInfo.text;
+        } else {
+            return getNoteDetailAPI({ id }).then((res) => {
+                const text = res?.data?.data?.text;
+                if (text === undefined) return;
+                noteInfo.text = text;
+                return text;
+            });
+        }
     }
 
-    return [noteTreeData, getNoteText];
+    return { noteTreeData, getNoteText };
 }
