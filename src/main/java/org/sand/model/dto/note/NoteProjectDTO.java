@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class NoteProjectDTO {
 
-    private Integer id;
+    private Long id;
 
     private String projectName;
 
