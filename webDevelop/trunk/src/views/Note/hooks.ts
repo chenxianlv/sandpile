@@ -30,12 +30,14 @@ interface FolderNode extends TreeNode {
 export type TempTreeNode = NoteNode | FolderNode;
 
 export function useNoteDetail(projectId: string) {
+    const responseData = ref<anyObj>({});
     const noteInfoList = ref<NoteInfo[]>([]);
     const noteTreeData = ref<TempTreeNode[]>([]);
 
     if (projectId !== '') {
         getProjectDetailAPI({ id: Number(projectId) }).then(
             (res: NormalResponse) => {
+                responseData.value = res?.data?.data ?? {};
                 noteInfoList.value = res?.data?.data?.notes;
             }
         );
@@ -110,5 +112,5 @@ export function useNoteDetail(projectId: string) {
         }
     }
 
-    return { noteTreeData, getNoteText };
+    return { noteTreeData, getNoteText, responseData };
 }
