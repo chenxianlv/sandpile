@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import HeaderView from '@/components/Base/HeaderView.vue';
 // todo VerticalSizeSash 添加属性minWidth;
 // todo 收起目录
 // todo tab页
+import HeaderView from '@/components/Base/HeaderView.vue';
 </script>
 
 <template>
-    <el-container>
-        <el-header>
-            <HeaderView />
-        </el-header>
-        <el-main>
-            <RouterView />
-        </el-main>
-    </el-container>
+    <div class="main-container">
+        <HeaderView />
+        <router-view v-slot="{ Component }">
+            <keep-alive>
+                <component :is="Component" />
+            </keep-alive>
+        </router-view>
+    </div>
 </template>
 
 <style scoped lang="less">
-.el-container {
+.main-container {
     height: 100%;
-}
-.el-header,
-.el-main {
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: @bg-color-bottom-layer;
 }
 </style>
