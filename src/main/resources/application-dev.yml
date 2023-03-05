@@ -23,3 +23,6 @@ sand:
     path: ./Sandpile
     username: anonymous
     password: null
+
+time:
+  time-zone: GMT+8
