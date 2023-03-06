@@ -7,6 +7,8 @@ import type { TreeNode } from '@/components/FileTree/FileTree.vue';
 export interface NoteProject {
     id: string;
     projectName: string;
+    createUserName: string;
+    createTime: string;
 }
 
 export interface NoteInfo {
