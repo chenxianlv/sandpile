@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.sand.mapper.user.RoleMapper">
+
+    <resultMap id="baseMap" type="org.sand.model.po.user.RolePO">
+        <id property="id" column="id"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+        role.id, role.role_name, role.delete_flag, role.create_time,
+        role.create_user_id, role.update_time, role.update_user_id, role.remark
+    </sql>
+
+    <select id="listRolesByUserId" resultMap="baseMap">
+        SELECT <include refid="baseColumn" />
+        FROM user_role AS role RIGHT JOIN user_user_role AS mt
+        ON role.id = mt.role_id
+        WHERE role.delete_flag = 0 and mt.user_id = #{userId}
+    </select>
+
+    <select id="listRolesByAccessId" resultMap="baseMap">
+        SELECT <include refid="baseColumn" />
+        FROM user_role AS role RIGHT JOIN user_role_access AS mt
+        ON role.id = mt.role_id
+        WHERE role.delete_flag = 0 and mt.access_id = #{accessId}
+    </select>
+
+</mapper>

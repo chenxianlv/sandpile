@@ -4,17 +4,15 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-@TableName("user_user")
 @Data
-public class UserPO {
+@TableName("user_role_access")
+public class RoleAccessPO {
 
     @TableId("id")
     private Long id;
 
-    private String userAccount;
+    private Long roleId;
 
-    private String userName;
-
-    private String userPassword;
+    private Long AccessId;
 
 }

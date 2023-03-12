@@ -16,19 +16,19 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class FTPUtils {
 
-    @Value("${sand.ftp.host}")
+    @Value("${ftp.host}")
     private String host;
 
-    @Value("${sand.ftp.username}")
+    @Value("${ftp.username}")
     private String username;
 
-    @Value("${sand.ftp.password}")
+    @Value("${ftp.password}")
     private String password;
 
-    @Value("${sand.ftp.port}")
+    @Value("${ftp.port}")
     private int port = 21;
 
-    @Value("${sand.ftp.path}")
+    @Value("${ftp.path}")
     private String path = "./";
 
 

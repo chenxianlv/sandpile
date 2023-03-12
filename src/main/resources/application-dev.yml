@@ -6,6 +6,7 @@ spring:
     url: jdbc:mysql://localhost:3306/sandpile?serverTimezone=UTC
     username: root
     password: 1234
+    type: com.zaxxer.hikari.HikariDataSource
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -15,14 +16,15 @@ mybatis-plus:
       logic-delete-field: deleted_flag
       logic-delete-value: 1
       logic-not-delete-value: 0
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: org.sand.model.po
 
-sand:
-  ftp:
-    host: 192.168.2.103
-    port: 21
-    path: ./Sandpile
-    username: anonymous
-    password: null
+ftp:
+  host: 192.168.2.103
+  port: 21
+  path: ./sandpile
+  username: anonymous
+  password: null
 
 time:
   time-zone: GMT+8

@@ -1,4 +1,4 @@
-package org.sand.config;
+package org.sand.config.swagger;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
