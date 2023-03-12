@@ -1,10 +1,40 @@
 @import url('./variable.less');
 
-html, body, #app {
-    height: 100%;
+:root {
+    --el-transition-duration: var(--el-transition-duration-fast);
+    --el-box-shadow-light: @box-shadow-normal-small;
 }
+
 .el-header,.el-container,
 .el-main {
     padding: 0;
     margin: 0;
+}
+
+.el-popover {
+    --el-popover-border-radius: 8px;
+    --el-popover-padding: 0;
+}
+
+.el-input {
+    --el-input-border-radius: 8px;
+    --el-input-hover-border-color: @border-color-base;
+}
+
+ul.option-menu {
+    margin: 10px;
+    padding: 0;
+    list-style: none;
+
+    li {
+        height: 30px;
+        line-height: 30px;
+        cursor: pointer;
+        padding: 0 0 0 10px;
+        color: @font-color-primary;
+        border-radius: 6px;
+        &:hover {
+            background-color: @bg-color-row-hover;
+        }
+    }
 }

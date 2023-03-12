@@ -5,7 +5,7 @@ import type { NormalResponse } from '@/common/axios';
 import type { TreeNode } from '@/components/FileTree/FileTree.vue';
 
 export interface NoteProject {
-    id: string;
+    id: number;
     projectName: string;
     createUserName: string;
     createTime: string;

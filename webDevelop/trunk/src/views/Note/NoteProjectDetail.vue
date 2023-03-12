@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { onActivated, ref } from 'vue';
+import { onActivated, onDeactivated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
-import $bus from '@/common/eventBus';
+import { ArrowLeftBold } from '@element-plus/icons-vue';
+import { useHeaderStore } from '@/stores/base';
 import { useNoteDetail } from '@/views/Note/hooks';
 import MarkdownMenuTree from '@/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/components/Markdown/MdParser.vue';
 import FileTree from '@/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
-import { ArrowLeftBold } from '@element-plus/icons-vue';
 
 window.location.hash = '';
 let projectId = useRoute().params.id;
@@ -16,8 +16,14 @@ let projectId = useRoute().params.id;
 if (projectId instanceof Array) {
     projectId = projectId[0];
 }
+const headerStore = useHeaderStore();
 onActivated(() => {
-    $bus.emit('headerCollapse', true);
+    headerStore.collapsed = true;
+    headerStore.collapseBtnShow = true;
+});
+onDeactivated(() => {
+    headerStore.collapsed = false;
+    headerStore.collapseBtnShow = false;
 });
 
 const { noteTreeData, getNoteText, responseData } = useNoteDetail(projectId);
@@ -115,6 +121,7 @@ const handlePanelTabSelect = (tab: string) => {
 .el-container {
     height: 100%;
 }
+
 .operation-bar {
     width: 100%;
     height: 40px;
@@ -131,7 +138,7 @@ const handlePanelTabSelect = (tab: string) => {
         margin-left: 10px;
         font-size: 16px;
         line-height: $font-size;
-        color: @primary-font-color;
+        color: @font-color-primary;
     }
 }
 
@@ -144,6 +151,7 @@ const handlePanelTabSelect = (tab: string) => {
     .aside,
     .main {
         height: 100%;
+        background-color: #fff;
     }
 
     .aside {
