@@ -49,7 +49,7 @@ public class NoteController {
             BeanUtils.copyProperties(noteProjectPO, noteProjectVO);
 
             UserPO userPO = userService.getById(noteProjectPO.getCreateUserId());
-            noteProjectVO.setCreateUserName(userPO.getName());
+            noteProjectVO.setCreateUserName(userPO.getUserName());
 
             return noteProjectVO;
         }).collect(Collectors.toList()));
