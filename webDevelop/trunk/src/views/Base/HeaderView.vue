@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import $bus from '@/common/eventBus';
-import { ref } from 'vue';
+import { useHeaderStore } from '@/stores/base';
+import { storeToRefs } from 'pinia';
 
-const isCollapsed = ref(false);
-$bus.on('headerCollapse', (val: boolean) => {
-    isCollapsed.value = val;
-});
-const switchCollapse = () => {
-    isCollapsed.value = !isCollapsed.value;
-};
+const headerStore = useHeaderStore();
+
+const { switchCollapse } = headerStore;
+const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
 </script>
 
 <template>
-    <div :class="['header', { collapsed: isCollapsed }]">
+    <div :class="['header', { collapsed: collapsed }]">
         <div class="content">
             <el-menu default-active="1" mode="horizontal">
                 <el-menu-item index="1">学习笔记</el-menu-item>
             </el-menu>
         </div>
 
-        <div class="collapse-icon" @click="switchCollapse">
+        <div
+            class="collapse-icon"
+            @click="switchCollapse"
+            v-if="collapseBtnShow"
+        >
             <el-icon>
-                <ArrowDown v-if="isCollapsed" />
+                <ArrowDown v-if="collapsed" />
                 <ArrowUp v-else />
             </el-icon>
         </div>

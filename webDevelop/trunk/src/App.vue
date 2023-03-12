@@ -2,7 +2,7 @@
 // todo VerticalSizeSash 添加属性minWidth;
 // todo 收起目录
 // todo tab页
-import HeaderView from '@/components/Base/HeaderView.vue';
+import HeaderView from '@/views/Base/HeaderView.vue';
 </script>
 
 <template>
