@@ -1,25 +1,5 @@
 @import url('./variable.less');
-
-:root {
-    --el-transition-duration: var(--el-transition-duration-fast);
-    --el-box-shadow-light: @box-shadow-normal-small;
-}
-
-.el-header,.el-container,
-.el-main {
-    padding: 0;
-    margin: 0;
-}
-
-.el-popover {
-    --el-popover-border-radius: 8px;
-    --el-popover-padding: 0;
-}
-
-.el-input {
-    --el-input-border-radius: 8px;
-    --el-input-hover-border-color: @border-color-base;
-}
+@import url('./theme.less');
 
 ul.option-menu {
     margin: 10px;
@@ -33,6 +13,7 @@ ul.option-menu {
         padding: 0 0 0 10px;
         color: @font-color-primary;
         border-radius: 6px;
+
         &:hover {
             background-color: @bg-color-row-hover;
         }

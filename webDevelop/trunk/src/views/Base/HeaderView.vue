@@ -9,7 +9,7 @@ const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
 </script>
 
 <template>
-    <div :class="['header', { collapsed: collapsed }]">
+    <div class="container" :class="{ collapsed: collapsed }">
         <div class="content">
             <el-menu default-active="1" mode="horizontal">
                 <el-menu-item index="1">学习笔记</el-menu-item>
@@ -30,7 +30,7 @@ const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
 </template>
 
 <style lang="less" scoped>
-.header {
+.container {
     box-sizing: border-box;
     @header-height: 59px;
     position: relative;

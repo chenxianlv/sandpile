@@ -7,12 +7,16 @@ import HeaderView from '@/views/Base/HeaderView.vue';
 
 <template>
     <div class="main-container">
-        <HeaderView />
-        <router-view v-slot="{ Component }">
-            <keep-alive>
-                <component :is="Component" />
-            </keep-alive>
-        </router-view>
+        <header>
+            <HeaderView />
+        </header>
+        <main>
+            <router-view v-slot="{ Component }">
+                <keep-alive>
+                    <component :is="Component" />
+                </keep-alive>
+            </router-view>
+        </main>
     </div>
 </template>
 
@@ -22,5 +26,15 @@ import HeaderView from '@/views/Base/HeaderView.vue';
     display: flex;
     flex-direction: column;
     background-color: @bg-color-bottom-layer;
+
+    header {
+        flex: none;
+    }
+
+    main {
+        flex: auto;
+        overflow: auto;
+        width: 100%;
+    }
 }
 </style>

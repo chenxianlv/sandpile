@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { onActivated, onDeactivated, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold } from '@element-plus/icons-vue';
-import { useHeaderStore } from '@/stores/base';
 import { useNoteDetail } from '@/views/Note/hooks';
 import MarkdownMenuTree from '@/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/components/Markdown/MdParser.vue';
@@ -16,17 +15,9 @@ let projectId = useRoute().params.id;
 if (projectId instanceof Array) {
     projectId = projectId[0];
 }
-const headerStore = useHeaderStore();
-onActivated(() => {
-    headerStore.collapsed = true;
-    headerStore.collapseBtnShow = true;
-});
-onDeactivated(() => {
-    headerStore.collapsed = false;
-    headerStore.collapseBtnShow = false;
-});
 
-const { noteTreeData, getNoteText, responseData } = useNoteDetail(projectId);
+const { noteTreeData, getNoteText, responseData, pageLoading } =
+    useNoteDetail(projectId);
 const markdownText = ref<string>();
 const markdownMenus = ref<string[]>([]);
 
@@ -54,7 +45,7 @@ const handlePanelTabSelect = (tab: string) => {
 </script>
 
 <template>
-    <el-container>
+    <el-container v-loading="pageLoading">
         <el-header class="operation-bar">
             <el-button
                 :icon="ArrowLeftBold"
