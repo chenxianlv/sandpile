@@ -17,18 +17,25 @@ const router = createRouter({
                     path: 'select',
                     name: 'select',
                     component: () =>
-                        import('@/views/Note/NoteProjectSelect.vue'),
+                        import(
+                            '@/views/Note/NoteProjectSelect/NoteProjectSelect.vue'
+                        ),
                 },
                 {
                     path: 'detail/:id?',
                     name: 'detail',
                     component: () =>
-                        import('@/views/Note/NoteProjectDetail.vue'),
+                        import(
+                            '@/views/Note/NoteProjectDetail/NoteProjectDetail.vue'
+                        ),
                 },
                 {
                     path: 'edit',
                     name: 'edit',
-                    component: () => import('@/views/Note/NoteProjectEdit.vue'),
+                    component: () =>
+                        import(
+                            '@/views/Note/NoteProjectEdit/NoteProjectEdit.vue'
+                        ),
                 },
             ],
         },

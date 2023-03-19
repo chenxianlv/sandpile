@@ -1,13 +1,14 @@
 import { ref, watch } from 'vue';
-import { getNoteDetailAPI, getProjectDetailAPI } from '@/api/note';
 import type { NormalResponse } from '@/common/axios';
+import { getNoteInfoAPI, getProjectDetailAPI } from '@/api/note';
+import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/components/FileTree/FileTree.vue';
 
 export interface NoteProject {
     id: number;
     projectName: string;
-    createUserName: string;
+    createUserName?: string;
     createTime: string;
 }
 
@@ -35,14 +36,18 @@ export function useNoteDetail(projectId: string) {
     const responseData = ref<anyObj>({});
     const noteInfoList = ref<NoteInfo[]>([]);
     const noteTreeData = ref<TempTreeNode[]>([]);
+    const { loading: pageLoading, startLoading, stopLoading } = useLoading();
+    startLoading();
 
     if (projectId !== '') {
-        getProjectDetailAPI({ id: Number(projectId) }).then(
-            (res: NormalResponse) => {
+        getProjectDetailAPI({ id: Number(projectId) })
+            .then((res: NormalResponse) => {
                 responseData.value = res?.data?.data ?? {};
                 noteInfoList.value = res?.data?.data?.notes;
-            }
-        );
+            })
+            .finally(() => {
+                stopLoading();
+            });
     }
 
     watch(noteInfoList, (newVal) => {
@@ -105,7 +110,7 @@ export function useNoteDetail(projectId: string) {
         if (noteInfo.text) {
             return noteInfo.text;
         } else {
-            return getNoteDetailAPI({ id }).then((res) => {
+            return getNoteInfoAPI({ id }).then((res) => {
                 const text = res?.data?.data?.text;
                 if (text === undefined) return;
                 noteInfo.text = text;
@@ -114,5 +119,5 @@ export function useNoteDetail(projectId: string) {
         }
     }
 
-    return { noteTreeData, getNoteText, responseData };
+    return { noteTreeData, getNoteText, responseData, pageLoading };
 }

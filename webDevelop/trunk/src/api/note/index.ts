@@ -3,30 +3,46 @@ import baseRequest from '@/common/axios';
 export function listProjectsAPI() {
     return baseRequest({
         method: 'get',
-        url: '/note/project/list',
+        url: '/note/listProjects',
     });
 }
 
-export function getProjectDetailAPI(params: anyObj) {
+export function addProjectAPI(data: anyObj) {
     return baseRequest({
-        method: 'get',
-        url: '/note/project',
-        params,
+        method: 'post',
+        url: '/note/addProject',
+        data,
     });
 }
 
 export function updateProjectAPI(data: anyObj) {
     return baseRequest({
         method: 'put',
-        url: '/note/project',
+        url: '/note/updateProject',
         data,
     });
 }
 
-export function getNoteDetailAPI(params: anyObj) {
+export function deleteProjectAPI(params: anyObj) {
+    return baseRequest({
+        method: 'delete',
+        url: '/note/deleteProject',
+        params,
+    });
+}
+
+export function getProjectDetailAPI(params: anyObj) {
     return baseRequest({
         method: 'get',
-        url: '/note/note',
+        url: '/note/getProjectDetail',
+        params,
+    });
+}
+
+export function getNoteInfoAPI(params: anyObj) {
+    return baseRequest({
+        method: 'get',
+        url: '/note/getNoteInfo',
         params,
     });
 }

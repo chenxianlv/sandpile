@@ -1,22 +1,25 @@
 <script setup lang="ts">
 // todo 选择完重命名或删除按钮后，自动关闭popover
 // todo 删除dialog样式调整
-import { listProjectsAPI } from '@/api/note';
-import { computed, nextTick, reactive, ref } from 'vue';
+import { listProjectsAPI, updateProjectAPI } from '@/api/note';
+import { computed, nextTick, ref } from 'vue';
 import dayjs from 'dayjs';
 import type { NoteProject } from '@/views/Note/hooks';
 import type { NormalResponse } from '@/common/axios';
 import { useRouter } from 'vue-router';
 import { Search } from '@element-plus/icons-vue';
-import type { FormRules, FormInstance } from 'element-plus';
+import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteDialog.vue';
+import AddDialog from '@/views/Note/NoteProjectSelect/AddDialog.vue';
 
 const noteProjects = ref<NoteProject[]>([]);
 
-listProjectsAPI().then((res: NormalResponse) => {
+const listProjects = async () => {
+    const res: NormalResponse = await listProjectsAPI();
     if (res?.data?.data?.noteProjects) {
         noteProjects.value = res?.data?.data?.noteProjects;
     }
-});
+};
+listProjects();
 
 const router = useRouter();
 const handleCellClick = (row: { id: number }, column: any) => {
@@ -29,7 +32,14 @@ const filterString = ref<string>('');
 const noteProjectsAfterFilter = computed(() => {
     return noteProjects.value.filter((project) => {
         if (project.projectName.includes(filterString.value)) return true;
-        if (project.createUserName.includes(filterString.value)) return true;
+        if (project.createUserName?.includes(filterString.value)) return true;
+        if (
+            project.createTime &&
+            dayjs(project.createTime)
+                .format('YYYY/MM/DD HH:mm:ss')
+                .includes(filterString.value)
+        )
+            return true;
     });
 });
 
@@ -43,51 +53,36 @@ const startEdit = (row: NoteProject) => {
         inputEl?.focus();
     });
 };
-const submitEdit = () => {
+const submitEdit = async () => {
     console.log({ id: editId.value, projectName: editText.value });
+    await updateProjectAPI({ id: editId.value, projectName: editText.value });
     editId.value = undefined;
     editText.value = '';
+    await listProjects();
 };
 
+const addDialogVisible = ref<boolean>(false);
 const deleteDialogVisible = ref<boolean>(false);
 const deleteRowData = ref<NoteProject>();
-const deleteConfirmFormData = reactive<{ text: string }>({
-    text: '',
-});
-const validateConfirmText = (rule: any, value: any, callback: any) => {
-    if (deleteRowData.value === undefined) {
-        callback(new Error('未知错误，请刷新页面'));
-    } else if ((value ?? '') !== deleteRowData.value?.projectName) {
-        callback(new Error('请输入正确的项目名'));
-    } else {
-        callback();
-    }
-};
-const rules = reactive<FormRules>({
-    text: [{ validator: validateConfirmText, trigger: 'blur' }],
-});
-const formRef = ref<FormInstance>();
 const showDeleteDialog = (row: NoteProject) => {
     deleteRowData.value = row;
     deleteDialogVisible.value = true;
-};
-const deleteProject = () => {
-    formRef.value?.validate((isValid) => {
-        if (!isValid || deleteRowData.value === undefined) return;
-        const { id } = deleteRowData.value;
-        console.log({ id });
-    });
 };
 </script>
 
 <template>
     <div class="container">
-        <el-input
-            class="search-input"
-            placeholder="搜索项目"
-            :prefix-icon="Search"
-            v-model="filterString"
-        />
+        <header>
+            <el-input
+                class="search-input"
+                placeholder="搜索项目"
+                :prefix-icon="Search"
+                v-model="filterString"
+            />
+            <el-button type="primary" @click="addDialogVisible = true"
+                >新建项目
+            </el-button>
+        </header>
         <el-table
             :data="noteProjectsAfterFilter"
             :row-style="{ height: '50px' }"
@@ -136,29 +131,16 @@ const deleteProject = () => {
                 </template>
             </el-table-column>
         </el-table>
+        <DeleteDialog
+            v-model:visible="deleteDialogVisible"
+            :row-data="deleteRowData"
+            @submit-success="listProjects"
+        />
+        <AddDialog
+            v-model:visible="addDialogVisible"
+            @submit-success="listProjects"
+        />
     </div>
-    <el-dialog v-model="deleteDialogVisible" title="确定删除吗？">
-        <template #default>
-            <span>{{
-                `若确定删除，请输入项目名称“${deleteRowData.projectName}”。`
-            }}</span>
-            <el-form
-                ref="formRef"
-                :rules="rules"
-                :model="deleteConfirmFormData"
-            >
-                <el-form-item prop="text">
-                    <el-input v-model="deleteConfirmFormData.text"></el-input>
-                </el-form-item>
-            </el-form>
-        </template>
-        <template #footer>
-            <el-button @click="() => (deleteDialogVisible = false)"
-                >取消
-            </el-button>
-            <el-button type="danger" @click="deleteProject">删除</el-button>
-        </template>
-    </el-dialog>
 </template>
 
 <style lang="less" scoped>
@@ -166,19 +148,25 @@ const deleteProject = () => {
     box-sizing: border-box;
     width: 100%;
     max-width: 1000px;
-    height: 100%;
+    min-height: 100%;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 20px 20px 50px;
 
     background-color: @bg-color-middle-layer;
     box-shadow: @box-shadow-normal-large;
-}
 
-.search-input {
-    float: right;
-    width: 430px;
-    height: 32px;
-    margin: 10px 0;
+    header {
+        width: 100%;
+        margin: 0 0 10px;
+        display: flex;
+        justify-content: end;
+
+        .search-input {
+            width: 430px;
+            height: 32px;
+            margin-right: 15px;
+        }
+    }
 }
 
 .el-table {

@@ -1,0 +1,79 @@
+:root {
+    --el-transition-duration: var(--el-transition-duration-fast);
+    --el-box-shadow-light: @box-shadow-normal-small;
+}
+
+.el-header, .el-container,
+.el-main {
+    padding: 0;
+    margin: 0;
+}
+
+.el-dialog {
+    --el-dialog-border-radius: 16px;
+
+    .el-dialog__header {
+        padding-bottom: 0;
+    }
+
+    .el-dialog__footer {
+        padding-top: 0;
+    }
+}
+
+.el-button {
+    &:not(.is-circle) {
+        padding-left: 22px;
+        padding-right: $padding-left;
+    }
+
+    --el-button-hover-text-color: var(--el-button-text-color);
+    --el-button-hover-bg-color: @bg-color-default-dark;
+    --el-button-hover-border-color: @bg-color-default-dark;
+    // 按下时样式同hover
+    --el-button-active-bg-color: @bg-color-default-dark;
+    --el-button-active-border-color: @bg-color-default-dark;
+    // 按下后鼠标移开，恢复为初始样式
+    &:focus:not(&:hover) {
+        --el-button-hover-bg-color: @bg-color-default;
+        --el-button-hover-border-color: var(--el-button-border-color);
+    }
+}
+
+.el-button--danger {
+    --el-button-hover-bg-color: @bg-color-danger-dark;
+    --el-button-hover-border-color: @bg-color-danger-dark;
+    --el-button-active-bg-color: @bg-color-danger-dark;
+    --el-button-active-border-color: @bg-color-danger-dark;
+
+    &:focus:not(&:hover) {
+        --el-button-hover-bg-color: @bg-color-danger;
+        --el-button-hover-border-color: @bg-color-danger;
+    }
+}
+
+.el-button--primary {
+    --el-button-hover-bg-color: @bg-color-primary-dark;
+    --el-button-hover-border-color: @bg-color-primary-dark;
+    --el-button-active-bg-color: @bg-color-primary-dark;
+    --el-button-active-border-color: @bg-color-primary-dark;
+
+    &:focus:not(&:hover) {
+        --el-button-hover-bg-color: @bg-color-primary;
+        --el-button-hover-border-color: @bg-color-primary;
+    }
+}
+
+.el-popover {
+    --el-popover-border-radius: 8px;
+    --el-popover-padding: 0;
+}
+
+.el-input {
+    --el-input-border-radius: 8px;
+    --el-input-hover-border-color: @border-color-base;
+}
+
+.el-icon.el-dialog__close {
+    color: var(--el-color-info) !important;
+}
