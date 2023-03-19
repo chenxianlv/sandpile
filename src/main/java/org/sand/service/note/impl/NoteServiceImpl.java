@@ -23,7 +23,7 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, NotePO> implements 
     public String getNoteText(Long id) throws IOException {
         NotePO notePO = this.getById(id);
         FTPClient ftpClient = ftpUtils.connectFtp();
-        String text = ftpUtils.readFile(ftpClient, notePO.getUrl());
+        String text = ftpUtils.readFile(ftpClient, notePO.getFilePath());
         ftpUtils.closeFtpClient(ftpClient);
         return text;
 

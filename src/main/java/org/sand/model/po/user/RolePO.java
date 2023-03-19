@@ -1,17 +1,16 @@
 package org.sand.model.po.user;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 @TableName("user_role")
 @Data
 public class RolePO {
 
-    @TableId("id")
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String roleName;
@@ -19,4 +18,16 @@ public class RolePO {
     @TableField(exist = false)
     private List<AccessPO> accessList;
 
+    @TableLogic
+    private Boolean deleteFlag;
+
+    private Date createTime;
+
+    private Long createUserId;
+
+    private Data updateTime;
+
+    private Long updateUserId;
+
+    private String remark;
 }

@@ -1,4 +1,4 @@
-package org.sand.service.impl;
+package org.sand.service.security.impl;
 
 import org.sand.model.dto.user.UserDTO;
 import org.sand.model.po.user.UserPO;
