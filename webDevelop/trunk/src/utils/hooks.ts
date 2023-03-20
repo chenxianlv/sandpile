@@ -4,7 +4,9 @@ import {
     LOADING_MIN_DURATION_TIME,
 } from '@/common/commonDefine';
 
-export function useLoading(offsetTime?: number) {
+export function useLoading(
+    config: { startOffsetTime?: number; minDurationTime?: number } = {}
+) {
     const loading = ref(false);
     let timeout: number | undefined;
     let loadingStartTime: number | undefined;
@@ -15,7 +17,7 @@ export function useLoading(offsetTime?: number) {
             loading.value = true;
             loadingStartTime = Date.now();
             timeout = undefined;
-        }, offsetTime ?? LOADING_START_OFFSET_TIME);
+        }, config.startOffsetTime ?? LOADING_START_OFFSET_TIME);
     };
 
     const stopLoading = () => {
@@ -28,7 +30,8 @@ export function useLoading(offsetTime?: number) {
             // 若已在loading
             if (loadingStartTime === undefined) return;
             const timeNeedToWait =
-                LOADING_MIN_DURATION_TIME - (Date.now() - loadingStartTime);
+                (config.startOffsetTime ?? LOADING_MIN_DURATION_TIME) -
+                (Date.now() - loadingStartTime);
             if (timeNeedToWait > 0) {
                 setTimeout(() => {
                     loading.value = false;
