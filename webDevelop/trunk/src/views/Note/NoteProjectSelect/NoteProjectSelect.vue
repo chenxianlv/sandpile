@@ -83,54 +83,61 @@ const showDeleteDialog = (row: NoteProject) => {
                 >新建项目
             </el-button>
         </header>
-        <el-table
-            :data="noteProjectsAfterFilter"
-            :row-style="{ height: '50px' }"
-            @cell-click="handleCellClick"
-        >
-            <el-table-column prop="projectName" label="笔记项目名" :width="350">
-                <template #default="{ row }">
-                    <el-input
-                        :id="'sp-edit-input-' + row.id"
-                        v-if="editId === row.id"
-                        v-model="editText"
-                        maxlength="50"
-                        show-word-limit
-                        @keydown.enter="(e) => e.target.blur()"
-                        @blur="submitEdit"
-                    />
-                    <span v-else>{{ row.projectName }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column
-                prop="createUserName"
-                label="创建者"
-            ></el-table-column>
-            <el-table-column label="创建时间">
-                <template #default="{ row }">
-                    <span>{{
-                        dayjs(row.createTime).format('YYYY/MM/DD HH:mm:ss')
-                    }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column width="40px" column-key="no-jump">
-                <template #default="{ row }">
-                    <el-popover placement="bottom-end" trigger="hover">
-                        <template #reference>
-                            <el-icon>
-                                <MoreFilled />
-                            </el-icon>
-                        </template>
-                        <template #default>
-                            <ul class="option-menu">
-                                <li @click="startEdit(row)">重命名</li>
-                                <li @click="showDeleteDialog(row)">删除</li>
-                            </ul>
-                        </template>
-                    </el-popover>
-                </template>
-            </el-table-column>
-        </el-table>
+        <div class="table-container">
+            <el-table
+                :data="noteProjectsAfterFilter"
+                :row-style="{ height: '50px' }"
+                @cell-click="handleCellClick"
+                height="100%"
+            >
+                <el-table-column
+                    prop="projectName"
+                    label="笔记项目名"
+                    :width="350"
+                >
+                    <template #default="{ row }">
+                        <el-input
+                            :id="'sp-edit-input-' + row.id"
+                            v-if="editId === row.id"
+                            v-model="editText"
+                            maxlength="50"
+                            show-word-limit
+                            @keydown.enter="(e) => e.target.blur()"
+                            @blur="submitEdit"
+                        />
+                        <span v-else>{{ row.projectName }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                    prop="createUserName"
+                    label="创建者"
+                ></el-table-column>
+                <el-table-column label="创建时间">
+                    <template #default="{ row }">
+                        <span>{{
+                            dayjs(row.createTime).format('YYYY/MM/DD HH:mm:ss')
+                        }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column width="45px" column-key="no-jump">
+                    <template #default="{ row }">
+                        <el-popover placement="bottom-end" trigger="hover">
+                            <template #reference>
+                                <el-icon>
+                                    <MoreFilled />
+                                </el-icon>
+                            </template>
+                            <template #default>
+                                <ul class="option-menu">
+                                    <li @click="startEdit(row)">重命名</li>
+                                    <li @click="showDeleteDialog(row)">删除</li>
+                                </ul>
+                            </template>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
         <DeleteDialog
             v-model:visible="deleteDialogVisible"
             :row-data="deleteRowData"
@@ -148,9 +155,11 @@ const showDeleteDialog = (row: NoteProject) => {
     box-sizing: border-box;
     width: 100%;
     max-width: 1000px;
-    min-height: 100%;
+    height: 100%;
     margin: 0 auto;
-    padding: 20px 20px 50px;
+    padding: 20px 20px 0;
+    display: flex;
+    flex-direction: column;
 
     background-color: @bg-color-middle-layer;
     box-shadow: @box-shadow-normal-large;
@@ -158,6 +167,7 @@ const showDeleteDialog = (row: NoteProject) => {
     header {
         width: 100%;
         margin: 0 0 10px;
+        flex: none;
         display: flex;
         justify-content: end;
 
@@ -166,6 +176,11 @@ const showDeleteDialog = (row: NoteProject) => {
             height: 32px;
             margin-right: 15px;
         }
+    }
+
+    .table-container {
+        flex-grow: 1;
+        overflow: auto;
     }
 }
 

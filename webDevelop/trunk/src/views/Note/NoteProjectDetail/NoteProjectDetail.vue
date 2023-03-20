@@ -8,6 +8,7 @@ import MarkdownMenuTree from '@/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/components/Markdown/MdParser.vue';
 import FileTree from '@/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
+import { useLoading } from '@/utils/hooks';
 
 window.location.hash = '';
 let projectId = useRoute().params.id;
@@ -16,6 +17,7 @@ if (projectId instanceof Array) {
     projectId = projectId[0];
 }
 
+const { loading: parserLoading, startLoading, stopLoading } = useLoading();
 const { noteTreeData, getNoteText, responseData, pageLoading } =
     useNoteDetail(projectId);
 const markdownText = ref<string>();
@@ -30,12 +32,17 @@ const updateMarkdownMenus = (newVal: string[]) => {
 
 let showingNoteId: number;
 const handleFileChange = (id: number) => {
+    startLoading();
     if (showingNoteId === id) return;
     showingNoteId = id;
-    getNoteText(id).then((text: string) => {
-        markdownText.value = text;
-        activePanelTab.value = 'outline';
-    });
+    getNoteText(id)
+        .then((text: string) => {
+            markdownText.value = text;
+            activePanelTab.value = 'outline';
+        })
+        .finally(() => {
+            stopLoading();
+        });
 };
 
 const activePanelTab = ref<string>('file');
@@ -91,7 +98,7 @@ const handlePanelTabSelect = (tab: string) => {
                     v-if="asideRef?.$el"
                     :targetDOM="asideRef?.$el"
                 />
-                <el-main class="main">
+                <el-main class="main" v-loading="parserLoading">
                     <el-empty
                         v-if="markdownText === undefined"
                         description="请选择笔记"
