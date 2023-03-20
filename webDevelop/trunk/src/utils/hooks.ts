@@ -30,7 +30,7 @@ export function useLoading(
             // 若已在loading
             if (loadingStartTime === undefined) return;
             const timeNeedToWait =
-                (config.startOffsetTime ?? LOADING_MIN_DURATION_TIME) -
+                (config.minDurationTime ?? LOADING_MIN_DURATION_TIME) -
                 (Date.now() - loadingStartTime);
             if (timeNeedToWait > 0) {
                 setTimeout(() => {
