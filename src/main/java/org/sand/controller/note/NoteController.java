@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
-import org.sand.common.ResponseDTO;
+import org.sand.model.vo.base.ResponseVO;
 import org.sand.model.dto.note.NoteProjectAddDTO;
 import org.sand.model.dto.note.NoteProjectDeleteDTO;
 import org.sand.model.dto.note.NoteProjectUpdateDTO;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Api(tags = "学习笔记模块")
 @RestController
 @AllArgsConstructor
-@RequestMapping(value = "/api/note")
+@RequestMapping(value = "${project.baseUrl}/note")
 public class NoteController {
 
     private final NoteProjectService noteProjectService;
@@ -39,7 +39,7 @@ public class NoteController {
     // todo 适配查询条件
     @ApiOperation("列出符合查询条件的笔记项目")
     @GetMapping("/listProjects")
-    private ResponseDTO<NoteProjectListVO> listProjects() {
+    private ResponseVO<NoteProjectListVO> listProjects() {
         List<NoteProjectPO> noteProjectPOs = noteProjectService.list();
 
         NoteProjectListVO noteProjectListVO = new NoteProjectListVO();
@@ -56,7 +56,7 @@ public class NoteController {
             return noteProjectVO;
         }).collect(Collectors.toList()));
 
-        return ResponseDTO.success(noteProjectListVO);
+        return ResponseVO.success(noteProjectListVO);
     }
 
     @ApiOperation("更新指定笔记项目的基本信息")
@@ -67,7 +67,7 @@ public class NoteController {
         BeanUtils.copyProperties(noteProjectUpdateDTO, noteProjectPO);
 
         noteProjectService.updateById(noteProjectPO);
-        return ResponseDTO.success();
+        return ResponseVO.success();
 
     }
 
@@ -90,7 +90,7 @@ public class NoteController {
         NoteProjectAddVO noteProjectAddVO = new NoteProjectAddVO();
         noteProjectAddVO.setId(noteProjectPO.getId());
 
-        return ResponseDTO.success(noteProjectAddVO);
+        return ResponseVO.success(noteProjectAddVO);
 
     }
 
@@ -98,12 +98,12 @@ public class NoteController {
     @DeleteMapping("/deleteProject")
     private Object deleteProject(@Validated NoteProjectDeleteDTO noteProjectDeleteDTO) {
         noteProjectService.removeById(noteProjectDeleteDTO.getId());
-        return ResponseDTO.success();
+        return ResponseVO.success();
     }
 
     @ApiOperation("获取指定笔记项目内部的笔记信息")
     @GetMapping("/getProjectDetail")
-    private ResponseDTO<NoteProjectDetailVO> getProjectDetail(@RequestParam("id") Integer projectId) {
+    private ResponseVO<NoteProjectDetailVO> getProjectDetail(@RequestParam("id") Integer projectId) {
 
         // 获取笔记项目内的笔记
         LambdaQueryWrapper<NotePO> lqw = new LambdaQueryWrapper<>();
@@ -120,20 +120,20 @@ public class NoteController {
         NoteProjectPO noteProjectPO = noteProjectService.getById(projectId);
         vo.setProjectName(noteProjectPO.getProjectName());
 
-        return ResponseDTO.success(vo);
+        return ResponseVO.success(vo);
 
     }
 
     @ApiOperation("获取指定笔记的信息")
     @GetMapping("/getNoteInfo")
-    private ResponseDTO<NoteDetailVO> getNoteDetail(@RequestParam Long id) {
+    private ResponseVO<NoteDetailVO> getNoteDetail(@RequestParam Long id) {
         NoteDetailVO noteDetailVO = new NoteDetailVO();
         try {
             noteDetailVO.setText(noteService.getNoteText(id));
         } catch (IOException e) {
-            return ResponseDTO.error(50000, "FTP连接失败");
+            return ResponseVO.error(50000, "FTP连接失败");
         }
-        return ResponseDTO.success(noteDetailVO);
+        return ResponseVO.success(noteDetailVO);
     }
 
 }

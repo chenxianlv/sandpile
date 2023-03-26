@@ -1,6 +1,5 @@
 package org.sand.config.security;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import org.sand.model.po.user.AccessPO;
 import org.sand.model.po.user.RolePO;
@@ -32,9 +31,7 @@ public class SandSecurityMetadataSource implements FilterInvocationSecurityMetad
         }
         System.out.println(url);
 
-        AccessPO accessPO = accessService.getOne(
-                new LambdaQueryWrapper<AccessPO>().eq(AccessPO::getAccessUrl, url)
-        );
+        AccessPO accessPO = accessService.getByUrl(url);
 
         if (accessPO == null ){
             return SecurityConfig.createList();

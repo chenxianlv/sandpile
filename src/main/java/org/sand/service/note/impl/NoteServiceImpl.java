@@ -5,7 +5,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.sand.mapper.note.NoteMapper;
 import org.sand.model.po.note.NotePO;
 import org.sand.service.note.NoteService;
-import org.sand.utils.FTPUtils;
+import org.sand.util.FTPUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

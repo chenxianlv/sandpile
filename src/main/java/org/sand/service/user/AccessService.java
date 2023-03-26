@@ -9,4 +9,6 @@ public interface AccessService  extends IService<AccessPO> {
 
     List<AccessPO> listAccessByRoleId(long roleId);
 
+    AccessPO getByUrl(String url);
+
 }

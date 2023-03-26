@@ -1,5 +1,11 @@
 server:
   port: 8060
+  servlet:
+    session:
+      timeout: 60
+      cookie:
+        name: SESSIONID
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,6 +16,7 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+
 mybatis-plus:
   global-config:
     db-config:
@@ -26,5 +33,9 @@ ftp:
   username: anonymous
   password: null
 
-time:
+swagger:
+  enabled: true
+
+project:
+  baseUrl: /api
   time-zone: GMT+8
