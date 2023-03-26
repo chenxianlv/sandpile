@@ -14,7 +14,7 @@ public class NoteProjectVO {
 
     private String createUserName;
 
-    @JsonFormat(timezone = "${time.time-zone}", pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "${project.time-zone}", pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
 }

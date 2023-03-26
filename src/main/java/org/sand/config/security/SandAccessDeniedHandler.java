@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.sand.model.vo.base.ResponseVO;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
@@ -16,17 +16,16 @@ import java.io.PrintWriter;
 
 @Component
 @AllArgsConstructor
-public class SandAuthenticationFailureHandler implements AuthenticationFailureHandler {
+public class SandAccessDeniedHandler implements AccessDeniedHandler {
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        AuthenticationException e) throws IOException, ServletException {
+    public void handle(HttpServletRequest request, HttpServletResponse response,
+                       AccessDeniedException e) throws IOException, ServletException {
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setHeader("Content-Type", "application/json;charset=utf-8");
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setHeader("Content-Type","application/json;charset=utf-8");
 
         PrintWriter out = response.getWriter();
         out.write(objectMapper.writeValueAsString(ResponseVO.error(0, e.getMessage())));

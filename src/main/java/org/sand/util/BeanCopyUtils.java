@@ -1,4 +1,4 @@
-package org.sand.utils;
+package org.sand.util;
 
 import org.springframework.beans.BeanUtils;
 

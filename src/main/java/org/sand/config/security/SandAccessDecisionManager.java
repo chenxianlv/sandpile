@@ -13,9 +13,21 @@ import java.util.Collection;
 @Component
 public class SandAccessDecisionManager implements AccessDecisionManager {
     @Override
-    public void decide(Authentication auth, Object o, Collection<ConfigAttribute> collection) throws AccessDeniedException, InsufficientAuthenticationException {
+    public void decide(Authentication auth, Object o, Collection<ConfigAttribute> configAttributes) throws AccessDeniedException, InsufficientAuthenticationException {
         Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
         System.out.println(authorities);
+
+        if (configAttributes == null) return;
+
+        for (ConfigAttribute attribute : configAttributes) {
+            for (GrantedAuthority authority : authorities) {
+                if (authority.getAuthority().equals(attribute.getAttribute())) {
+                    return;
+                }
+            }
+        }
+
+        throw new AccessDeniedException("Access is denied");
     }
 
     @Override

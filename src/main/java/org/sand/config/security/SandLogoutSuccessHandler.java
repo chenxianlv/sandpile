@@ -1,6 +1,8 @@
 package org.sand.config.security;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import org.sand.model.vo.base.ResponseVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -13,20 +15,21 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @Component
+@AllArgsConstructor
 public class SandLogoutSuccessHandler implements LogoutSuccessHandler {
 
+    private ObjectMapper objectMapper;
+
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request,
+                                HttpServletResponse response,
+                                Authentication authentication) throws IOException, ServletException {
 
         response.setStatus(HttpStatus.OK.value());
         response.setContentType("application/json;charset=utf-8");
 
-        JSONObject json = new JSONObject();
-        json.put("status", 200);
-        json.put("msg","登出成功");
-
         PrintWriter out = response.getWriter();
-        out.write(json.toString());
+        out.write(objectMapper.writeValueAsString(ResponseVO.success()));
         out.flush();
         out.close();
 

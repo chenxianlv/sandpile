@@ -167,17 +167,17 @@ VALUES (1, 'admin', 'administrator', '$2a$10$G6zACWgQzdmCGgdlFYc0WeMPI8L0zwrfOAs
 
 INSERT INTO `user_role`(`id`, `role_name`, `create_user_id`)
 VALUES (1, 'root', 1),
-       (2, 'guest', 1);
+       (2, 'manager', 1);
 
 INSERT INTO `user_access`(`id`, `access_name`, `access_url`)
-VALUES (1, 'test', '/api/security/test1'),
-       (2, 'test', '/api/security/test2');
+VALUES (1, 'updateProject', '/api/note/updateProject'),
+       (2, 'addProject', '/api/note/addProject'),
+       (3, 'deleteProject', '/api/note/deleteProject');
 
 INSERT INTO `user_user_role`(`user_id`, `role_id`)
 VALUES (1, 1),
        (2, 2);
 
 INSERT INTO `user_role_access`(`role_id`, `access_id`)
-VALUES (1, 1),
-       (1, 2),
-       (2, 2);
+VALUES (1, 1),(1, 2),(1, 3),
+       (2, 1),(2, 2),(2, 3);
