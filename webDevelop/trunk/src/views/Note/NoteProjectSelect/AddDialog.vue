@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { FormInstance, FormRules } from 'element-plus';
+import type { FormInstance, FormRules } from 'element-plus';
 import { addProjectAPI } from '@/api/note';
+import { useLoading } from '@/utils/hooks';
 
 const props = defineProps<{
     visible: boolean;
@@ -23,19 +24,26 @@ const rules = reactive<FormRules>({
         { max: 255, message: '请输入小于255字符的项目名称', trigger: 'change' },
     ],
 });
+const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
-const submitAdd = async () => {
-    formRef.value?.validate(async (isValid) => {
+const submitAdd = () => {
+    formRef.value?.validate((isValid) => {
         if (!isValid) return;
-        await addProjectAPI(formData);
-        emit('submitSuccess');
-        emit('update:visible', false);
+        startLoading();
+        addProjectAPI(formData)
+            .then(() => {
+                emit('submitSuccess');
+                emit('update:visible', false);
+            })
+            .catch(() => {})
+            .finally(() => {
+                stopLoading();
+            });
     });
 };
 
 const resetDialog = () => {
     formRef.value?.resetFields();
-    formData.projectName = '';
 };
 </script>
 
@@ -45,20 +53,34 @@ const resetDialog = () => {
         title="新建笔记项目"
         :modelValue="props.visible"
         @update:modelValue="(e) => emit('update:visible', e)"
-        @closed="resetDialog"
+        @open="resetDialog"
         align-center
+        draggable
         append-to-body
     >
         <template #default>
-            <el-form ref="formRef" :rules="rules" :model="formData">
+            <el-form
+                @submit.prevent
+                ref="formRef"
+                :rules="rules"
+                :model="formData"
+            >
                 <el-form-item prop="projectName" label="项目名称">
-                    <el-input v-model="formData.projectName"></el-input>
+                    <el-input
+                        v-model="formData.projectName"
+                        @keydown.enter="submitAdd"
+                    ></el-input>
                 </el-form-item>
             </el-form>
         </template>
         <template #footer>
             <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button type="primary" @click="submitAdd">新建</el-button>
+            <el-button
+                type="primary"
+                @click="submitAdd"
+                :loading="submitBtnLoading"
+                >新建</el-button
+            >
         </template>
     </el-dialog>
 </template>

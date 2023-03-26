@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import { NoteProject } from '@/views/Note/hooks';
 import { FormInstance, FormRules } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
+import { useLoading } from '@/utils/hooks';
 
 const props = defineProps<{
     visible: boolean;
@@ -25,19 +26,27 @@ const rules = reactive<FormRules>({
     text: [{ validator: validateConfirmText, trigger: 'blur' }],
 });
 const formRef = ref<FormInstance>();
+const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
 const deleteProject = () => {
-    formRef.value?.validate(async (isValid) => {
+    formRef.value?.validate((isValid) => {
         if (!isValid) return;
-        await deleteProjectAPI({ id: props.rowData.id });
-        emit('submitSuccess');
-        emit('update:visible', false);
+
+        startLoading();
+        deleteProjectAPI({ id: props.rowData.id })
+            .then(() => {
+                emit('submitSuccess');
+                emit('update:visible', false);
+            })
+            .catch(() => {})
+            .finally(() => {
+                stopLoading();
+            });
     });
 };
 
 const resetDialog = () => {
     formRef.value?.resetFields();
-    deleteConfirmFormData.text = '';
 };
 </script>
 
@@ -47,8 +56,9 @@ const resetDialog = () => {
         title="确定删除吗？"
         :modelValue="props.visible"
         @update:modelValue="(e) => emit('update:visible', e)"
-        @closed="resetDialog"
+        @open="resetDialog"
         align-center
+        draggable
         append-to-body
     >
         <template #default>
@@ -58,18 +68,27 @@ const resetDialog = () => {
             <br />
             <br />
             <el-form
+                @submit.prevent
                 ref="formRef"
                 :rules="rules"
                 :model="deleteConfirmFormData"
             >
                 <el-form-item prop="text">
-                    <el-input v-model="deleteConfirmFormData.text"></el-input>
+                    <el-input
+                        v-model="deleteConfirmFormData.text"
+                        @keydown.enter="deleteProject"
+                    ></el-input>
                 </el-form-item>
             </el-form>
         </template>
         <template #footer>
             <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button type="danger" @click="deleteProject">删除</el-button>
+            <el-button
+                type="danger"
+                @click="deleteProject"
+                :loading="submitBtnLoading"
+                >删除</el-button
+            >
         </template>
     </el-dialog>
 </template>

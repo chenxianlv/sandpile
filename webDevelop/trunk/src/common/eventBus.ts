@@ -2,5 +2,6 @@ import mitt from 'mitt';
 
 type Events = {
     sashRePosition: void;
+    showLoginDialog: void;
 };
-export default mitt<Events>();
+export const $bus = mitt<Events>();
