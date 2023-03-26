@@ -88,6 +88,7 @@ let menus: string[] = [];
  * 解析markdown文本，生成vnode
  */
 export function parse(originalText: string) {
+    console.time('解析');
     menus = [];
     const root = new ParseTreeNode({
         text: null,
@@ -127,8 +128,7 @@ export function parse(originalText: string) {
         (node as ParseTreeNode).text = null;
         parseText(child);
     });
-
-    console.log(root.children);
+    console.timeEnd('解析');
 
     return {
         menus,

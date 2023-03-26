@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue';
-import $bus from '@/common/eventBus';
+import { $bus } from '@/common/eventBus';
 
 const props = defineProps<{
     targetDOM: HTMLElement;

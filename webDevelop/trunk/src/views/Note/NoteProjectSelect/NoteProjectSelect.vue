@@ -1,23 +1,32 @@
 <script setup lang="ts">
-// todo 选择完重命名或删除按钮后，自动关闭popover
-// todo 删除dialog样式调整
 import { listProjectsAPI, updateProjectAPI } from '@/api/note';
 import { computed, nextTick, ref } from 'vue';
 import dayjs from 'dayjs';
-import type { NoteProject } from '@/views/Note/hooks';
-import type { NormalResponse } from '@/common/axios';
 import { useRouter } from 'vue-router';
 import { Search } from '@element-plus/icons-vue';
+import type { NoteProject } from '@/views/Note/hooks';
+import type { NormalResponse } from '@/common/axios';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddDialog.vue';
 
 const noteProjects = ref<NoteProject[]>([]);
 
-const listProjects = async () => {
-    const res: NormalResponse = await listProjectsAPI();
-    if (res?.data?.data?.noteProjects) {
-        noteProjects.value = res?.data?.data?.noteProjects;
-    }
+const listProjects = () => {
+    listProjectsAPI()
+        .then((res: NormalResponse) => {
+            const data = res?.data?.data?.noteProjects;
+            if (!data) return;
+            const timeFormatter = (item: any) => {
+                if (item?.createTime) {
+                    item.createTime = dayjs(item.createTime).format(
+                        'YYYY/MM/DD HH:mm:ss'
+                    );
+                }
+                return item;
+            };
+            noteProjects.value = data?.map?.(timeFormatter) ?? [];
+        })
+        .catch(() => {});
 };
 listProjects();
 
@@ -31,34 +40,38 @@ const handleCellClick = (row: { id: number }, column: any) => {
 const filterString = ref<string>('');
 const noteProjectsAfterFilter = computed(() => {
     return noteProjects.value.filter((project) => {
-        if (project.projectName.includes(filterString.value)) return true;
+        if (project.projectName?.includes(filterString.value)) return true;
         if (project.createUserName?.includes(filterString.value)) return true;
-        if (
-            project.createTime &&
-            dayjs(project.createTime)
-                .format('YYYY/MM/DD HH:mm:ss')
-                .includes(filterString.value)
-        )
-            return true;
+        if (project.createTime?.includes(filterString.value)) return true;
     });
 });
 
 const editId = ref<number>();
 const editText = ref<string>('');
-const startEdit = (row: NoteProject) => {
-    editId.value = row.id;
-    editText.value = row.projectName;
+const editInputDisabled = ref(false);
+const inputFocus = (id: string) => {
     nextTick(() => {
-        const inputEl = document.getElementById('sp-edit-input-' + row.id);
+        const inputEl = document.getElementById(id);
         inputEl?.focus();
     });
 };
-const submitEdit = async () => {
-    console.log({ id: editId.value, projectName: editText.value });
-    await updateProjectAPI({ id: editId.value, projectName: editText.value });
-    editId.value = undefined;
-    editText.value = '';
-    await listProjects();
+const startEdit = (row: NoteProject) => {
+    editId.value = row.id;
+    editText.value = row.projectName;
+    inputFocus('sp-edit-input-' + row.id);
+};
+const submitEdit = () => {
+    editInputDisabled.value = true;
+    updateProjectAPI({ id: editId.value, projectName: editText.value })
+        .then(() => {
+            listProjects();
+        })
+        .catch(() => {})
+        .finally(() => {
+            editId.value = undefined;
+            editText.value = '';
+            editInputDisabled.value = false;
+        });
 };
 
 const addDialogVisible = ref<boolean>(false);
@@ -89,6 +102,7 @@ const showDeleteDialog = (row: NoteProject) => {
                 :row-style="{ height: '50px' }"
                 @cell-click="handleCellClick"
                 height="100%"
+                row-key="id"
             >
                 <el-table-column
                     prop="projectName"
@@ -102,6 +116,7 @@ const showDeleteDialog = (row: NoteProject) => {
                             v-model="editText"
                             maxlength="50"
                             show-word-limit
+                            :disabled="editInputDisabled"
                             @keydown.enter="(e) => e.target.blur()"
                             @blur="submitEdit"
                         />
@@ -112,12 +127,7 @@ const showDeleteDialog = (row: NoteProject) => {
                     prop="createUserName"
                     label="创建者"
                 ></el-table-column>
-                <el-table-column label="创建时间">
-                    <template #default="{ row }">
-                        <span>{{
-                            dayjs(row.createTime).format('YYYY/MM/DD HH:mm:ss')
-                        }}</span>
-                    </template>
+                <el-table-column prop="createTime" label="创建时间">
                 </el-table-column>
                 <el-table-column width="45px" column-key="no-jump">
                     <template #default="{ row }">
@@ -192,9 +202,5 @@ const showDeleteDialog = (row: NoteProject) => {
 
     --el-table-header-text-color: @font-color-regular;
     --el-table-text-color: @font-color-regular;
-
-    :deep(.el-scrollbar) {
-        cursor: pointer;
-    }
 }
 </style>

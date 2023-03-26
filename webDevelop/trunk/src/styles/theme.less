@@ -11,13 +11,30 @@
 
 .el-dialog {
     --el-dialog-border-radius: 16px;
+    --el-dialog-padding-primary: 25px;
+
+    .el-dialog__body {
+        padding: calc(var(--el-dialog-padding-primary) - 5px) var(--el-dialog-padding-primary);
+    }
 
     .el-dialog__header {
-        padding-bottom: 0;
+        padding-bottom: 7px;
+        padding-top: 18px;
     }
 
     .el-dialog__footer {
-        padding-top: 0;
+        padding-top: 7px;
+        padding-bottom: 20px;
+    }
+}
+
+.el-form-item {
+    margin-bottom: 20px;
+}
+
+.el-table {
+    .el-table__row {
+        cursor: pointer;
     }
 }
 
@@ -62,6 +79,10 @@
         --el-button-hover-bg-color: @bg-color-primary;
         --el-button-hover-border-color: @bg-color-primary;
     }
+}
+
+.el-message {
+    z-index: 1000000 !important;
 }
 
 .el-popover {
