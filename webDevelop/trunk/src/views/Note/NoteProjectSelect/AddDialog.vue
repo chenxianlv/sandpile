@@ -52,7 +52,7 @@ const resetDialog = () => {
         width="500px"
         title="新建笔记项目"
         :modelValue="props.visible"
-        @update:modelValue="(e) => emit('update:visible', e)"
+        @update:modelValue="(e:boolean) => emit('update:visible', e)"
         @open="resetDialog"
         align-center
         draggable

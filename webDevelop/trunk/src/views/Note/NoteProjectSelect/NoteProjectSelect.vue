@@ -76,7 +76,7 @@ const submitEdit = () => {
 
 const addDialogVisible = ref<boolean>(false);
 const deleteDialogVisible = ref<boolean>(false);
-const deleteRowData = ref<NoteProject>();
+const deleteRowData = ref<NoteProject | undefined>();
 const showDeleteDialog = (row: NoteProject) => {
     deleteRowData.value = row;
     deleteDialogVisible.value = true;
@@ -117,7 +117,7 @@ const showDeleteDialog = (row: NoteProject) => {
                             maxlength="50"
                             show-word-limit
                             :disabled="editInputDisabled"
-                            @keydown.enter="(e) => e.target.blur()"
+                            @keydown.enter="(e:KeyboardEvent) => e.target?.blur?.()"
                             @blur="submitEdit"
                         />
                         <span v-else>{{ row.projectName }}</span>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { FormInstance, FormRules } from 'element-plus';
+import type { FormInstance, FormRules } from 'element-plus';
 import { loginAPI } from '@/api/base';
 import type { NormalResponse } from '@/common/axios';
 import { useUserStore } from '@/stores/base';
@@ -75,7 +75,7 @@ const resetDialog = () => {
         width="500px"
         title="用户登录"
         :modelValue="props.visible"
-        @update:modelValue="(e) => emit('update:visible', e)"
+        @update:modelValue="(e:boolean) => emit('update:visible', e)"
         @open="resetDialog"
         align-center
         draggable
