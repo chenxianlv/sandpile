@@ -2,7 +2,7 @@
 
 一个WEB全栈试验场，基于个人需求制作
 
-[查看页面](http://zfas56dg49zxc465vs4d56fg4s56dfg.shop/)
+[查看页面](http://sandpile.shop/)
 
 ## TODO
 
