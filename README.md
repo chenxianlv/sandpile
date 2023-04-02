@@ -4,6 +4,8 @@
 
 [查看页面](http://sandpile.shop/)
 
+> 致谢：本项目的 Markdown 主题基于 [typora-vue-theme](https://github.com/blinkfox/typora-vue-theme) 进行二次开发
+
 ## TODO
 
 Markdown笔记：
