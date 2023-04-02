@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { NoteProject } from '@/views/Note/hooks';
+import type { NoteProject } from '@/views/Note/hooks';
 import { FormInstance, FormRules } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 
 const props = defineProps<{
     visible: boolean;
-    rowData: NoteProject;
+    rowData?: NoteProject;
 }>();
 const emit = defineEmits<{
     (e: 'update:visible', value: boolean): void;
@@ -30,7 +30,7 @@ const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
 const deleteProject = () => {
     formRef.value?.validate((isValid) => {
-        if (!isValid) return;
+        if (!isValid || !props.rowData) return;
 
         startLoading();
         deleteProjectAPI({ id: props.rowData.id })
@@ -55,7 +55,7 @@ const resetDialog = () => {
         width="500px"
         title="确定删除吗？"
         :modelValue="props.visible"
-        @update:modelValue="(e) => emit('update:visible', e)"
+        @update:modelValue="(e:boolean) => emit('update:visible', e)"
         @open="resetDialog"
         align-center
         draggable
@@ -63,7 +63,9 @@ const resetDialog = () => {
     >
         <template #default>
             <span>{{
-                `若确定删除，请输入项目名称“${props.rowData.projectName}”。`
+                `若确定删除，请输入项目名称“${
+                    props.rowData?.projectName ?? ''
+                }”。`
             }}</span>
             <br />
             <br />
