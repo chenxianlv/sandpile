@@ -2,7 +2,7 @@
 
 一个WEB全栈试验场，基于个人需求制作
 
-[查看页面](http://sandpile.shop/)
+[查看页面](https://sandpile.shop/)
 
 > 致谢：本项目的 Markdown 主题基于 [typora-vue-theme](https://github.com/blinkfox/typora-vue-theme) 进行二次开发
 
