@@ -4,6 +4,7 @@
 // todo tab页
 // fixme 部署后显示时区的问题
 import HeaderView from '@/views/Base/HeaderView.vue';
+import LoginDialog from '@/components/LoginDialog/LoginDialog.vue';
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import HeaderView from '@/views/Base/HeaderView.vue';
             </router-view>
         </main>
     </div>
+    <LoginDialog />
 </template>
 
 <style scoped lang="less">

@@ -1,12 +1,7 @@
 import { ref } from 'vue';
-import {
-    LOADING_START_OFFSET_TIME,
-    LOADING_MIN_DURATION_TIME,
-} from '@/common/commonDefine';
+import { LOADING_START_OFFSET_TIME, LOADING_MIN_DURATION_TIME } from '@/common/commonDefine';
 
-export function useLoading(
-    config: { startOffsetTime?: number; minDurationTime?: number } = {}
-) {
+export function useLoading(config: { startOffsetTime?: number; minDurationTime?: number } = {}) {
     const loading = ref(false);
     let timeout: number | undefined;
     let loadingStartTime: number | undefined;

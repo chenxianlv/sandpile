@@ -8,6 +8,7 @@ import type { NoteProject } from '@/views/Note/hooks';
 import type { NormalResponse } from '@/common/axios';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddDialog.vue';
+import UserAvatar from '@/components/UserAvatar/UserAvatar.vue';
 
 const noteProjects = ref<NoteProject[]>([]);
 
@@ -18,9 +19,7 @@ const listProjects = () => {
             if (!data) return;
             const timeFormatter = (item: any) => {
                 if (item?.createTime) {
-                    item.createTime = dayjs(item.createTime).format(
-                        'YYYY/MM/DD HH:mm:ss'
-                    );
+                    item.createTime = dayjs(item.createTime).format('YYYY/MM/DD HH:mm:ss');
                 }
                 return item;
             };
@@ -92,9 +91,9 @@ const showDeleteDialog = (row: NoteProject) => {
                 :prefix-icon="Search"
                 v-model="filterString"
             />
-            <el-button type="primary" @click="addDialogVisible = true"
-                >新建项目
-            </el-button>
+            <el-button type="primary" @click="addDialogVisible = true">新建项目 </el-button>
+            <el-divider direction="vertical" :style="{ height: '100%' }" />
+            <user-avatar />
         </header>
         <div class="table-container">
             <el-table
@@ -104,11 +103,7 @@ const showDeleteDialog = (row: NoteProject) => {
                 height="100%"
                 row-key="id"
             >
-                <el-table-column
-                    prop="projectName"
-                    label="笔记项目名"
-                    :width="350"
-                >
+                <el-table-column prop="projectName" label="笔记项目名" :width="350">
                     <template #default="{ row }">
                         <el-input
                             :id="'sp-edit-input-' + row.id"
@@ -123,12 +118,8 @@ const showDeleteDialog = (row: NoteProject) => {
                         <span v-else>{{ row.projectName }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column
-                    prop="createUserName"
-                    label="创建者"
-                ></el-table-column>
-                <el-table-column prop="createTime" label="创建时间">
-                </el-table-column>
+                <el-table-column prop="createUserName" label="创建者"></el-table-column>
+                <el-table-column prop="createTime" label="创建时间"> </el-table-column>
                 <el-table-column width="45px" column-key="no-jump">
                     <template #default="{ row }">
                         <el-popover placement="bottom-end" trigger="hover">
@@ -153,10 +144,7 @@ const showDeleteDialog = (row: NoteProject) => {
             :row-data="deleteRowData"
             @submit-success="listProjects"
         />
-        <AddDialog
-            v-model:visible="addDialogVisible"
-            @submit-success="listProjects"
-        />
+        <AddDialog v-model:visible="addDialogVisible" @submit-success="listProjects" />
     </div>
 </template>
 

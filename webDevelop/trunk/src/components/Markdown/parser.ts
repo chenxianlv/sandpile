@@ -27,7 +27,7 @@ interface ParseTreeNodeConstructorObj {
     text: string | null;
     parent: ParseTreeNode | null;
     type?: string;
-    props?: anyObj;
+    props?: AnyObj;
     children?: Array<ParseTreeNode | string>;
 }
 
