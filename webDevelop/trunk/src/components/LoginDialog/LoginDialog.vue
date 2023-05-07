@@ -1,23 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { loginAPI } from '@/api/base';
+import { getLoginSecretAPI, loginAPI } from '@/api/base';
 import type { NormalResponse } from '@/common/axios';
-import { useUserStore } from '@/stores/base';
+import { useUserStore } from '@/stores/userStore';
+import { useLoginStore } from '@/components/LoginDialog/store';
 import { useLoading } from '@/utils/hooks';
-import { $bus } from '@/common/eventBus';
+import { encryptPwd } from '@/utils/crypto';
 
-const props = defineProps<{
-    visible: boolean;
-}>();
-const emit = defineEmits<{
-    (e: 'update:visible', value: boolean): void;
-}>();
-
-$bus.on('showLoginDialog', () => {
-    emit('update:visible', true);
-});
-
+const loginStore = useLoginStore();
 const formRef = ref<FormInstance>();
 const formData = reactive<{
     account: string;
@@ -40,24 +31,28 @@ const { loading: loginBtnLoading, startLoading, stopLoading } = useLoading();
 const login = () => {
     formRef.value?.validate((isValid) => {
         if (!isValid) return;
-
-        const submitForm = new FormData();
-        submitForm.append('account', formData.account);
-        submitForm.append('password', formData.password);
-
         startLoading();
-        loginAPI(submitForm)
+        getLoginSecretAPI({ account: formData.account })
+            .then((res: NormalResponse) => {
+                const secret = res.data?.data?.secret;
+                if (!secret || typeof secret !== 'string') return Promise.reject();
+
+                const submitForm = new FormData();
+                submitForm.append('account', formData.account);
+                submitForm.append('password', encryptPwd(formData.password, secret));
+
+                return loginAPI(submitForm);
+            })
             .then((res: NormalResponse) => {
                 const data = res.data?.data ?? {};
                 userStore.login({
                     username: data.userName,
                     id: data.id,
                 });
-                emit('update:visible', false);
+                loginStore.close();
             })
             .catch((reason) => {
-                errorInfo.value =
-                    reason.response?.data?.errorInfo ?? '登录失败';
+                errorInfo.value = reason?.response?.data?.errorInfo ?? '登录失败';
             })
             .finally(() => {
                 stopLoading();
@@ -74,8 +69,8 @@ const resetDialog = () => {
     <el-dialog
         width="500px"
         title="用户登录"
-        :modelValue="props.visible"
-        @update:modelValue="(e:boolean) => emit('update:visible', e)"
+        :modelValue="loginStore.loginDialogVisible"
+        @update:modelValue="(e:boolean) => loginStore.loginDialogVisible = e"
         @open="resetDialog"
         align-center
         draggable
@@ -103,10 +98,8 @@ const resetDialog = () => {
             </el-form>
         </template>
         <template #footer>
-            <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button type="primary" @click="login" :loading="loginBtnLoading"
-                >登录
-            </el-button>
+            <el-button @click="loginStore.close()">取消</el-button>
+            <el-button type="primary" @click="login" :loading="loginBtnLoading">登录</el-button>
         </template>
     </el-dialog>
 </template>

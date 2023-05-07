@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // todo 补充右键菜单：新建文件、新建文件夹、重命名、删除
 // todo 拖动文件，变更位置的功能
-export interface TreeNode extends anyObj {
+export interface TreeNode extends AnyObj {
     fileId?: number;
 
     children?: Array<TreeNode>;

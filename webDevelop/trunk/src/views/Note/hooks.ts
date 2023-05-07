@@ -33,7 +33,7 @@ interface FolderNode extends TreeNode {
 export type TempTreeNode = NoteNode | FolderNode;
 
 export function useNoteDetail(projectId: string) {
-    const responseData = ref<anyObj>({});
+    const responseData = ref<AnyObj>({});
     const noteInfoList = ref<NoteInfo[]>([]);
     const noteTreeData = ref<TempTreeNode[]>([]);
     const { loading: pageLoading, startLoading, stopLoading } = useLoading();

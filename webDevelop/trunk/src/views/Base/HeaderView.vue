@@ -1,32 +1,13 @@
 <script setup lang="ts">
-import { useHeaderStore, useUserStore } from '@/stores/base';
+import { useHeaderStore } from '@/views/Base/store';
 import { storeToRefs } from 'pinia';
-import LoginDialog from '@/views/Base/LoginDialog.vue';
-import { ref } from 'vue';
 import imgUrl from '@/assets/img/logo/logo_141x80.png';
-import type { PopoverInstance } from 'element-plus';
-import { logoutAPI } from '@/api/base';
+import UserAvatar from '@/components/UserAvatar/UserAvatar.vue';
 
 const headerStore = useHeaderStore();
 
 const { switchCollapse } = headerStore;
 const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
-
-const loginDialogVisible = ref(false);
-const userStore = useUserStore();
-
-const popoverRef = ref<PopoverInstance>();
-
-const logout = () => {
-    logoutAPI()
-        .then(() => {
-            userStore.logout();
-        })
-        .catch()
-        .finally(() => {
-            popoverRef.value?.hide();
-        });
-};
 </script>
 
 <template>
@@ -37,45 +18,14 @@ const logout = () => {
         <el-menu class="menu" default-active="1" mode="horizontal">
             <el-menu-item index="1">学习笔记</el-menu-item>
         </el-menu>
-        <div class="user-box">
-            <el-button
-                @click="loginDialogVisible = true"
-                v-if="userStore.username === undefined"
-                >登录
-            </el-button>
-            <template v-else>
-                <el-popover
-                    placement="bottom-end"
-                    trigger="click"
-                    ref="popoverRef"
-                >
-                    <template #reference>
-                        <span class="profile">
-                            <span>{{ userStore.username }}</span>
-                            <el-icon><ArrowDown /></el-icon>
-                        </span>
-                    </template>
-                    <template #default>
-                        <ul class="option-menu">
-                            <li @click="logout">退出登录</li>
-                        </ul>
-                    </template>
-                </el-popover>
-            </template>
-        </div>
-
-        <div
-            class="collapse-icon"
-            @click="switchCollapse"
-            v-if="collapseBtnShow"
-        >
+        <UserAvatar />
+        <div class="collapse-icon" @click="switchCollapse" v-if="collapseBtnShow">
             <el-icon>
                 <ArrowDown v-if="collapsed" />
                 <ArrowUp v-else />
             </el-icon>
         </div>
     </div>
-    <LoginDialog v-model:visible="loginDialogVisible" />
 </template>
 
 <style lang="less" scoped>
@@ -96,6 +46,8 @@ const logout = () => {
 
     &.collapsed {
         height: 0;
+        border: none;
+        overflow: hidden;
     }
 
     .logo {
@@ -114,24 +66,6 @@ const logout = () => {
         --el-menu-item-height: calc(@header-height - 2px);
         flex: auto;
         border: none;
-    }
-
-    .user-box {
-        margin-left: 20px;
-
-        .profile {
-            cursor: pointer;
-            font-size: 16px;
-            color: @font-color-primary;
-
-            display: flex;
-            align-items: center;
-
-            > i {
-                margin-top: 2px;
-                margin-left: 7px;
-            }
-        }
     }
 
     .collapse-icon {

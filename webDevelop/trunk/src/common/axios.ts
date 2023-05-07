@@ -2,8 +2,8 @@ import axios, { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 import { CUSTOM_ERROR_HANDLE_URL } from '@/common/commonDefine';
-import { $bus } from '@/common/eventBus';
-import { useUserStore } from '@/stores/base';
+import { useUserStore } from '@/stores/userStore';
+import { useLoginStore } from '@/components/LoginDialog/store';
 
 const baseURL = '/api';
 
@@ -35,7 +35,7 @@ baseRequest.interceptors.response.use(
 
             if (res?.status === 401) {
                 useUserStore().logout();
-                $bus.emit('showLoginDialog');
+                useLoginStore().open();
             }
         }
         return Promise.reject(error);

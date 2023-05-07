@@ -7,7 +7,7 @@ export function listProjectsAPI() {
     });
 }
 
-export function addProjectAPI(data: anyObj) {
+export function addProjectAPI(data: AnyObj) {
     return baseRequest({
         method: 'post',
         url: '/note/addProject',
@@ -15,7 +15,7 @@ export function addProjectAPI(data: anyObj) {
     });
 }
 
-export function updateProjectAPI(data: anyObj) {
+export function updateProjectAPI(data: AnyObj) {
     return baseRequest({
         method: 'put',
         url: '/note/updateProject',
@@ -23,7 +23,7 @@ export function updateProjectAPI(data: anyObj) {
     });
 }
 
-export function deleteProjectAPI(params: anyObj) {
+export function deleteProjectAPI(params: AnyObj) {
     return baseRequest({
         method: 'delete',
         url: '/note/deleteProject',
@@ -31,7 +31,7 @@ export function deleteProjectAPI(params: anyObj) {
     });
 }
 
-export function getProjectDetailAPI(params: anyObj) {
+export function getProjectDetailAPI(params: AnyObj) {
     return baseRequest({
         method: 'get',
         url: '/note/getProjectDetail',
@@ -39,7 +39,7 @@ export function getProjectDetailAPI(params: anyObj) {
     });
 }
 
-export function getNoteInfoAPI(params: anyObj) {
+export function getNoteInfoAPI(params: AnyObj) {
     return baseRequest({
         method: 'get',
         url: '/note/getNoteInfo',

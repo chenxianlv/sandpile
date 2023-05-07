@@ -1,7 +1,7 @@
-interface anyObj {
+interface AnyObj {
     [prop: string]: any;
 }
-interface ResponseData extends anyObj {
-    data?: anyObj;
+interface ResponseData extends AnyObj {
+    data?: AnyObj;
     status: number;
 }
