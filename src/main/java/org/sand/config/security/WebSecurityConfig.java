@@ -2,7 +2,8 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.sand.model.vo.base.ResponseVO;
+import org.sand.common.ResponseVO;
+import org.sand.util.TokenUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,10 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,6 +42,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final Environment environment;
 
     private final ObjectMapper objectMapper;
+
+    private final TokenUtils tokenUtils;
+
+    private final UserDetailsService userDetailsService;
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -79,9 +88,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .deleteCookies(environment.getProperty("server.servlet.session.cookie.name"," "));
 
         http.sessionManagement()
-                .invalidSessionStrategy(((request, response) ->
-                        unauthorizedErrorResponse(response, 0, "登录信息过期")))
-                .maximumSessions(-1);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS); // 关闭session
+
+        http.addFilterBefore(
+                new SandAuthenticationTokenFilter(environment, objectMapper, tokenUtils, userDetailsService),
+                UsernamePasswordAuthenticationFilter.class
+        ); // token验证
     }
 
     private void unauthorizedErrorResponse(HttpServletResponse response,

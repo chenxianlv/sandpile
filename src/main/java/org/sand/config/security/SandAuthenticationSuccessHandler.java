@@ -2,10 +2,11 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.sand.model.vo.base.ResponseVO;
+import org.sand.common.ResponseVO;
 import org.sand.model.po.user.UserPO;
 import org.sand.model.vo.base.UserLoginVO;
 import org.sand.service.user.UserService;
+import org.sand.util.TokenUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,8 @@ public class SandAuthenticationSuccessHandler implements AuthenticationSuccessHa
 
     private ObjectMapper objectMapper;
 
+    private final TokenUtils tokenUtils;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -38,6 +41,9 @@ public class SandAuthenticationSuccessHandler implements AuthenticationSuccessHa
         UserPO userPO =  userService.getByUserAccount(((UserDetails) authentication.getPrincipal()).getUsername());
         UserLoginVO userLoginVO = new UserLoginVO();
         BeanUtils.copyProperties(userPO, userLoginVO);
+
+        // 设置token
+        userLoginVO.setToken(tokenUtils.buildJWT(userPO.getUserAccount()));
 
         PrintWriter out = response.getWriter();
         out.write(objectMapper.writeValueAsString(ResponseVO.success(userLoginVO)));

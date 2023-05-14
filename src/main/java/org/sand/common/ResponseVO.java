@@ -1,4 +1,4 @@
-package org.sand.model.vo.base;
+package org.sand.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -37,6 +37,14 @@ public class ResponseVO<T> {
         ResponseVO<T> responseVO = new ResponseVO<>();
         responseVO.errorCode = errorCode;
         responseVO.errorInfo = errorInfo;
+        responseVO.status = ResponseStatusEnum.ERROR.getValue();
+        return responseVO;
+    }
+
+    public static <T> ResponseVO<T> error(ResultException exception) {
+        ResponseVO<T> responseVO = new ResponseVO<>();
+        responseVO.errorCode = exception.getErrorCode();
+        responseVO.errorInfo = exception.getErrorMessage();
         responseVO.status = ResponseStatusEnum.ERROR.getValue();
         return responseVO;
     }

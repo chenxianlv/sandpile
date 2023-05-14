@@ -29,7 +29,6 @@ public class SandSecurityMetadataSource implements FilterInvocationSecurityMetad
         if (index > 0) {
             url = url.substring(0, index);
         }
-        System.out.println(url);
 
         AccessPO accessPO = accessService.getByUrl(url);
 

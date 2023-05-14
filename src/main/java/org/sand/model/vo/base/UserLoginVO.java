@@ -9,4 +9,6 @@ public class UserLoginVO {
 
     private String userName;
 
+    private String token;
+
 }

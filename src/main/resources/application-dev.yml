@@ -36,6 +36,10 @@ ftp:
 swagger:
   enabled: true
 
+token:
+  header: Authorization
+  timeout: 2592000000 # 30天
+
 project:
   baseUrl: /api
   time-zone: GMT+8

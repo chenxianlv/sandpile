@@ -2,7 +2,7 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.sand.model.vo.base.ResponseVO;
+import org.sand.common.ResponseVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
