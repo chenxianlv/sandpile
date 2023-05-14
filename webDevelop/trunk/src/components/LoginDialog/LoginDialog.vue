@@ -32,22 +32,18 @@ const login = () => {
     formRef.value?.validate((isValid) => {
         if (!isValid) return;
         startLoading();
-        getLoginSecretAPI({ account: formData.account })
-            .then((res: NormalResponse) => {
-                const secret = res.data?.data?.secret;
-                if (!secret || typeof secret !== 'string') return Promise.reject();
 
-                const submitForm = new FormData();
-                submitForm.append('account', formData.account);
-                submitForm.append('password', encryptPwd(formData.password, secret));
+        const submitForm = new FormData();
+        submitForm.append('account', formData.account);
+        submitForm.append('password', encryptPwd(formData.password, formData.account));
 
-                return loginAPI(submitForm);
-            })
+        loginAPI(submitForm)
             .then((res: NormalResponse) => {
                 const data = res.data?.data ?? {};
                 userStore.login({
                     username: data.userName,
                     id: data.id,
+                    token: data.token,
                 });
                 loginStore.close();
             })
