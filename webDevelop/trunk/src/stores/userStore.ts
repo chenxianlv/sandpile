@@ -5,6 +5,7 @@ import { LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
 interface UserInfo {
     username?: string;
     id?: number;
+    token?: string;
 }
 
 export const useUserStore = defineStore('user', {
@@ -12,6 +13,7 @@ export const useUserStore = defineStore('user', {
         const user: UserInfo = {
             username: undefined,
             id: undefined,
+            token: undefined,
         };
 
         const userStorage = getLocalStorage(LOCALSTORAGE_USER_PROP_NAME, true);

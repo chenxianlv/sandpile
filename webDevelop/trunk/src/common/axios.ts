@@ -1,9 +1,10 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
-import { CUSTOM_ERROR_HANDLE_URL } from '@/common/commonDefine';
+import { CUSTOM_ERROR_HANDLE_URL, LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/components/LoginDialog/store';
+import { getLocalStorage } from '@/utils/utils';
 
 const baseURL = '/api';
 
@@ -12,6 +13,14 @@ const baseRequest = axios.create({
     timeout: 5000,
 });
 export default baseRequest;
+
+baseRequest.interceptors.request.use((config) => {
+    const token = getLocalStorage(LOCALSTORAGE_USER_PROP_NAME, true)?.token;
+    if (token) {
+        config.headers.Authorization = token;
+    }
+    return config;
+});
 
 baseRequest.interceptors.response.use(
     (res: AxiosResponse) => {
