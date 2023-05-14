@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
-import org.sand.model.vo.base.ResponseVO;
+import org.sand.common.ResponseVO;
 import org.sand.model.dto.note.NoteProjectAddDTO;
 import org.sand.model.dto.note.NoteProjectDeleteDTO;
 import org.sand.model.dto.note.NoteProjectUpdateDTO;
