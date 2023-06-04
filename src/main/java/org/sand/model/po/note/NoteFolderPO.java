@@ -1,27 +1,24 @@
 package org.sand.model.po.note;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-@TableName("note_info")
-public class NotePO {
+@TableName("note_folder_info")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class NoteFolderPO {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
     private String name;
 
-    private String filePath;
+    private Long projectId;
 
     private Long folderId;
-
-    private Long projectId;
 
     @TableLogic
     private Boolean deleteFlag;

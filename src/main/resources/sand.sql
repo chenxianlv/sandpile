@@ -41,9 +41,9 @@ CREATE TABLE `note_info`
 (
     `id`             BIGINT PRIMARY KEY NOT NULL UNIQUE AUTO_INCREMENT COMMENT '笔记文件id',
     `name`           VARCHAR(255)       NOT NULL COMMENT '笔记名（在项目中显示的笔记名，不一定等于物理文件名）',
-    `directory_path` VARCHAR(500)       NOT NULL COMMENT '笔记所在目录的路径，以/分隔，如"/note1"表示笔记位于项目根目录下的note1目录中',
     `file_path`      VARCHAR(500)       NOT NULL COMMENT '笔记文件的物理位置，如"/docs/math.md"',
     `project_id`     BIGINT             NOT NULL COMMENT '所属笔记项目的id',
+    `folder_id`      BIGINT             NULL COMMENT '所属笔记文件夹的id',
     `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
     `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `create_user_id` BIGINT             NULL COMMENT '创建用户的ID',
@@ -51,6 +51,21 @@ CREATE TABLE `note_info`
     `update_user_id` BIGINT             NULL COMMENT '修改用户的ID',
     `remark`         VARCHAR(500)       NULL COMMENT '备注'
 ) COMMENT '笔记文件表';
+
+DROP TABLE IF EXISTS `note_folder_info`;
+CREATE TABLE `note_folder_info`
+(
+    `id`             BIGINT PRIMARY KEY NOT NULL UNIQUE AUTO_INCREMENT COMMENT '笔记文件夹id',
+    `name`           VARCHAR(255)       NOT NULL COMMENT '文件夹名',
+    `project_id`     BIGINT             NOT NULL COMMENT '所属笔记项目的id',
+    `folder_id`      BIGINT             NULL COMMENT '所属笔记文件夹的id',
+    `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
+    `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `create_user_id` BIGINT             NULL COMMENT '创建用户的ID',
+    `update_time`    TIMESTAMP          NULL COMMENT '修改时间',
+    `update_user_id` BIGINT             NULL COMMENT '修改用户的ID',
+    `remark`         VARCHAR(500)       NULL COMMENT '备注'
+) COMMENT '笔记文件夹表';
 
 
 DROP TABLE IF EXISTS `system_params`;

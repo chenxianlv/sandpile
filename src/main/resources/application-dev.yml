@@ -38,7 +38,7 @@ swagger:
 
 token:
   header: Authorization
-  timeout: 2592000000 # 30天
+  timeout: 3600000 # 1小时
 
 project:
   baseUrl: /api

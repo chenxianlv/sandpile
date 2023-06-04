@@ -11,4 +11,6 @@ public class NoteProjectDetailVO {
 
     private List<NoteVO> notes;
 
+    private List<NoteFolderVO> noteFolders;
+
 }
