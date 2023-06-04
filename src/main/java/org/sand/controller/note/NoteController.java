@@ -8,10 +8,12 @@ import org.sand.common.ResponseVO;
 import org.sand.model.dto.note.NoteProjectAddDTO;
 import org.sand.model.dto.note.NoteProjectDeleteDTO;
 import org.sand.model.dto.note.NoteProjectUpdateDTO;
+import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
 import org.sand.model.po.user.UserPO;
 import org.sand.model.vo.note.*;
+import org.sand.service.note.NoteFolderService;
 import org.sand.service.note.NoteProjectService;
 import org.sand.service.note.NoteService;
 import org.sand.service.user.UserService;
@@ -33,6 +35,8 @@ public class NoteController {
     private final NoteProjectService noteProjectService;
 
     private final NoteService noteService;
+
+    private final NoteFolderService noteFolderService;
 
     private final UserService userService;
 
@@ -110,11 +114,23 @@ public class NoteController {
         lqw.eq(NotePO::getProjectId, projectId);
         List<NotePO> notePOs = noteService.list(lqw);
 
+        // 获取笔记项目内的笔记文件夹
+        LambdaQueryWrapper<NoteFolderPO> lqw2 = new LambdaQueryWrapper<>();
+        lqw2.eq(NoteFolderPO::getProjectId, projectId);
+        List<NoteFolderPO> noteFolderPOs  = noteFolderService.list(lqw2);
+
         NoteProjectDetailVO vo = new NoteProjectDetailVO();
+
         vo.setNotes(notePOs.stream().map((notePO) -> {
             NoteVO noteVO = new NoteVO();
             BeanUtils.copyProperties(notePO, noteVO);
             return noteVO;
+        }).collect(Collectors.toList()));
+
+        vo.setNoteFolders(noteFolderPOs.stream().map((noteFolderPO) -> {
+            NoteFolderVO noteFolderVO = new NoteFolderVO();
+            BeanUtils.copyProperties(noteFolderPO, noteFolderVO);
+            return noteFolderVO;
         }).collect(Collectors.toList()));
 
         NoteProjectPO noteProjectPO = noteProjectService.getById(projectId);

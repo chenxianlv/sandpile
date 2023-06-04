@@ -112,6 +112,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         String baseUrl = environment.getProperty("project.baseUrl", "");
 
         web.ignoring()
+                .antMatchers("/swagger-ui.html")
+                .antMatchers("/webjars/**")
+                .antMatchers("/v2/**")
+                .antMatchers("/swagger-resources/**")
                 .antMatchers(baseUrl + "/note/listProjects")
                 .antMatchers(baseUrl + "/note/getNoteInfo")
                 .antMatchers(baseUrl + "/note/getProjectDetail");

@@ -3,10 +3,12 @@ package org.sand.model.vo.note;
 import lombok.Data;
 
 @Data
-public class NoteDetailVO {
+public class NoteFolderVO {
 
     private Long id;
 
-    private String text;
+    private String name;
+
+    private Long folderId;
 
 }

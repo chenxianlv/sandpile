@@ -39,7 +39,7 @@ public class TokenUtils {
             MACSigner macSigner = new MACSigner(SECRET);
             // 建立payload 载体
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .expirationTime(new Date(System.currentTimeMillis() + EXPIRE_TIME))
+                    .expirationTime(new Date(System.currentTimeMillis()))
                     .claim("ACCOUNT", account)
                     .build();
 
@@ -72,7 +72,7 @@ public class TokenUtils {
             }
 
             //校验超时
-            Date expirationTime = jwt.getJWTClaimsSet().getExpirationTime();
+            Date expirationTime = new Date(jwt.getJWTClaimsSet().getExpirationTime().getTime() +  EXPIRE_TIME);
             if (new Date().after(expirationTime)) {
                 throw ResultException.of(10002, "Token 已过期");
             }
