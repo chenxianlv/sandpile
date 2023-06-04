@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash-es';
 import { ref, watch } from 'vue';
 import type { NormalResponse } from '@/common/axios';
 import { getNoteInfoAPI, getProjectDetailAPI } from '@/api/note';
@@ -15,109 +16,112 @@ export interface NoteProject {
 export interface NoteInfo {
     id: number;
     name: string;
-    path: string;
     text?: string;
 }
 
 interface NoteNode extends TreeNode {
+    id: number;
     name: string;
-    fileId: number;
+
+    /**
+     * 所属文件夹id
+     */
+    folderId?: number;
     text?: string;
+
+    isFile: true;
 }
 
 interface FolderNode extends TreeNode {
     name: string;
+
+    id: number;
+
+    /**
+     * 所属文件夹id
+     */
+    folderId?: number;
     children: Array<TreeNode>;
+
+    isFile: false;
 }
 
 export type TempTreeNode = NoteNode | FolderNode;
 
-export function useNoteDetail(projectId: string) {
-    const responseData = ref<AnyObj>({});
-    const noteInfoList = ref<NoteInfo[]>([]);
+export function useNoteDetail(projectId: number) {
+    const responseData = ref<{
+        notes?: NoteNode[];
+        noteFolders?: FolderNode[];
+        projectName?: string;
+    }>({});
     const noteTreeData = ref<TempTreeNode[]>([]);
+    const noteTextStorage = ref<SimpleObj<string>>({});
     const { loading: pageLoading, startLoading, stopLoading } = useLoading();
     startLoading();
 
-    if (projectId !== '') {
+    /**
+     * 发出请求获取信息，可以重复调用刷新数据
+     * @param projectId
+     * @param clearText 若传入true，请求后清除已缓存的笔记文本信息
+     */
+    function getData(projectId: number, clearText = false) {
         getProjectDetailAPI({ id: Number(projectId) })
             .then((res: NormalResponse) => {
+                if (clearText) {
+                    noteTextStorage.value = {};
+                }
                 responseData.value = res?.data?.data ?? {};
-                noteInfoList.value = res?.data?.data?.notes;
             })
             .finally(() => {
                 stopLoading();
             });
     }
 
-    watch(noteInfoList, (newVal) => {
-        const newData: TempTreeNode[] = [];
-        newVal.forEach(({ id, name, path, text }) => {
-            const folder = getFolder(path, newData);
-            const noteNode = { name, fileId: id, text };
-            if (!folder) {
-                newData.push(noteNode);
-            } else {
-                folder.children.push(noteNode);
-            }
-        });
-        noteTreeData.value = newData;
-    });
+    getData(projectId);
 
-    function getFolder(path: string, treeData: TreeNode[]) {
-        if (path === '/') return;
+    // 加工响应数据，生成树信息
+    watch(
+        responseData,
+        (newVal) => {
+            const { notes, noteFolders } = cloneDeep(newVal);
+            const newTreeData: TempTreeNode[] = [];
 
-        const splits = path.split('/');
-        splits.shift();
+            const getParentArr = (folderId?: number) => {
+                return folderId
+                    ? noteFolders?.find?.((i) => i.id === folderId)?.children
+                    : newTreeData;
+            };
 
-        let children = treeData;
-        let resultFolder: FolderNode;
+            noteFolders?.forEach((item) => {
+                item.children = [];
+                item.isFile = false;
+                getParentArr(item.folderId)?.push(item);
+            });
 
-        splits.forEach((folderName) => {
-            let folderNode = children.find(
-                (node) =>
-                    !Object.prototype.hasOwnProperty.call(node, 'fileId') &&
-                    node.name === folderName
-            ) as FolderNode | undefined;
+            notes?.forEach((item) => {
+                item.isFile = true;
+                getParentArr(item.folderId)?.push(item);
+            });
 
-            if (!folderNode) {
-                folderNode = { name: folderName, children: [] };
-                const insertIndex = children.findIndex((node) =>
-                    Object.prototype.hasOwnProperty.call(node, 'fileId')
-                );
-                // 将新创建的目录节点添加于所有笔记节点前
-                children.splice(
-                    insertIndex === -1 ? 0 : insertIndex,
-                    0,
-                    folderNode
-                );
-            }
-
-            children = folderNode.children;
-            resultFolder = folderNode;
-        });
-
-        // @ts-ignore
-        return resultFolder;
-    }
+            noteTreeData.value = newTreeData;
+        },
+        { deep: true }
+    );
 
     /**
      * 获取指定节点的文本（有缓存机制）
      */
     async function getNoteText(id: number) {
-        const noteInfo = noteInfoList.value.find((info) => info.id === id);
-        if (!noteInfo) return;
-        if (noteInfo.text) {
-            return noteInfo.text;
-        } else {
-            return getNoteInfoAPI({ id }).then((res) => {
-                const text = res?.data?.data?.text;
-                if (text === undefined) return;
-                noteInfo.text = text;
-                return text;
-            });
-        }
+        const text = noteTextStorage.value?.[id];
+        if (text) return Promise.resolve(text);
+
+        return getNoteInfoAPI({ id }).then((res) => {
+            const text = res?.data?.data?.text;
+            if (text === undefined) return;
+            noteTextStorage.value[id] = text;
+            return text;
+        });
     }
 
-    return { noteTreeData, getNoteText, responseData, pageLoading };
+    return { noteTreeData, getNoteText, responseData, pageLoading, getData };
 }

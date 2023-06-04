@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold } from '@element-plus/icons-vue';
@@ -7,6 +7,7 @@ import { useNoteDetail } from '@/views/Note/hooks';
 import MarkdownMenuTree from '@/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/components/Markdown/MdParser.vue';
 import FileTree from '@/components/FileTree/FileTree.vue';
+import type { TreeNode } from '@/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
 
@@ -18,8 +19,7 @@ if (projectId instanceof Array) {
 }
 
 const { loading: parserLoading, startLoading, stopLoading } = useLoading();
-const { noteTreeData, getNoteText, responseData, pageLoading } =
-    useNoteDetail(projectId);
+const { noteTreeData, getNoteText, responseData, pageLoading } = useNoteDetail(Number(projectId));
 const markdownText = ref<string>();
 const markdownMenus = ref<string[]>([]);
 
@@ -60,10 +60,7 @@ const handlePanelTabSelect = (tab: string) => {
                 circle
                 @click="$router.push({ name: 'select' })"
             />
-            <span
-                class="project-name"
-                v-if="responseData?.projectName !== undefined"
-            >
+            <span class="project-name" v-if="responseData?.projectName !== undefined">
                 {{ responseData?.projectName }}</span
             >
         </el-header>
@@ -86,7 +83,16 @@ const handlePanelTabSelect = (tab: string) => {
                         v-show="activePanelTab === 'file'"
                         :data="noteTreeData"
                         @file-change="handleFileChange"
-                    />
+                    >
+                        <template #context-menu="{ data }">
+                            <ul class="option-menu">
+                                <li>新建文件</li>
+                                <li>新建文件夹</li>
+                                <li v-if="data">重命名</li>
+                                <li v-if="data">删除</li>
+                            </ul>
+                        </template>
+                    </FileTree>
                     <MarkdownMenuTree
                         class="tree"
                         v-show="activePanelTab === 'outline'"
@@ -94,15 +100,9 @@ const handlePanelTabSelect = (tab: string) => {
                         :expand-level="3"
                     />
                 </el-aside>
-                <VerticalSizeSash
-                    v-if="asideRef?.$el"
-                    :targetDOM="asideRef?.$el"
-                />
+                <VerticalSizeSash v-if="asideRef?.$el" :targetDOM="asideRef?.$el" />
                 <el-main class="main" v-loading="parserLoading">
-                    <el-empty
-                        v-if="markdownText === undefined"
-                        description="请选择笔记"
-                    />
+                    <el-empty v-if="markdownText === undefined" description="请选择笔记" />
                     <MarkdownParser
                         v-else
                         ref="parserRef"
