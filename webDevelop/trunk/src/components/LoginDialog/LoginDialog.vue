@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { getLoginSecretAPI, loginAPI } from '@/api/base';
+import { loginAPI } from '@/api/base';
 import type { NormalResponse } from '@/common/axios';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/components/LoginDialog/store';
