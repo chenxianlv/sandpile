@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router';
 import { useHeaderStore } from '@/views/Base/store';
 import { storeToRefs } from 'pinia';
 import imgUrl from '@/assets/img/logo/logo_141x80.png';
 import UserAvatar from '@/components/UserAvatar/UserAvatar.vue';
 
 const headerStore = useHeaderStore();
+const route = useRoute();
+const getRoutePath = () => {
+    return route.path.match(/^\/\w*(?=\/|$)/)?.[0];
+};
 
 const { switchCollapse } = headerStore;
 const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
@@ -15,8 +20,9 @@ const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
         <div class="logo">
             <img :src="imgUrl" alt="sandpile" />
         </div>
-        <el-menu class="menu" default-active="1" mode="horizontal">
-            <el-menu-item index="1">学习笔记</el-menu-item>
+        <el-menu class="menu" :default-active="getRoutePath()" mode="horizontal" router>
+            <el-menu-item index="/note">学习笔记</el-menu-item>
+            <el-menu-item index="/3d">3d</el-menu-item>
         </el-menu>
         <UserAvatar />
         <div class="collapse-icon" @click="switchCollapse" v-if="collapseBtnShow">

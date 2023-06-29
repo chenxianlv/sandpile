@@ -21,6 +21,7 @@
     "lodash-es": "^4.17.21",
     "mitt": "^3.0.0",
     "pinia": "^2.0.28",
+    "three": "^0.153.0",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },
@@ -30,6 +31,7 @@
     "@types/jsdom": "^20.0.1",
     "@types/lodash-es": "^4.17.6",
     "@types/mockjs": "^1.0.7",
+    "@types/three": "^0.152.1",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vitejs/plugin-vue-jsx": "^3.0.0",
     "@vue/eslint-config-prettier": "^7.0.0",
