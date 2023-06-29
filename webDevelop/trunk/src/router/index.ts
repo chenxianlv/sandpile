@@ -16,28 +16,24 @@ const router = createRouter({
                 {
                     path: 'select',
                     name: 'select',
-                    component: () =>
-                        import(
-                            '@/views/Note/NoteProjectSelect/NoteProjectSelect.vue'
-                        ),
+                    component: () => import('@/views/Note/NoteProjectSelect/NoteProjectSelect.vue'),
                 },
                 {
                     path: 'detail/:id?',
                     name: 'detail',
-                    component: () =>
-                        import(
-                            '@/views/Note/NoteProjectDetail/NoteProjectDetail.vue'
-                        ),
+                    component: () => import('@/views/Note/NoteProjectDetail/NoteProjectDetail.vue'),
                 },
                 {
                     path: 'edit',
                     name: 'edit',
-                    component: () =>
-                        import(
-                            '@/views/Note/NoteProjectEdit/NoteProjectEdit.vue'
-                        ),
+                    component: () => import('@/views/Note/NoteProjectEdit/NoteProjectEdit.vue'),
                 },
             ],
+        },
+        {
+            path: '/3d',
+            name: '3d',
+            component: () => import('@/views/3D/ThreeView.vue'),
         },
         // {
         //   path: '/about',
