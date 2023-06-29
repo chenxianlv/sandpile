@@ -1,13 +1,5 @@
 import baseRequest from '@/common/axios';
 
-export function getLoginSecretAPI(params: AnyObj) {
-    return baseRequest({
-        url: '/base/getLoginSecret',
-        method: 'get',
-        params,
-    });
-}
-
 export function loginAPI(data: FormData) {
     return baseRequest({
         url: '/base/login',
