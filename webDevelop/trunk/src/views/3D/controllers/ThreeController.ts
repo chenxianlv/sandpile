@@ -1,4 +1,4 @@
-import type { Scene, Camera, WebGLRenderer } from 'three';
+import type { Scene, Camera, WebGLRenderer, Clock } from 'three';
 
 export abstract class ThreeController {
     static controllerName: string;
@@ -6,8 +6,9 @@ export abstract class ThreeController {
     scene?: Scene;
     camera?: Camera;
     renderer?: WebGLRenderer;
+    clock?: Clock;
 
-    constructor(displayCanvasDom: HTMLCanvasElement) {
+    protected constructor(displayCanvasDom: HTMLCanvasElement) {
         this.displayCanvasDom = displayCanvasDom;
     }
 
