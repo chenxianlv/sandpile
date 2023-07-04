@@ -11,7 +11,7 @@ import {
     WebGLRenderer,
 } from 'three';
 import { ThreeController } from '@/views/3D/controllers/ThreeController';
-import { isNaN } from 'lodash-es';
+import { shuffle } from 'lodash-es';
 
 class PhysicalParticle {
     position: Vector3;
@@ -103,20 +103,19 @@ class GravityParticles extends Points {
         });
         super(geometry, material);
 
-        for (let i = 0; i < count; i++) {
-            const targetPosition = new Vector3(
-                (i % 50) * 0.2 - 5,
-                Math.floor(-i / 50) * 0.2 + 5,
-                0
-            );
-            this.particles.push(new PhysicalParticle(generateWidth, targetPosition));
-        }
-
-        geometry.setAttribute('position', new BufferAttribute(this.particlePositions, 3));
-        geometry.setAttribute('color', new BufferAttribute(this.particleColors, 3));
-
         material.depthTest = false; // 场景中只有粒子，停用深度测试以提高性能
         material.vertexColors = true;
+
+        const imageWidth = 70;
+        const imageHeight = 70;
+        const particlesWidth = 10;
+        const particlesHeight = 10;
+
+        this.loadInitImage(imageWidth, imageHeight).then((imageData) => {
+            this.loadPattern(imageData, particlesWidth, particlesHeight);
+            geometry.setAttribute('position', new BufferAttribute(this.particlePositions, 3));
+            geometry.setAttribute('color', new BufferAttribute(this.particleColors, 3));
+        });
     }
 
     // constructor({ count = 1, generateWidth }: { count?: number; generateWidth?: number } = {}) {
@@ -167,6 +166,86 @@ class GravityParticles extends Points {
         }
 
         return result;
+    }
+
+    async loadInitImage(imageWidth?: number, imageHeight?: number) {
+        const src = await import('@/assets/img/logo/logo_756x756.png');
+
+        const img = await new Promise<HTMLImageElement>((resolve) => {
+            const img = document.createElement('img');
+            img.onload = () => resolve(img);
+            img.src = src.default;
+        });
+
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        imageWidth && (width = imageWidth);
+        imageHeight && (height = imageHeight);
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        ctx!.drawImage(img, 0, 0, width, height);
+        const imageData = ctx!.getImageData(0, 0, width, height);
+
+        img.remove();
+        document.body.append(canvas);
+        // canvas.remove();
+        return imageData;
+    }
+
+    loadPattern(imageData: ImageData, particlesWidth: number, particlesHeight: number) {
+        console.log(imageData);
+        const len = imageData.data.length;
+        const { width, height } = imageData;
+
+        const colorThreshold = 10;
+        const alphaThreshold = 10;
+
+        const newTargetPositions: Array<Vector3> = [];
+
+        for (let i = 0; i < len; i += 4) {
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+            const a = imageData.data[i + 3];
+
+            if (a > 0) console.log(a);
+
+            if (
+                (r >= colorThreshold || g >= colorThreshold || b >= colorThreshold) &&
+                a >= alphaThreshold
+            ) {
+                const x = (i / 4) % width;
+                const y = Math.floor(i / 4 / width);
+                const xInAxis = (x / width) * particlesWidth - particlesWidth / 2;
+                const yInAxis = -((y / height) * particlesHeight - particlesHeight / 2);
+
+                newTargetPositions.push(new Vector3(xInAxis, yInAxis, 0));
+            }
+        }
+
+        this.updateParticles(shuffle(newTargetPositions));
+    }
+
+    updateParticles(targetPositions: Array<Vector3>) {
+        let i = 0;
+        const newLen = targetPositions.length;
+        const oldLen = this.particles.length;
+        if (newLen < oldLen) {
+            const desertedParticles = this.particles.splice(newLen);
+            console.log(this.particles.length, newLen);
+        }
+        while (i < newLen) {
+            const newPos = targetPositions[i];
+            if (i < oldLen) {
+                this.particles[i].targetPosition = newPos;
+            } else {
+                this.particles.push(new PhysicalParticle(15, newPos));
+            }
+            i++;
+        }
     }
 
     update(deltaTimeInSeconds: number) {
