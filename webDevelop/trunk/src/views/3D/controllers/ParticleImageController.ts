@@ -2,6 +2,7 @@ import {
     BufferAttribute,
     BufferGeometry,
     Clock,
+    FileLoader,
     OrthographicCamera,
     Points,
     PointsMaterial,
@@ -10,6 +11,7 @@ import {
     Vector3,
     WebGLRenderer,
 } from 'three';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { ThreeController } from '@/views/3D/controllers/ThreeController';
 import { shuffle } from 'lodash-es';
 
@@ -24,16 +26,29 @@ class PhysicalParticle {
 
     targetPosition: Vector3;
 
-    constructor(generateWidth = 15, targetPosition: Vector3) {
-        const distanceRange = [2, 7];
-        const initSpeed = 3;
+    config: ParticlesConfig;
+
+    constructor(targetPosition: Vector3, config: ParticlesConfig) {
+        const {
+            particlesGenerateWidth: generateWidth,
+            particlesGenerateDistanceRange: distanceRange,
+            particlesGenerateRetryLimit: retryLimit,
+            particlesGenerateSpeed: initSpeed,
+            particlesGrayScale: grayScale,
+        } = config;
+
         const rand = () => Math.random() * generateWidth - generateWidth / 2;
+        let count = 0;
 
         // eslint-disable-next-line
         while (true) {
             const tempPosition = new Vector3(rand(), rand(), 0);
             const distance = tempPosition.clone().sub(targetPosition).length();
-            if (distance >= distanceRange[0] && distance <= distanceRange[1]) {
+            if (
+                count++ <= retryLimit ||
+                (distance >= distanceRange[0] && distance <= distanceRange[1])
+            ) {
+                if (count > retryLimit) console.error('超过重试次数');
                 this.position = tempPosition;
                 break;
             }
@@ -45,12 +60,14 @@ class PhysicalParticle {
             .normalize()
             .multiplyScalar(initSpeed);
 
-        this.color = new Float32Array([Math.random(), Math.random(), Math.random()]);
+        const randColor = Math.random() * Math.abs(grayScale[1] - grayScale[0]) + grayScale[0];
+        this.color = new Float32Array([randColor, randColor, randColor]);
         this.targetPosition = targetPosition;
+        this.config = config;
     }
 
     update(deltaTimeInSeconds: number) {
-        const maxSpeed = 4;
+        const { particlesMaxSpeed: maxSpeed } = this.config;
         this.speed.add(this.acceleration.clone().multiplyScalar(deltaTimeInSeconds));
         if (this.speed.length() > maxSpeed) {
             this.speed.normalize().multiplyScalar(maxSpeed);
@@ -91,52 +108,29 @@ interface Effect {
 class GravityParticles extends Points {
     particles: Array<PhysicalParticle> = [];
 
-    effects: Array<Effect> = [];
+    config: ParticlesConfig;
+
+    imageData?: ImageData;
 
     count: number = 1;
 
-    constructor({ count = 2500, generateWidth }: { count?: number; generateWidth?: number } = {}) {
+    constructor(config: ParticlesConfig) {
+        const { particlesSize } = config;
+
         const geometry = new BufferGeometry();
         const material = new PointsMaterial({
-            size: 4,
+            size: particlesSize,
             sizeAttenuation: false,
         });
-        super(geometry, material);
-
         material.depthTest = false; // 场景中只有粒子，停用深度测试以提高性能
         material.vertexColors = true;
 
-        const imageWidth = 70;
-        const imageHeight = 70;
-        const particlesWidth = 10;
-        const particlesHeight = 10;
-
-        this.loadInitImage(imageWidth, imageHeight).then((imageData) => {
-            this.loadPattern(imageData, particlesWidth, particlesHeight);
-            geometry.setAttribute('position', new BufferAttribute(this.particlePositions, 3));
-            geometry.setAttribute('color', new BufferAttribute(this.particleColors, 3));
+        super(geometry, material);
+        this.config = config;
+        this.loadInitImage().then(() => {
+            this.loadPattern(this.imageData!);
         });
     }
-
-    // constructor({ count = 1, generateWidth }: { count?: number; generateWidth?: number } = {}) {
-    //     const geometry = new BufferGeometry();
-    //     const material = new PointsMaterial({
-    //         size: 4,
-    //         sizeAttenuation: false,
-    //     });
-    //     super(geometry, material);
-    //
-    //     for (let i = 0; i < count; i++) {
-    //         const targetPosition = new Vector3(0, 0, 0);
-    //         this.particles.push(new PhysicalParticle(generateWidth, targetPosition));
-    //     }
-    //
-    //     geometry.setAttribute('position', new BufferAttribute(this.particlePositions, 3));
-    //     geometry.setAttribute('color', new BufferAttribute(this.particleColors, 3));
-    //
-    //     material.depthTest = false; // 场景中只有粒子，停用深度测试以提高性能
-    //     material.vertexColors = true;
-    // }
 
     get particlePositions() {
         const count = this.particles.length;
@@ -168,20 +162,20 @@ class GravityParticles extends Points {
         return result;
     }
 
-    async loadInitImage(imageWidth?: number, imageHeight?: number) {
+    async loadInitImage() {
         const src = await import('@/assets/img/logo/logo_756x756.png');
+        return await this.loadImage(src.default);
+    }
 
+    async loadImage(src: string) {
         const img = await new Promise<HTMLImageElement>((resolve) => {
             const img = document.createElement('img');
             img.onload = () => resolve(img);
-            img.src = src.default;
+            img.src = src;
         });
 
         const canvas = document.createElement('canvas');
-        let { width, height } = img;
-        imageWidth && (width = imageWidth);
-        imageHeight && (height = imageHeight);
-
+        const { particlesNumInWidth: width, particlesNumInHeight: height } = this.config;
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
@@ -190,18 +184,22 @@ class GravityParticles extends Points {
         const imageData = ctx!.getImageData(0, 0, width, height);
 
         img.remove();
-        document.body.append(canvas);
-        // canvas.remove();
+        canvas.remove();
+
+        this.imageData = imageData;
         return imageData;
     }
 
-    loadPattern(imageData: ImageData, particlesWidth: number, particlesHeight: number) {
-        console.log(imageData);
+    loadPattern(imageData: ImageData) {
         const len = imageData.data.length;
         const { width, height } = imageData;
 
-        const colorThreshold = 10;
-        const alphaThreshold = 10;
+        const {
+            particlesGenerateColorThreshold: colorThreshold,
+            particlesGenerateAlphaThreshold: alphaThreshold,
+            particlesWidth,
+            particlesHeight,
+        } = this.config;
 
         const newTargetPositions: Array<Vector3> = [];
 
@@ -210,8 +208,6 @@ class GravityParticles extends Points {
             const g = imageData.data[i + 1];
             const b = imageData.data[i + 2];
             const a = imageData.data[i + 3];
-
-            if (a > 0) console.log(a);
 
             if (
                 (r >= colorThreshold || g >= colorThreshold || b >= colorThreshold) &&
@@ -226,30 +222,38 @@ class GravityParticles extends Points {
             }
         }
 
-        this.updateParticles(shuffle(newTargetPositions));
+        this.updateParticles(shuffle(newTargetPositions), false);
     }
 
-    updateParticles(targetPositions: Array<Vector3>) {
+    /**
+     * 根据目标点数组，更新粒子数组，若现有粒子数不足，则生成新粒子。若现有粒子数过多，则删除多余粒子。
+     */
+    updateParticles(targetPositions: Array<Vector3>, fadeOut = true) {
         let i = 0;
         const newLen = targetPositions.length;
         const oldLen = this.particles.length;
+        console.log(newLen, oldLen);
         if (newLen < oldLen) {
-            const desertedParticles = this.particles.splice(newLen);
-            console.log(this.particles.length, newLen);
+            if (fadeOut) {
+            } else {
+                const desertedParticles = this.particles.splice(newLen);
+                console.log(this.particles.length, newLen);
+            }
         }
         while (i < newLen) {
             const newPos = targetPositions[i];
             if (i < oldLen) {
                 this.particles[i].targetPosition = newPos;
             } else {
-                this.particles.push(new PhysicalParticle(15, newPos));
+                this.particles.push(new PhysicalParticle(newPos, this.config));
             }
             i++;
         }
+        this.geometry.setAttribute('position', new BufferAttribute(this.particlePositions, 3));
+        this.geometry.setAttribute('color', new BufferAttribute(this.particleColors, 3));
     }
 
     update(deltaTimeInSeconds: number) {
-        const count = this.particles.length;
         this.updateEffect(deltaTimeInSeconds);
 
         this.particles.forEach((particle) => {
@@ -259,20 +263,22 @@ class GravityParticles extends Points {
         this.geometry.setAttribute('position', new BufferAttribute(this.particlePositions!, 3));
     }
 
-    addEffect(effect: Omit<Effect, 'id'>) {
-        this.effects.push({ ...effect, id: this.count++ });
-    }
+    // addEffect(effect: Omit<Effect, 'id'>) {
+    //     const id = this.count++;
+    //     this.effects.push({ ...effect, id });
+    //     return id;
+    // }
 
-    removeEffect(id: number) {
-        const index = this.effects.findIndex((effect) => effect.id === id);
-        if (index !== -1) {
-            this.effects.splice(index, 1);
-        }
-    }
+    // removeEffect(id: number) {
+    //     const index = this.effects.findIndex((effect) => effect.id === id);
+    //     if (index !== -1) {
+    //         this.effects.splice(index, 1);
+    //     }
+    // }
 
     updateEffect(deltaTimeInSeconds: number) {
         const effectHandlerMap = new Map([['PointerGravity', this.handleEffectPointerGravity]]);
-        this.effects.forEach((effect) => {
+        this.config.effects.forEach((effect) => {
             effectHandlerMap.get(effect.type)?.call(this, deltaTimeInSeconds, effect);
         });
     }
@@ -328,6 +334,78 @@ class GravityParticles extends Points {
     }
 }
 
+interface ParticlesConfig {
+    /**
+     * 粒子大小
+     */
+    particlesSize: number;
+
+    /**
+     * 粒子灰度范围，第一位为下限，第二位为上限
+     */
+    particlesGrayScale: [number, number];
+
+    /**
+     * x方向上的粒子栅格数
+     */
+    particlesNumInWidth: number;
+
+    /**
+     * y方向上的粒子栅格数
+     */
+    particlesNumInHeight: number;
+
+    /**
+     * 粒子图案的宽度
+     */
+    particlesWidth: number;
+
+    /**
+     * 粒子图案的高度
+     */
+    particlesHeight: number;
+
+    /**
+     * 效果器，用于自定义控制粒子
+     */
+    effects: Array<Effect>;
+
+    /**
+     * 粒子生成矩形的宽高。粒子只会在该矩形中生成
+     */
+    particlesGenerateWidth: number;
+
+    /**
+     * 粒子生成距离限制，数组第一位表示最小距离，数组第二位表示最大距离
+     */
+    particlesGenerateDistanceRange: [number, number];
+
+    /**
+     * 单个粒子生成时的重试次数上限。粒子生成时，会随机在生成矩形中选取一个位置，若该位置不符合生成距离限制，则会重试。
+     */
+    particlesGenerateRetryLimit: number;
+
+    /**
+     * 粒子生成时的速度，方向会指向该粒子的目的地
+     */
+    particlesGenerateSpeed: number;
+
+    /**
+     * 粒子生成的颜色阈值。图片中某像素的rgb中的所有颜色都小于该阈值时，不会在该处生成粒子
+     */
+    particlesGenerateColorThreshold: number;
+
+    /**
+     * 粒子可见的不透明度阈值。图片中某像素的不透明度小于该阈值时，不会在该处生成粒子
+     */
+    particlesGenerateAlphaThreshold: number;
+
+    /**
+     * 粒子最大速度
+     */
+    particlesMaxSpeed: number;
+}
+
 export class ParticleImageController extends ThreeController {
     static controllerName = 'ParticleImage';
 
@@ -339,8 +417,18 @@ export class ParticleImageController extends ThreeController {
 
     fnArrOnUnmount: Array<Function> = [];
 
-    constructor(displayCanvasDom: HTMLCanvasElement) {
-        super(displayCanvasDom);
+    particlesConfig: ParticlesConfig = this.initConfig;
+
+    gui?: GUI;
+
+    constructor({
+        canvas,
+        guiContainer,
+    }: {
+        canvas: HTMLCanvasElement;
+        guiContainer: HTMLElement;
+    }) {
+        super(canvas, guiContainer);
     }
 
     mount() {
@@ -360,15 +448,9 @@ export class ParticleImageController extends ThreeController {
         camera.position.z = cameraDepth / 2;
         scene.add(camera);
 
-        const particles = new GravityParticles();
-        particles.addEffect({
-            type: 'PointerGravity',
-            targetDampingConstant: 2,
-            targetGravityConstant: 2,
-            pointerGravityConstant: -2,
-            getPointer: () => this.pointer,
-        });
+        const particles = new GravityParticles(this.particlesConfig);
         scene.add(particles);
+        this.generateGui();
 
         const renderer = new WebGLRenderer({ canvas: this.displayCanvasDom });
         const clock = new Clock();
@@ -399,12 +481,225 @@ export class ParticleImageController extends ThreeController {
         this.particles = particles;
         this.clock = clock;
 
-        // const geometry = new BoxGeometry(1, 1, 1);
-        // const material = new MeshBasicMaterial({ color: 0x00ff00 });
-        // const cube = new Mesh(geometry, material);
-        // scene.add(cube);
-
         this.render();
+    }
+
+    get initConfig(): ParticlesConfig {
+        return {
+            particlesSize: 4,
+            particlesGrayScale: [0.2, 0.6],
+            particlesWidth: 10,
+            particlesHeight: 10,
+            particlesNumInWidth: 70,
+            particlesNumInHeight: 70,
+            effects: [
+                {
+                    id: 1,
+                    type: 'PointerGravity',
+                    targetDampingConstant: 2,
+                    targetGravityConstant: 2,
+                    pointerGravityConstant: -2,
+                    getPointer: () => this.pointer,
+                },
+            ],
+            particlesGenerateWidth: 15,
+            particlesGenerateDistanceRange: [2, 7],
+            particlesGenerateRetryLimit: 100,
+            particlesGenerateColorThreshold: 10,
+            particlesGenerateAlphaThreshold: 10,
+            particlesGenerateSpeed: 3,
+            particlesMaxSpeed: 4,
+        };
+    }
+
+    generateGui() {
+        if (this.gui) this.gui.destroy();
+        const gui = new GUI({ container: this.guiContainerDom });
+        const btnFnObj = {
+            reGenerate: () => {
+                const { particles } = this;
+                particles?.updateParticles([], false);
+                particles?.imageData && particles?.loadPattern(particles.imageData);
+                this.generateGui();
+            },
+            reload: () => {
+                this.scene!.remove(this.particles!);
+                this.particlesConfig = this.initConfig;
+                this.particles = new GravityParticles(this.particlesConfig);
+                this.scene!.add(this.particles);
+                this.generateGui();
+            },
+            upload: () => {},
+        };
+
+        type NumberFieldsConfig = {
+            name: string;
+            obj: Object;
+            property: string;
+            min: number;
+            max: number;
+            step: number;
+        };
+        const particlesConfig = this.particlesConfig;
+        const numberFieldsConfigs: Array<NumberFieldsConfig> = [
+            {
+                name: '粒子尺寸',
+                obj: particlesConfig,
+                property: 'particlesSize',
+                min: 0.1,
+                max: 100,
+                step: 0.1,
+            },
+            {
+                name: '粒子最小灰度',
+                obj: particlesConfig.particlesGrayScale,
+                property: '0',
+                min: 0,
+                max: 1,
+                step: 0.01,
+            },
+            {
+                name: '粒子最大灰度',
+                obj: particlesConfig.particlesGrayScale,
+                property: '1',
+                min: 0,
+                max: 1,
+                step: 0.01,
+            },
+            {
+                name: '粒子图案宽度',
+                obj: particlesConfig,
+                property: 'particlesWidth',
+                min: 1,
+                max: 100,
+                step: 0.1,
+            },
+            {
+                name: '粒子图案高度',
+                obj: particlesConfig,
+                property: 'particlesHeight',
+                min: 1,
+                max: 100,
+                step: 0.1,
+            },
+            {
+                name: 'x方向粒子栅格数',
+                obj: particlesConfig,
+                property: 'particlesNumInWidth',
+                min: 1,
+                max: 300,
+                step: 1,
+            },
+            {
+                name: 'y方向粒子栅格数',
+                obj: particlesConfig,
+                property: 'particlesNumInHeight',
+                min: 1,
+                max: 300,
+                step: 1,
+            },
+            {
+                name: '生成半径',
+                obj: particlesConfig,
+                property: 'particlesGenerateWidth',
+                min: 1,
+                max: 300,
+                step: 1,
+            },
+            {
+                name: '最小生成距离',
+                obj: particlesConfig.particlesGenerateDistanceRange,
+                property: '0',
+                min: 0.1,
+                max: 300,
+                step: 0.1,
+            },
+            {
+                name: '最大生成距离',
+                obj: particlesConfig.particlesGenerateDistanceRange,
+                property: '1',
+                min: 0.1,
+                max: 300,
+                step: 0.1,
+            },
+            {
+                name: '最大重试次数',
+                obj: particlesConfig,
+                property: 'particlesGenerateRetryLimit',
+                min: 0,
+                max: 30000,
+                step: 1,
+            },
+            {
+                name: '生成颜色阈值',
+                obj: particlesConfig,
+                property: 'particlesGenerateColorThreshold',
+                min: 0,
+                max: 256,
+                step: 1,
+            },
+            {
+                name: '生成不透明度阈值',
+                obj: particlesConfig,
+                property: 'particlesGenerateAlphaThreshold',
+                min: 0,
+                max: 256,
+                step: 1,
+            },
+            {
+                name: '粒子初速度',
+                obj: particlesConfig,
+                property: 'particlesGenerateSpeed',
+                min: 0,
+                max: 50,
+                step: 0.1,
+            },
+            {
+                name: '粒子最大速度',
+                obj: particlesConfig,
+                property: 'particlesMaxSpeed',
+                min: 0,
+                max: 50,
+                step: 0.1,
+            },
+        ];
+
+        const upload = gui.add(btnFnObj, 'upload').name('指定模板');
+        const containerDom = upload.domElement.getElementsByClassName('widget')[0];
+
+        const uploadBtnDom = document.createElement('input');
+        uploadBtnDom.type = 'file';
+        uploadBtnDom.style.cssText =
+            'position: absolute; left: 0; top: 0; right: 0; bottom: 0; opacity: 0; cursor: pointer';
+        uploadBtnDom.addEventListener('change', (e) => {
+            // @ts-ignore
+            const file = e.target?.files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const result = e.target?.result;
+                    if (result) {
+                        this.particles!.loadImage(result as string).then((imageData) => {
+                            this.particles!.loadPattern(imageData);
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        containerDom.append(uploadBtnDom);
+
+        gui.add(btnFnObj, 'reGenerate').name('重新生成');
+        gui.add(btnFnObj, 'reload').name('重置DEMO');
+        numberFieldsConfigs.forEach(({ obj, property, min, max, step, name }) => {
+            gui.add(obj, property, min, max, step)
+                .name(name)
+                .onFinishChange(() => {
+                    btnFnObj.reGenerate();
+                });
+        });
+        gui.open();
+        this.gui = gui;
     }
 
     unmount() {

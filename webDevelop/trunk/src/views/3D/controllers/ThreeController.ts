@@ -8,11 +8,14 @@ export abstract class ThreeController {
     renderer?: WebGLRenderer;
     clock?: Clock;
 
-    protected constructor(displayCanvasDom: HTMLCanvasElement) {
+    protected constructor(displayCanvasDom: HTMLCanvasElement, guiContainerDom?: HTMLElement) {
         this.displayCanvasDom = displayCanvasDom;
+        guiContainerDom && (this.guiContainerDom = guiContainerDom);
     }
 
     displayCanvasDom: HTMLCanvasElement;
+
+    guiContainerDom?: HTMLElement;
 
     abstract mount(): void;
 
