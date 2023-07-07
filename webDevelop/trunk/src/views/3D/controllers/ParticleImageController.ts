@@ -2,7 +2,6 @@ import {
     BufferAttribute,
     BufferGeometry,
     Clock,
-    FileLoader,
     OrthographicCamera,
     Points,
     PointsMaterial,
@@ -12,8 +11,8 @@ import {
     WebGLRenderer,
 } from 'three';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
-import { ThreeController } from '@/views/3D/controllers/ThreeController';
 import { shuffle } from 'lodash-es';
+import { ThreeController } from '@/views/3D/controllers/ThreeController';
 
 class PhysicalParticle {
     position: Vector3;
@@ -48,7 +47,7 @@ class PhysicalParticle {
                 count++ <= retryLimit ||
                 (distance >= distanceRange[0] && distance <= distanceRange[1])
             ) {
-                if (count > retryLimit) console.error('超过重试次数');
+                if (import.meta.env.DEV && count > retryLimit) console.error('超过重试次数');
                 this.position = tempPosition;
                 break;
             }
@@ -232,13 +231,11 @@ class GravityParticles extends Points {
         let i = 0;
         const newLen = targetPositions.length;
         const oldLen = this.particles.length;
-        console.log(newLen, oldLen);
         if (newLen < oldLen) {
             if (fadeOut) {
                 // todo 补充淡出效果
             } else {
-                const desertedParticles = this.particles.splice(newLen);
-                console.log(this.particles.length, newLen);
+                this.particles.splice(newLen);
             }
         }
         while (i < newLen) {
@@ -313,7 +310,6 @@ class GravityParticles extends Points {
             acceleration.add(targetDampingVector);
 
             if (!isNaN(pointerX) && !isNaN(pointerY)) {
-                // console.log(new Vector3(pointerX, pointerY, 0));
                 const particleToPointerVector = new Vector3(pointerX, pointerY, 0).sub(position);
                 const getGravity = () => {
                     const pointerDistance = particleToPointerVector.length();
@@ -452,6 +448,9 @@ export class ParticleImageController extends ThreeController {
         const particles = new GravityParticles(this.particlesConfig);
         scene.add(particles);
         this.generateGui();
+        this.fnArrOnUnmount.push(() => {
+            this.gui?.destroy();
+        });
 
         const renderer = new WebGLRenderer({ canvas: this.displayCanvasDom });
         const clock = new Clock();
@@ -519,6 +518,11 @@ export class ParticleImageController extends ThreeController {
         const btnFnObj = {
             reGenerate: () => {
                 const { particles } = this;
+                // @ts-ignore
+                if (particles?.material?.size !== undefined) {
+                    // @ts-ignore
+                    particles.material.size = particles?.config.particlesSize;
+                }
                 particles?.updateParticles([], false);
                 particles?.imageData && particles?.loadPattern(particles.imageData);
                 this.generateGui();
@@ -548,7 +552,7 @@ export class ParticleImageController extends ThreeController {
                 obj: particlesConfig,
                 property: 'particlesSize',
                 min: 0.1,
-                max: 100,
+                max: 20,
                 step: 0.1,
             },
             {
@@ -572,7 +576,7 @@ export class ParticleImageController extends ThreeController {
                 obj: particlesConfig,
                 property: 'particlesWidth',
                 min: 1,
-                max: 100,
+                max: 20,
                 step: 0.1,
             },
             {
@@ -580,7 +584,7 @@ export class ParticleImageController extends ThreeController {
                 obj: particlesConfig,
                 property: 'particlesHeight',
                 min: 1,
-                max: 100,
+                max: 20,
                 step: 0.1,
             },
             {
@@ -711,7 +715,10 @@ export class ParticleImageController extends ThreeController {
 
     render() {
         requestAnimationFrame(this.render.bind(this));
-        this.particles!.update(this.clock!.getDelta());
+        const deltaTimeInSeconds = this.clock!.getDelta();
+        if (deltaTimeInSeconds < 1) {
+            this.particles!.update(deltaTimeInSeconds);
+        }
         this.renderer!.render(this.scene!, this.camera!); // 渲染一帧
     }
 }
