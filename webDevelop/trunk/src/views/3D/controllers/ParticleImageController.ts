@@ -235,6 +235,7 @@ class GravityParticles extends Points {
         console.log(newLen, oldLen);
         if (newLen < oldLen) {
             if (fadeOut) {
+                // todo 补充淡出效果
             } else {
                 const desertedParticles = this.particles.splice(newLen);
                 console.log(this.particles.length, newLen);
@@ -306,7 +307,7 @@ class GravityParticles extends Points {
                 .clone()
                 .normalize()
                 .multiplyScalar(
-                    (-targetDampingConstant * speed.length() ** 2) / Math.max(distance, 0.1)
+                    (-targetDampingConstant * speed.length() ** 2) / Math.max(distance, 0.01)
                     // Math.min(0, -targetDampingConstant * speed.length() ** 2 + 0.1)
                 );
             acceleration.add(targetDampingVector);
