@@ -4,13 +4,14 @@ import { ElMessage } from 'element-plus';
 import { CUSTOM_ERROR_HANDLE_URL, LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
 import apiConfig from '@/config/api';
 import { useUserStore } from '@/stores/userStore';
-import { useLoginStore } from '@/components/LoginDialog/store';
+import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/utils';
 
 const baseURL = '/api';
 const printEnabled = import.meta.env.DEV && apiConfig.printInDev;
 
 const baseRequest = axios.create({
+    method: 'post',
     baseURL,
     timeout: 5000,
 });
