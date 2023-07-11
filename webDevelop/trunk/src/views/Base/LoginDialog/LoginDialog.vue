@@ -4,7 +4,7 @@ import type { FormInstance, FormRules } from 'element-plus';
 import { loginAPI } from '@/api/base';
 import type { NormalResponse } from '@/common/axios';
 import { useUserStore } from '@/stores/userStore';
-import { useLoginStore } from '@/components/LoginDialog/store';
+import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { useLoading } from '@/utils/hooks';
 import { encryptPwd } from '@/utils/crypto';
 

@@ -21,11 +21,14 @@ const outsideClickDetect = (e: any) => {
 };
 onMounted(() => {
     // document.addEventListener('wheel', hide);
-    document.addEventListener('click', outsideClickDetect);
+    document.addEventListener('click', outsideClickDetect, { capture: true });
 });
 onUnmounted(() => {
     // document.removeEventListener('wheel', hide);
     document.removeEventListener('click', outsideClickDetect);
+});
+defineExpose({
+    hide,
 });
 </script>
 

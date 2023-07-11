@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { ArrowDown } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/userStore';
-import { useLoginStore } from '@/components/LoginDialog/store';
+import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { logoutAPI } from '@/api/base';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';

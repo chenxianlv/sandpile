@@ -3,11 +3,11 @@ import { listProjectsAPI, updateProjectAPI } from '@/api/note';
 import { computed, nextTick, ref } from 'vue';
 import dayjs from 'dayjs';
 import { useRouter } from 'vue-router';
-import { Search } from '@element-plus/icons-vue';
+import { Search, MoreFilled } from '@element-plus/icons-vue';
 import type { NoteProject } from '@/views/Note/hooks';
 import type { NormalResponse } from '@/common/axios';
-import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteDialog.vue';
-import AddDialog from '@/views/Note/NoteProjectSelect/AddDialog.vue';
+import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
+import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
 import UserAvatar from '@/components/UserAvatar/UserAvatar.vue';
 
 const noteProjects = ref<NoteProject[]>([]);

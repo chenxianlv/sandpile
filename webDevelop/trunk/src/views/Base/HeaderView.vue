@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import { useRoute } from 'vue-router';
 import { useHeaderStore } from '@/views/Base/store';
 import { storeToRefs } from 'pinia';

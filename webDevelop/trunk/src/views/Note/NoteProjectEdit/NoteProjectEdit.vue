@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MarkdownTextarea from '@/components/Markdown/MdTextarea.vue';
+import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import { ref } from 'vue';
 
 const text = ref('');

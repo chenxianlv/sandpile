@@ -1,10 +1,10 @@
 import { cloneDeep } from 'lodash-es';
 import { ref, watch } from 'vue';
 import type { NormalResponse } from '@/common/axios';
-import { getNoteInfoAPI, getProjectDetailAPI } from '@/api/note';
+import { getNoteTextAPI, getProjectDetailAPI } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 // @ts-ignore
-import type { TreeNode } from '@/components/FileTree/FileTree.vue';
+import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 
 export interface NoteProject {
     id: number;
@@ -24,9 +24,9 @@ interface NoteNode extends TreeNode {
     name: string;
 
     /**
-     * 所属文件夹id
+     * 所属文件夹id，若在笔记项目根目录，则为-1
      */
-    folderId?: number;
+    folderId: number;
     text?: string;
 
     isFile: true;
@@ -38,9 +38,9 @@ interface FolderNode extends TreeNode {
     id: number;
 
     /**
-     * 所属文件夹id
+     * 所属文件夹id，若在笔记项目根目录，则为-1
      */
-    folderId?: number;
+    folderId: number;
     children: Array<TreeNode>;
 
     isFile: false;
@@ -86,8 +86,8 @@ export function useNoteDetail(projectId: number) {
             const { notes, noteFolders } = cloneDeep(newVal);
             const newTreeData: TempTreeNode[] = [];
 
-            const getParentArr = (folderId?: number) => {
-                return folderId
+            const getParentArr = (folderId: number) => {
+                return folderId !== -1
                     ? noteFolders?.find?.((i) => i.id === folderId)?.children
                     : newTreeData;
             };
@@ -115,7 +115,7 @@ export function useNoteDetail(projectId: number) {
         const text = noteTextStorage.value?.[id];
         if (text) return Promise.resolve(text);
 
-        return getNoteInfoAPI({ id }).then((res) => {
+        return getNoteTextAPI({ id }).then((res) => {
             const text = res?.data?.data?.text;
             if (text === undefined) return;
             noteTextStorage.value[id] = text;

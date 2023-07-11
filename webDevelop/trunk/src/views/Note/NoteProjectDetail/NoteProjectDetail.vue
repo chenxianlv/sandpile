@@ -4,12 +4,13 @@ import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold } from '@element-plus/icons-vue';
 import { useNoteDetail } from '@/views/Note/hooks';
-import MarkdownMenuTree from '@/components/Markdown/MdMenuTree.vue';
-import MarkdownParser from '@/components/Markdown/MdParser.vue';
-import FileTree from '@/components/FileTree/FileTree.vue';
-import type { TreeNode } from '@/components/FileTree/FileTree.vue';
+import MarkdownMenuTree from '@/views/Note/components/Markdown/MdMenuTree.vue';
+import MarkdownParser from '@/views/Note/components/Markdown/MdParser.vue';
+import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
+import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
+import AddNoteFileDialog from '@/views/Note/NoteProjectDetail/AddNoteFileDialog.vue';
 
 window.location.hash = '';
 let projectId = useRoute().params.id;
@@ -49,6 +50,12 @@ const activePanelTab = ref<string>('file');
 const handlePanelTabSelect = (tab: string) => {
     activePanelTab.value = tab;
 };
+
+const addNoteFileDialogVisible = ref(false);
+const openAddNoteFileDialog = (hideContextMenu: () => void) => {
+    addNoteFileDialogVisible.value = true;
+    hideContextMenu();
+};
 </script>
 
 <template>
@@ -84,10 +91,15 @@ const handlePanelTabSelect = (tab: string) => {
                         :data="noteTreeData"
                         @file-change="handleFileChange"
                     >
-                        <template #context-menu="{ data }">
+                        <template #context-menu="{ data, hideContextMenu }">
                             <ul class="option-menu">
-                                <li>新建文件</li>
-                                <li>新建文件夹</li>
+                                <li
+                                    v-if="!data?.isFile"
+                                    @click="openAddNoteFileDialog(hideContextMenu)"
+                                >
+                                    新建文件
+                                </li>
+                                <li v-if="!data?.isFile">新建文件夹</li>
                                 <li v-if="data">重命名</li>
                                 <li v-if="data">删除</li>
                             </ul>
@@ -113,6 +125,7 @@ const handlePanelTabSelect = (tab: string) => {
             </el-container>
         </el-main>
     </el-container>
+    <AddNoteFileDialog v-model:visible="addNoteFileDialogVisible" />
 </template>
 
 <style lang="less" scoped>
