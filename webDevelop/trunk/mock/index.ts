@@ -5,5 +5,5 @@ import './base';
 
 console.log('mock enabled');
 Mock.setup({
-    timeout: '200-2000',
+    timeout: '100-300',
 });
