@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
+import { Document, Folder } from '@element-plus/icons-vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 
 export interface TreeNode extends AnyObj {
@@ -24,6 +25,7 @@ const handleCurrentChange = (data: TreeNode) => {
     emit('fileChange', data.id);
 };
 
+const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
 const contextMenuState: {
     event?: MouseEvent;
     data?: TreeNode;
@@ -39,11 +41,13 @@ const openContextMenu = (e: MouseEvent, data: TreeNode) => {
     contextMenuState.data = data;
 };
 const openContextMenuInBlank = (e: MouseEvent) => {
-    console.log(e);
     e.preventDefault();
     contextMenuState.visible = true;
     contextMenuState.event = e;
     contextMenuState.data = undefined;
+};
+const hideContextMenu = () => {
+    contextMenuRef.value?.hide();
 };
 </script>
 
@@ -69,10 +73,15 @@ const openContextMenuInBlank = (e: MouseEvent) => {
             </template>
         </el-tree>
         <ContextMenu
+            ref="contextMenuRef"
             v-model:visible="contextMenuState.visible"
             :click-event="contextMenuState.event"
         >
-            <slot name="context-menu" :data="contextMenuState.data"></slot>
+            <slot
+                name="context-menu"
+                :data="contextMenuState.data"
+                :hideContextMenu="hideContextMenu"
+            ></slot>
         </ContextMenu>
     </div>
 </template>
@@ -85,6 +94,7 @@ const openContextMenuInBlank = (e: MouseEvent) => {
 .tree-icon-label {
     display: flex;
     align-items: center;
+    user-select: none;
 
     i {
         font-size: 15px;

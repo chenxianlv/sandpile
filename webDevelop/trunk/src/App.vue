@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import HeaderView from '@/views/Base/HeaderView.vue';
-import LoginDialog from '@/components/LoginDialog/LoginDialog.vue';
+import LoginDialog from '@/views/Base/LoginDialog/LoginDialog.vue';
 </script>
 
 <template>
