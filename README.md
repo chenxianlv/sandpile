@@ -4,11 +4,14 @@
 
 [查看页面](https://sandpile.shop/)
 
-> 致谢：本项目的 Markdown 主题基于 [typora-vue-theme](https://github.com/blinkfox/typora-vue-theme) 进行二次开发
+## 系统：
 
-## TODO
+- ✅权限管理
+- ✅用户登录
+- 用户注册（暂不开放注册）
+- ✅自动登陆功能
 
-Markdown笔记：
+## Markdown笔记模块
 
 - ✅新增、查询、重命名、删除笔记项目
 - ✅解析器：解析Markdown为HTML，并生成菜单
@@ -16,18 +19,9 @@ Markdown笔记：
 - 编辑markdown笔记、保存编辑内容
 - 新增、重命名、删除笔记
 
+## 3D模块
 
+- ✅DEMO1：以图片为模板的平面粒子
 
-系统：
-
-- ✅权限管理
-- ✅用户登录
-- 用户注册（暂不开放注册）
-- ✅自动登陆功能
-
-
-
-AI Chat：
-
-- 前端构建聊天组件
-- 接入ChatGPT API
+## 致谢
+> 本项目的 Markdown 主题基于 [typora-vue-theme](https://github.com/blinkfox/typora-vue-theme) 进行二次开发
