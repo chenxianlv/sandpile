@@ -36,6 +36,8 @@ const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
 </template>
 
 <style lang="less" scoped>
+@import url('@/styles/variable.less');
+
 @header-height: 50px;
 @logo-box-width: 70px;
 @logo-height: 36px;
