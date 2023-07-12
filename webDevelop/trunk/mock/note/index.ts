@@ -129,7 +129,7 @@ Mock.mock(new RegExp('.*' + 'note/getNoteText'), (options) => {
 
 Mock.mock(new RegExp('.*' + 'note/addNoteFile'), (options) => {
     const params = JSON.parse(options.body);
-    const target = projectDetails[params.id];
+    const target = projectDetails[params.projectId];
     const newFile = {
         id: noteFileIdCount++,
         name: params.name,
@@ -171,7 +171,7 @@ Mock.mock(new RegExp('.*' + 'note/updateNoteFile'), (options) => {
 
 Mock.mock(new RegExp('.*' + 'note/addNoteFolder'), (options) => {
     const params = JSON.parse(options.body);
-    const target = projectDetails[params.id];
+    const target = projectDetails[params.projectId];
     const newFolder = {
         id: noteFolderIdCount++,
         name: params.name,
