@@ -45,6 +45,8 @@ const logout = () => {
 </template>
 
 <style lang="less" scoped>
+@import url('@/styles/variable.less');
+
 .user-avatar {
     .profile {
         cursor: pointer;

@@ -149,6 +149,7 @@ const showDeleteDialog = (row: NoteProject) => {
 </template>
 
 <style lang="less" scoped>
+@import url('@/styles/variable.less');
 .container {
     box-sizing: border-box;
     width: 100%;

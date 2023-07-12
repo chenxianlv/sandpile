@@ -20,6 +20,8 @@ import LoginDialog from '@/views/Base/LoginDialog/LoginDialog.vue';
 </template>
 
 <style scoped lang="less">
+@import url('@/styles/variable.less');
+
 .main-container {
     height: 100%;
     display: flex;

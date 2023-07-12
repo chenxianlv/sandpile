@@ -129,6 +129,7 @@ const openAddNoteFileDialog = (hideContextMenu: () => void) => {
 </template>
 
 <style lang="less" scoped>
+@import url('@/styles/variable.less');
 .el-container {
     height: 100%;
 }
