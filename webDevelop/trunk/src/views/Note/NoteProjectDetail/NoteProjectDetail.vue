@@ -45,7 +45,6 @@ const handleFileChange = (id: number) => {
 let contextMenuSelectNode = ref<TreeNode | undefined>();
 const contextMenuSelectNodeFolderId = computed(() => {
     const node = contextMenuSelectNode.value;
-    console.log(node);
     if (node && !node.isFile) {
         return node.id;
     }
