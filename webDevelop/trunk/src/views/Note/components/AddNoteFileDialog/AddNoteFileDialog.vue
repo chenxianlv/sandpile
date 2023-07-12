@@ -6,6 +6,8 @@ import { addNoteFileAPI } from '@/api/note';
 
 const props = defineProps<{
     visible: boolean;
+    folderId: number;
+    projectId: number;
 }>();
 const emit = defineEmits<{
     (e: 'update:visible', value: boolean): void;
@@ -14,17 +16,16 @@ const emit = defineEmits<{
 
 const formRef = ref<FormInstance>();
 const formData = reactive<{
-    fileName: string;
+    name: string;
 }>({
-    fileName: '',
+    name: '',
 });
 const rules = reactive<FormRules>({
-    fileName: [{ required: true, message: '请输入文件名称', trigger: 'blur' }],
+    name: [{ required: true, message: '请输入文件名称', trigger: 'blur' }],
 });
 const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
 const resetDialog = () => {
-    console.log(1);
     formRef.value?.resetFields();
 };
 
@@ -32,7 +33,7 @@ const submit = () => {
     formRef.value?.validate((isValid) => {
         if (!isValid) return;
         startLoading();
-        addNoteFileAPI(formData)
+        addNoteFileAPI({ ...formData, folderId: props.folderId, projectId: props.projectId })
             .then(() => {
                 emit('submitSuccess');
                 emit('update:visible', false);
@@ -58,8 +59,8 @@ const submit = () => {
     >
         <template #default>
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
-                <el-form-item prop="fileName" label="文件名">
-                    <el-input v-model="formData.fileName" @keydown.enter="submit"></el-input>
+                <el-form-item prop="name" label="文件名">
+                    <el-input v-model="formData.name" @keydown.enter="submit"></el-input>
                 </el-form-item>
             </el-form>
         </template>

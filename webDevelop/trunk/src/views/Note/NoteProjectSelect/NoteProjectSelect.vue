@@ -4,7 +4,7 @@ import { computed, nextTick, ref } from 'vue';
 import dayjs from 'dayjs';
 import { useRouter } from 'vue-router';
 import { Search, MoreFilled } from '@element-plus/icons-vue';
-import type { NoteProject } from '@/views/Note/hooks';
+import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 import type { NormalResponse } from '@/common/axios';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
