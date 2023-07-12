@@ -17,6 +17,7 @@ export interface TreeNode extends AnyObj {
 const props = defineProps<{ data: TreeNode[] }>();
 const emit = defineEmits<{
     (e: 'fileChange', id: number): void;
+    (e: 'contextMenuSelectChange', node?: TreeNode): void;
 }>();
 
 const handleCurrentChange = (data: TreeNode) => {
@@ -39,12 +40,14 @@ const openContextMenu = (e: MouseEvent, data: TreeNode) => {
     contextMenuState.visible = true;
     contextMenuState.event = e;
     contextMenuState.data = data;
+    emit('contextMenuSelectChange', data);
 };
 const openContextMenuInBlank = (e: MouseEvent) => {
     e.preventDefault();
     contextMenuState.visible = true;
     contextMenuState.event = e;
     contextMenuState.data = undefined;
+    emit('contextMenuSelectChange');
 };
 const hideContextMenu = () => {
     contextMenuRef.value?.hide();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import type { NoteProject } from '@/views/Note/hooks';
+import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 import { FormInstance, FormRules } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
@@ -62,19 +62,10 @@ const resetDialog = () => {
         append-to-body
     >
         <template #default>
-            <span>{{
-                `若确定删除，请输入项目名称“${
-                    props.rowData?.projectName ?? ''
-                }”。`
-            }}</span>
+            <span>{{ `若确定删除，请输入项目名称“${props.rowData?.projectName ?? ''}”。` }}</span>
             <br />
             <br />
-            <el-form
-                @submit.prevent
-                ref="formRef"
-                :rules="rules"
-                :model="deleteConfirmFormData"
-            >
+            <el-form @submit.prevent ref="formRef" :rules="rules" :model="deleteConfirmFormData">
                 <el-form-item prop="text">
                     <el-input
                         v-model="deleteConfirmFormData.text"
@@ -85,10 +76,7 @@ const resetDialog = () => {
         </template>
         <template #footer>
             <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button
-                type="danger"
-                @click="deleteProject"
-                :loading="submitBtnLoading"
+            <el-button type="danger" @click="deleteProject" :loading="submitBtnLoading"
                 >删除</el-button
             >
         </template>

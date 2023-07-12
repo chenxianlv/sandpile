@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold } from '@element-plus/icons-vue';
-import { useNoteDetail } from '@/views/Note/hooks';
+import { useNoteDetail } from '@/views/Note/NoteProjectDetail/hooks';
 import MarkdownMenuTree from '@/views/Note/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/views/Note/components/Markdown/MdParser.vue';
 import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
-import AddNoteFileDialog from '@/views/Note/NoteProjectDetail/AddNoteFileDialog.vue';
+import AddNoteFileDialog from '@/views/Note/components/AddNoteFileDialog/AddNoteFileDialog.vue';
 
 window.location.hash = '';
-let projectId = useRoute().params.id;
-
-if (projectId instanceof Array) {
-    projectId = projectId[0];
-}
+let projectId = Number(useRoute().params.id?.[0]);
 
 const { loading: parserLoading, startLoading, stopLoading } = useLoading();
-const { noteTreeData, getNoteText, responseData, pageLoading } = useNoteDetail(Number(projectId));
+const { noteTreeData, getData, getNoteText, responseData, pageLoading } = useNoteDetail(projectId);
 const markdownText = ref<string>();
 const markdownMenus = ref<string[]>([]);
 
@@ -44,6 +40,19 @@ const handleFileChange = (id: number) => {
         .finally(() => {
             stopLoading();
         });
+};
+
+let contextMenuSelectNode = ref<TreeNode | undefined>();
+const contextMenuSelectNodeFolderId = computed(() => {
+    const node = contextMenuSelectNode.value;
+    console.log(node);
+    if (node && !node.isFile) {
+        return node.id;
+    }
+    return -1;
+});
+const handleContextMenuSelectChange = (node: TreeNode) => {
+    contextMenuSelectNode.value = node;
 };
 
 const activePanelTab = ref<string>('file');
@@ -90,6 +99,7 @@ const openAddNoteFileDialog = (hideContextMenu: () => void) => {
                         v-show="activePanelTab === 'file'"
                         :data="noteTreeData"
                         @file-change="handleFileChange"
+                        @context-menu-select-change="handleContextMenuSelectChange"
                     >
                         <template #context-menu="{ data, hideContextMenu }">
                             <ul class="option-menu">
@@ -125,11 +135,17 @@ const openAddNoteFileDialog = (hideContextMenu: () => void) => {
             </el-container>
         </el-main>
     </el-container>
-    <AddNoteFileDialog v-model:visible="addNoteFileDialogVisible" />
+    <AddNoteFileDialog
+        v-model:visible="addNoteFileDialogVisible"
+        :folderId="contextMenuSelectNodeFolderId"
+        :projectId="projectId"
+        @submit-success="getData(projectId)"
+    />
 </template>
 
 <style lang="less" scoped>
 @import url('@/styles/variable.less');
+
 .el-container {
     height: 100%;
 }

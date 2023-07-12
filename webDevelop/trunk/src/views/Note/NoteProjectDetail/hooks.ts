@@ -13,12 +13,6 @@ export interface NoteProject {
     createTime: string;
 }
 
-export interface NoteInfo {
-    id: number;
-    name: string;
-    text?: string;
-}
-
 interface NoteNode extends TreeNode {
     id: number;
     name: string;
@@ -64,20 +58,19 @@ export function useNoteDetail(projectId: number) {
      * @param projectId
      * @param clearText 若传入true，请求后清除已缓存的笔记文本信息
      */
-    function getData(projectId: number, clearText = false) {
-        getProjectDetailAPI({ id: Number(projectId) })
-            .then((res: NormalResponse) => {
-                if (clearText) {
-                    noteTextStorage.value = {};
-                }
-                responseData.value = res?.data?.data ?? {};
-            })
-            .finally(() => {
-                stopLoading();
-            });
+    async function getData(projectId: number, clearText = false) {
+        try {
+            const res = await getProjectDetailAPI({ id: Number(projectId) });
+            if (clearText) {
+                noteTextStorage.value = {};
+            }
+            responseData.value = res?.data?.data ?? {};
+        } finally {
+            stopLoading();
+        }
     }
 
-    getData(projectId);
+    getData(projectId).then(() => {});
 
     // 加工响应数据，生成树信息
     watch(
