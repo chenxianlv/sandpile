@@ -146,13 +146,13 @@ const openAddNoteFolderDialog = (hideContextMenu: () => void) => {
         </el-main>
     </el-container>
     <AddNoteFileDialog
-        v-model:visible="addNoteFileDialogVisible"
+        v-model="addNoteFileDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"
     />
     <AddNoteFolderDialog
-        v-model:visible="addNoteFolderDialogVisible"
+        v-model="addNoteFolderDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"

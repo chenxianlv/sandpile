@@ -1,19 +1,12 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { addProjectAPI } from '@/api/note';
-import { useLoading } from '@/utils/hooks';
-
-const props = defineProps<{
-    visible: boolean;
-}>();
-const emit = defineEmits<{
-    (e: 'update:visible', value: boolean): void;
-    (e: 'submitSuccess'): void;
-}>();
+import FormDialog from '@/components/FormDialog/FormDialog.vue';
 
 const formRef = ref<FormInstance>();
-const defaultInputRef = ref<InputInstance>();
+const autoFocusRef = ref<InputInstance>();
+
 const formData = reactive<{
     projectName: string;
 }>({
@@ -25,61 +18,29 @@ const rules = reactive<FormRules>({
         { max: 255, message: '请输入小于255字符的项目名称', trigger: 'change' },
     ],
 });
-const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
-const submitAdd = () => {
-    formRef.value?.validate((isValid) => {
-        if (!isValid) return;
-        startLoading();
-        addProjectAPI(formData)
-            .then(() => {
-                emit('submitSuccess');
-                emit('update:visible', false);
-            })
-            .catch(() => {})
-            .finally(() => {
-                stopLoading();
-            });
-    });
-};
-
-const resetDialog = () => {
-    nextTick(() => {
-        formRef.value?.resetFields();
-        defaultInputRef.value?.focus();
-    });
-};
+const requestFn = () => addProjectAPI(formData);
 </script>
 
 <template>
-    <el-dialog
-        width="500px"
+    <FormDialog
         title="新建笔记项目"
-        :modelValue="props.visible"
-        @update:modelValue="(e:boolean) => emit('update:visible', e)"
-        @open="resetDialog"
-        align-center
-        draggable
-        append-to-body
+        :formRef="formRef"
+        :autoFocusRef="autoFocusRef"
+        :requestFn="requestFn"
     >
-        <template #default>
+        <template #default="{ submit }">
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
                 <el-form-item prop="projectName" label="项目名称">
                     <el-input
-                        ref="defaultInputRef"
+                        ref="autoFocusRef"
                         v-model="formData.projectName"
-                        @keydown.enter="submitAdd"
+                        @keydown.enter="submit"
                     ></el-input>
                 </el-form-item>
             </el-form>
         </template>
-        <template #footer>
-            <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button type="primary" @click="submitAdd" :loading="submitBtnLoading"
-                >新建</el-button
-            >
-        </template>
-    </el-dialog>
+    </FormDialog>
 </template>
 
 <style lang="less" scoped></style>
