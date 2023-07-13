@@ -11,6 +11,7 @@ import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
 import AddNoteFileDialog from '@/views/Note/components/AddNoteFileDialog/AddNoteFileDialog.vue';
+import AddNoteFolderDialog from '@/views/Note/components/AddNoteFolderDialog/AddNoteFolderDialog.vue';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
@@ -64,6 +65,11 @@ const openAddNoteFileDialog = (hideContextMenu: () => void) => {
     addNoteFileDialogVisible.value = true;
     hideContextMenu();
 };
+const addNoteFolderDialogVisible = ref(false);
+const openAddNoteFolderDialog = (hideContextMenu: () => void) => {
+    addNoteFolderDialogVisible.value = true;
+    hideContextMenu();
+};
 </script>
 
 <template>
@@ -108,7 +114,12 @@ const openAddNoteFileDialog = (hideContextMenu: () => void) => {
                                 >
                                     新建文件
                                 </li>
-                                <li v-if="!data?.isFile">新建文件夹</li>
+                                <li
+                                    v-if="!data?.isFile"
+                                    @click="openAddNoteFolderDialog(hideContextMenu)"
+                                >
+                                    新建文件夹
+                                </li>
                                 <li v-if="data">重命名</li>
                                 <li v-if="data">删除</li>
                             </ul>
@@ -136,6 +147,12 @@ const openAddNoteFileDialog = (hideContextMenu: () => void) => {
     </el-container>
     <AddNoteFileDialog
         v-model:visible="addNoteFileDialogVisible"
+        :folderId="contextMenuSelectNodeFolderId"
+        :projectId="projectId"
+        @submit-success="getData(projectId)"
+    />
+    <AddNoteFolderDialog
+        v-model:visible="addNoteFolderDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"

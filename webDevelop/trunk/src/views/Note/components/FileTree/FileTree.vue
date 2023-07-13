@@ -68,8 +68,8 @@ const hideContextMenu = () => {
             <template #default="{ data }">
                 <span class="tree-icon-label">
                     <el-icon>
-                        <Folder v-if="data.children?.length ?? 0 > 0" />
-                        <Document v-else />
+                        <Document v-if="data?.isFile" />
+                        <Folder v-else />
                     </el-icon>
                     <span>{{ data.name }}</span>
                 </span>
