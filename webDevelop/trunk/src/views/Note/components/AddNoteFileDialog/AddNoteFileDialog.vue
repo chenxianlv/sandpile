@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { FormInstance, FormRules } from 'element-plus';
+import { nextTick, reactive, ref } from 'vue';
+import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { useLoading } from '@/utils/hooks';
 import { addNoteFileAPI } from '@/api/note';
 
@@ -15,6 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const formRef = ref<FormInstance>();
+const defaultInputRef = ref<InputInstance>();
 const formData = reactive<{
     name: string;
 }>({
@@ -26,7 +27,10 @@ const rules = reactive<FormRules>({
 const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
 const resetDialog = () => {
-    formRef.value?.resetFields();
+    nextTick(() => {
+        formRef.value?.resetFields();
+        defaultInputRef.value?.focus();
+    });
 };
 
 const submit = () => {
@@ -60,7 +64,11 @@ const submit = () => {
         <template #default>
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
                 <el-form-item prop="name" label="文件名">
-                    <el-input v-model="formData.name" @keydown.enter="submit"></el-input>
+                    <el-input
+                        ref="defaultInputRef"
+                        v-model="formData.name"
+                        @keydown.enter="submit"
+                    ></el-input>
                 </el-form-item>
             </el-form>
         </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import type { FormInstance, FormRules } from 'element-plus';
+import { nextTick, reactive, ref } from 'vue';
+import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { addProjectAPI } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 
@@ -13,6 +13,7 @@ const emit = defineEmits<{
 }>();
 
 const formRef = ref<FormInstance>();
+const defaultInputRef = ref<InputInstance>();
 const formData = reactive<{
     projectName: string;
 }>({
@@ -43,7 +44,10 @@ const submitAdd = () => {
 };
 
 const resetDialog = () => {
-    formRef.value?.resetFields();
+    nextTick(() => {
+        formRef.value?.resetFields();
+        defaultInputRef.value?.focus();
+    });
 };
 </script>
 
@@ -59,14 +63,10 @@ const resetDialog = () => {
         append-to-body
     >
         <template #default>
-            <el-form
-                @submit.prevent
-                ref="formRef"
-                :rules="rules"
-                :model="formData"
-            >
+            <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
                 <el-form-item prop="projectName" label="项目名称">
                     <el-input
+                        ref="defaultInputRef"
                         v-model="formData.projectName"
                         @keydown.enter="submitAdd"
                     ></el-input>
@@ -75,10 +75,7 @@ const resetDialog = () => {
         </template>
         <template #footer>
             <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button
-                type="primary"
-                @click="submitAdd"
-                :loading="submitBtnLoading"
+            <el-button type="primary" @click="submitAdd" :loading="submitBtnLoading"
                 >新建</el-button
             >
         </template>
