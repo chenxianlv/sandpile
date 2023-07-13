@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import type { FormInstance, FormRules } from 'element-plus';
+import { nextTick, reactive, ref } from 'vue';
+import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { loginAPI } from '@/api/base';
 import type { NormalResponse } from '@/common/axios';
 import { useUserStore } from '@/stores/userStore';
@@ -10,6 +10,7 @@ import { encryptPwd } from '@/utils/crypto';
 
 const loginStore = useLoginStore();
 const formRef = ref<FormInstance>();
+const defaultInputRef = ref<InputInstance>();
 const formData = reactive<{
     account: string;
     password: string;
@@ -57,7 +58,10 @@ const login = () => {
 };
 
 const resetDialog = () => {
-    formRef.value?.clearValidate();
+    nextTick(() => {
+        formRef.value?.resetFields();
+        defaultInputRef.value?.focus();
+    });
 };
 </script>
 
@@ -82,7 +86,7 @@ const resetDialog = () => {
             />
             <el-form ref="formRef" :rules="rules" :model="formData">
                 <el-form-item prop="account" label="账号">
-                    <el-input v-model="formData.account"></el-input>
+                    <el-input ref="defaultInputRef" v-model="formData.account"></el-input>
                 </el-form-item>
                 <el-form-item prop="password" label="密码">
                     <el-input

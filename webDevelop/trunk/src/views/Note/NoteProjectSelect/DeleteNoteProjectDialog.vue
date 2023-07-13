@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { nextTick, reactive, ref } from 'vue';
 import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
-import { FormInstance, FormRules } from 'element-plus';
+import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 
@@ -26,6 +26,7 @@ const rules = reactive<FormRules>({
     text: [{ validator: validateConfirmText, trigger: 'blur' }],
 });
 const formRef = ref<FormInstance>();
+const defaultInputRef = ref<InputInstance>();
 const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
 const deleteProject = () => {
@@ -46,7 +47,10 @@ const deleteProject = () => {
 };
 
 const resetDialog = () => {
-    formRef.value?.resetFields();
+    nextTick(() => {
+        formRef.value?.resetFields();
+        defaultInputRef.value?.focus();
+    });
 };
 </script>
 
@@ -68,6 +72,7 @@ const resetDialog = () => {
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="deleteConfirmFormData">
                 <el-form-item prop="text">
                     <el-input
+                        ref="defaultInputRef"
                         v-model="deleteConfirmFormData.text"
                         @keydown.enter="deleteProject"
                     ></el-input>
