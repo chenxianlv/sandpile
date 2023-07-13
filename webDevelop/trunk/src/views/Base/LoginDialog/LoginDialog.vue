@@ -7,10 +7,15 @@ import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { useLoading } from '@/utils/hooks';
 import { encryptPwd } from '@/utils/crypto';
+import FormDialog from '@/components/FormDialog/FormDialog.vue';
 
 const loginStore = useLoginStore();
+const userStore = useUserStore();
+
+const errorInfo = ref('');
 const formRef = ref<FormInstance>();
-const defaultInputRef = ref<InputInstance>();
+const autoFocusRef = ref<InputInstance>();
+
 const formData = reactive<{
     account: string;
     password: string;
@@ -26,57 +31,36 @@ const rules = reactive<FormRules>({
     password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 });
 
-const errorInfo = ref('');
-const userStore = useUserStore();
-const { loading: loginBtnLoading, startLoading, stopLoading } = useLoading();
-const login = () => {
-    formRef.value?.validate((isValid) => {
-        if (!isValid) return;
-        startLoading();
+const requestFn = async () => {
+    const submitForm = new FormData();
+    submitForm.append('account', formData.account);
+    submitForm.append('password', encryptPwd(formData.password, formData.account));
 
-        const submitForm = new FormData();
-        submitForm.append('account', formData.account);
-        submitForm.append('password', encryptPwd(formData.password, formData.account));
-
-        loginAPI(submitForm)
-            .then((res: NormalResponse) => {
-                const data = res.data?.data ?? {};
-                userStore.login({
-                    username: data.userName,
-                    id: data.id,
-                    token: data.token,
-                });
-                loginStore.close();
-            })
-            .catch((reason) => {
-                errorInfo.value = reason?.response?.data?.errorInfo ?? '登录失败';
-            })
-            .finally(() => {
-                stopLoading();
-            });
-    });
-};
-
-const resetDialog = () => {
-    nextTick(() => {
-        formRef.value?.resetFields();
-        defaultInputRef.value?.focus();
-    });
+    try {
+        const res = await loginAPI(submitForm);
+        const data = res.data?.data ?? {};
+        userStore.login({
+            username: data.userName,
+            id: data.id,
+            token: data.token,
+        });
+        loginStore.close();
+    } catch (reason: any) {
+        errorInfo.value = reason?.response?.data?.errorInfo ?? '登录失败';
+        throw reason;
+    }
 };
 </script>
 
 <template>
-    <el-dialog
-        width="500px"
+    <FormDialog
+        v-model="loginStore.loginDialogVisible"
         title="用户登录"
-        :modelValue="loginStore.loginDialogVisible"
-        @update:modelValue="(e:boolean) => loginStore.loginDialogVisible = e"
-        @open="resetDialog"
-        align-center
-        draggable
-        append-to-body
+        :formRef="formRef"
+        :autoFocusRef="autoFocusRef"
+        :requestFn="requestFn"
     >
-        <template #default>
+        <template #default="{ submit }">
             <el-alert
                 class="alert"
                 v-if="errorInfo"
@@ -86,22 +70,18 @@ const resetDialog = () => {
             />
             <el-form ref="formRef" :rules="rules" :model="formData">
                 <el-form-item prop="account" label="账号">
-                    <el-input ref="defaultInputRef" v-model="formData.account"></el-input>
+                    <el-input ref="autoFocusRef" v-model="formData.account"></el-input>
                 </el-form-item>
                 <el-form-item prop="password" label="密码">
                     <el-input
                         show-password
                         v-model="formData.password"
-                        @keydown.enter="login"
+                        @keydown.enter="submit"
                     ></el-input>
                 </el-form-item>
             </el-form>
         </template>
-        <template #footer>
-            <el-button @click="loginStore.close()">取消</el-button>
-            <el-button type="primary" @click="login" :loading="loginBtnLoading">登录</el-button>
-        </template>
-    </el-dialog>
+    </FormDialog>
 </template>
 
 <style lang="less" scoped>

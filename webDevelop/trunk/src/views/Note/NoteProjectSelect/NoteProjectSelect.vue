@@ -140,11 +140,11 @@ const showDeleteDialog = (row: NoteProject) => {
             </el-table>
         </div>
         <DeleteDialog
-            v-model:visible="deleteDialogVisible"
+            v-model="deleteDialogVisible"
             :row-data="deleteRowData"
             @submit-success="listProjects"
         />
-        <AddDialog v-model:visible="addDialogVisible" @submit-success="listProjects" />
+        <AddDialog v-model="addDialogVisible" @submit-success="listProjects" />
     </div>
 </template>
 

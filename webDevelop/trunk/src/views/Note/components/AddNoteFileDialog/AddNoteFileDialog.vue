@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
-import { useLoading } from '@/utils/hooks';
 import { addNoteFileAPI } from '@/api/note';
+import FormDialog from '@/components/FormDialog/FormDialog.vue';
 
 const props = defineProps<{
-    visible: boolean;
     folderId: number;
     projectId: number;
 }>();
-const emit = defineEmits<{
-    (e: 'update:visible', value: boolean): void;
-    (e: 'submitSuccess'): void;
-}>();
 
 const formRef = ref<FormInstance>();
-const defaultInputRef = ref<InputInstance>();
+const autoFocusRef = ref<InputInstance>();
+
 const formData = reactive<{
     name: string;
 }>({
@@ -24,59 +20,30 @@ const formData = reactive<{
 const rules = reactive<FormRules>({
     name: [{ required: true, message: '请输入文件名称', trigger: 'blur' }],
 });
-const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 
-const resetDialog = () => {
-    nextTick(() => {
-        formRef.value?.resetFields();
-        defaultInputRef.value?.focus();
-    });
-};
-
-const submit = () => {
-    formRef.value?.validate((isValid) => {
-        if (!isValid) return;
-        startLoading();
-        addNoteFileAPI({ ...formData, folderId: props.folderId, projectId: props.projectId })
-            .then(() => {
-                emit('submitSuccess');
-                emit('update:visible', false);
-            })
-            .catch(() => {})
-            .finally(() => {
-                stopLoading();
-            });
-    });
-};
+const requestFn = () =>
+    addNoteFileAPI({ ...formData, folderId: props.folderId, projectId: props.projectId });
 </script>
 
 <template>
-    <el-dialog
-        width="500px"
+    <FormDialog
         title="新建文件"
-        :modelValue="props.visible"
-        @update:modelValue="(e:boolean) => emit('update:visible', e)"
-        @open="resetDialog"
-        align-center
-        draggable
-        append-to-body
+        :formRef="formRef"
+        :autoFocusRef="autoFocusRef"
+        :requestFn="requestFn"
     >
-        <template #default>
+        <template #default="{ submit }">
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
                 <el-form-item prop="name" label="文件名">
                     <el-input
-                        ref="defaultInputRef"
+                        ref="autoFocusRef"
                         v-model="formData.name"
                         @keydown.enter="submit"
                     ></el-input>
                 </el-form-item>
             </el-form>
         </template>
-        <template #footer>
-            <el-button @click="emit('update:visible', false)">取消</el-button>
-            <el-button type="primary" @click="submit" :loading="submitBtnLoading">新建</el-button>
-        </template>
-    </el-dialog>
+    </FormDialog>
 </template>
 
 <style lang="less" scoped></style>
