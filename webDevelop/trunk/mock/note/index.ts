@@ -30,13 +30,15 @@ interface NoteFolder {
     folderId: number;
 }
 
-const projectDetails: {
+interface ProjectDetail {
     [id: string]: {
         projectName: string;
         notes: NoteFile[];
         noteFolders: NoteFolder[];
     };
-} = {
+}
+
+const projectDetails: ProjectDetail = {
     1: {
         projectName: '前端笔记',
         notes: [
@@ -145,9 +147,9 @@ Mock.mock(new RegExp('.*' + 'note/addNoteFile'), (options) => {
 Mock.mock(new RegExp('.*' + 'note/deleteNoteFile'), (options) => {
     const params = JSON.parse(options.body);
 
-    const targetArr = projectDetails[params.id].notes;
-    const targetIndex = targetArr.findIndex((item) => item.id === params.id);
-    targetIndex !== -1 && targetArr.splice(targetIndex, 1);
+    Object.values(projectDetails).forEach((detail) => {
+        detail.notes = detail.notes.filter((item) => item.id !== params.id);
+    });
 
     return {
         status: 1,
@@ -195,9 +197,14 @@ Mock.mock(new RegExp('.*' + 'note/addNoteFolder'), (options) => {
 Mock.mock(new RegExp('.*' + 'note/deleteNoteFolder'), (options) => {
     const params = JSON.parse(options.body);
 
-    const targetArr = projectDetails[params.id].noteFolders;
-    const targetIndex = targetArr.findIndex((item) => item.id === params.id);
-    targetIndex !== -1 && targetArr.splice(targetIndex, 1);
+    Object.values(projectDetails).forEach((detail) => {
+        detail.notes = detail.notes.filter((item) => item.folderId !== params.id);
+    });
+    Object.values(projectDetails).forEach((detail) => {
+        detail.noteFolders = detail.noteFolders.filter(
+            (item) => item.folderId !== params.id && item.id !== params.id
+        );
+    });
 
     return {
         status: 1,
