@@ -48,9 +48,37 @@ export function addNoteFileAPI(data: AnyObj) {
     });
 }
 
+export function deleteNoteFileAPI(data: AnyObj) {
+    return baseRequest({
+        url: '/note/deleteNoteFile',
+        data,
+    });
+}
+
+export function updateNoteFileAPI(data: AnyObj) {
+    return baseRequest({
+        url: '/note/updateNoteFile',
+        data,
+    });
+}
+
 export function addNoteFolderAPI(data: AnyObj) {
     return baseRequest({
         url: '/note/addNoteFolder',
+        data,
+    });
+}
+
+export function deleteNoteFolderAPI(data: AnyObj) {
+    return baseRequest({
+        url: '/note/deleteNoteFolder',
+        data,
+    });
+}
+
+export function updateNoteFolderAPI(data: AnyObj) {
+    return baseRequest({
+        url: '/note/updateNoteFolder',
         data,
     });
 }

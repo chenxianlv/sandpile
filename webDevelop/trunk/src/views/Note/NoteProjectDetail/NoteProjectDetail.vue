@@ -10,8 +10,9 @@ import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
-import addFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue';
-import addFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
+import AddFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue';
+import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
+import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
@@ -70,6 +71,11 @@ const openAddFolderDialog = (hideContextMenu: () => void) => {
     addFolderDialogVisible.value = true;
     hideContextMenu();
 };
+const renameDialogVisible = ref(false);
+const openRenameDialog = (hideContextMenu: () => void) => {
+    renameDialogVisible.value = true;
+    hideContextMenu();
+};
 </script>
 
 <template>
@@ -86,7 +92,7 @@ const openAddFolderDialog = (hideContextMenu: () => void) => {
             >
         </el-header>
         <el-main>
-            <div v-if="projectId === ''">404</div>
+            <div v-if="isNaN(projectId)">404</div>
             <el-container class="container" v-else>
                 <el-aside class="aside" ref="asideRef">
                     <el-menu
@@ -120,7 +126,9 @@ const openAddFolderDialog = (hideContextMenu: () => void) => {
                                 >
                                     新建文件夹
                                 </li>
-                                <li v-if="data">重命名</li>
+                                <li v-if="data" @click="openRenameDialog(hideContextMenu)">
+                                    重命名
+                                </li>
                                 <li v-if="data">删除</li>
                             </ul>
                         </template>
@@ -145,16 +153,21 @@ const openAddFolderDialog = (hideContextMenu: () => void) => {
             </el-container>
         </el-main>
     </el-container>
-    <addFileDialog
+    <AddFileDialog
         v-model="addFileDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"
     />
-    <addFolderDialog
+    <AddFolderDialog
         v-model="addFolderDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
+        @submit-success="getData(projectId)"
+    />
+    <RenameTreeNodeDialog
+        v-model="renameDialogVisible"
+        :targetNode="contextMenuSelectNode"
         @submit-success="getData(projectId)"
     />
 </template>
