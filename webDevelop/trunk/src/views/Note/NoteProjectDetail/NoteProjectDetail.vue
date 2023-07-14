@@ -13,6 +13,8 @@ import { useLoading } from '@/utils/hooks';
 import AddFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue';
 import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
 import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
+import { ElMessageBox } from 'element-plus';
+import { deleteNoteFileAPI, deleteNoteFolderAPI } from '@/api/note';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
@@ -44,7 +46,7 @@ const handleFileChange = (id: number) => {
         });
 };
 
-let contextMenuSelectNode = ref<TreeNode | undefined>();
+const contextMenuSelectNode = ref<TreeNode>();
 const contextMenuSelectNodeFolderId = computed(() => {
     const node = contextMenuSelectNode.value;
     if (node && !node.isFile) {
@@ -75,6 +77,35 @@ const renameDialogVisible = ref(false);
 const openRenameDialog = (hideContextMenu: () => void) => {
     renameDialogVisible.value = true;
     hideContextMenu();
+};
+const deleteNode = (hideContextMenu: () => void) => {
+    const node = contextMenuSelectNode.value;
+    if (node) {
+        hideContextMenu();
+        ElMessageBox({
+            message: node.isFile
+                ? `确认删除文件 ${node?.name} 吗？`
+                : `确认删除文件夹 ${node?.name} ，以及该文件夹内的所有内容吗？`,
+            title: node.isFile ? '删除文件' : '删除文件夹',
+            type: 'warning',
+            confirmButtonText: '删除',
+            showCancelButton: true,
+            cancelButtonText: '取消',
+            beforeClose: (action, instance, done) => {
+                if (action === 'confirm') {
+                    const promise = node.isFile
+                        ? deleteNoteFileAPI({ id: node.id })
+                        : deleteNoteFolderAPI({ id: node.id });
+                    promise.then(() => {
+                        done();
+                        getData(projectId);
+                    });
+                } else {
+                    done();
+                }
+            },
+        });
+    }
 };
 </script>
 
@@ -129,7 +160,7 @@ const openRenameDialog = (hideContextMenu: () => void) => {
                                 <li v-if="data" @click="openRenameDialog(hideContextMenu)">
                                     重命名
                                 </li>
-                                <li v-if="data">删除</li>
+                                <li v-if="data" @click="deleteNode(hideContextMenu)">删除</li>
                             </ul>
                         </template>
                     </FileTree>
