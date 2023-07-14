@@ -10,8 +10,8 @@ import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
-import AddNoteFileDialog from '@/views/Note/components/AddNoteFileDialog/AddNoteFileDialog.vue';
-import AddNoteFolderDialog from '@/views/Note/components/AddNoteFolderDialog/AddNoteFolderDialog.vue';
+import addFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue';
+import addFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
@@ -60,14 +60,14 @@ const handlePanelTabSelect = (tab: string) => {
     activePanelTab.value = tab;
 };
 
-const addNoteFileDialogVisible = ref(false);
-const openAddNoteFileDialog = (hideContextMenu: () => void) => {
-    addNoteFileDialogVisible.value = true;
+const addFileDialogVisible = ref(false);
+const openAddFileDialog = (hideContextMenu: () => void) => {
+    addFileDialogVisible.value = true;
     hideContextMenu();
 };
-const addNoteFolderDialogVisible = ref(false);
-const openAddNoteFolderDialog = (hideContextMenu: () => void) => {
-    addNoteFolderDialogVisible.value = true;
+const addFolderDialogVisible = ref(false);
+const openAddFolderDialog = (hideContextMenu: () => void) => {
+    addFolderDialogVisible.value = true;
     hideContextMenu();
 };
 </script>
@@ -110,13 +110,13 @@ const openAddNoteFolderDialog = (hideContextMenu: () => void) => {
                             <ul class="option-menu">
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="openAddNoteFileDialog(hideContextMenu)"
+                                    @click="openAddFileDialog(hideContextMenu)"
                                 >
                                     新建文件
                                 </li>
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="openAddNoteFolderDialog(hideContextMenu)"
+                                    @click="openAddFolderDialog(hideContextMenu)"
                                 >
                                     新建文件夹
                                 </li>
@@ -145,14 +145,14 @@ const openAddNoteFolderDialog = (hideContextMenu: () => void) => {
             </el-container>
         </el-main>
     </el-container>
-    <AddNoteFileDialog
-        v-model="addNoteFileDialogVisible"
+    <addFileDialog
+        v-model="addFileDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"
     />
-    <AddNoteFolderDialog
-        v-model="addNoteFolderDialogVisible"
+    <addFolderDialog
+        v-model="addFolderDialogVisible"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"
