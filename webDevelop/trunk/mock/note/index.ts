@@ -157,7 +157,15 @@ Mock.mock(new RegExp('.*' + 'note/deleteNoteFile'), (options) => {
 Mock.mock(new RegExp('.*' + 'note/updateNoteFile'), (options) => {
     const params = JSON.parse(options.body);
 
-    const target = projectDetails[params.id].notes?.find((item) => item.id === params.id);
+    let target: NoteFile | undefined;
+    Object.values(projectDetails).find((detail) => {
+        const temp = detail.notes?.find((item) => item.id === params.id);
+        if (temp) {
+            target = temp;
+        }
+        return temp;
+    });
+
     if (target) {
         params.name !== undefined && (target.name = params.name);
         params.folderId !== undefined && (target.folderId = params.folderId);
@@ -199,7 +207,15 @@ Mock.mock(new RegExp('.*' + 'note/deleteNoteFolder'), (options) => {
 Mock.mock(new RegExp('.*' + 'note/updateNoteFolder'), (options) => {
     const params = JSON.parse(options.body);
 
-    const target = projectDetails[params.id].notes?.find((item) => item.id === params.id);
+    let target: NoteFolder | undefined;
+    Object.values(projectDetails).find((detail) => {
+        const temp = detail.noteFolders?.find((item) => item.id === params.id);
+        if (temp) {
+            target = temp;
+        }
+        return temp;
+    });
+
     if (target) {
         params.name !== undefined && (target.name = params.name);
         params.folderId !== undefined && (target.folderId = params.folderId);
