@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold } from '@element-plus/icons-vue';
 import { useNoteDetail } from '@/views/Note/NoteProjectDetail/hooks';
-import MarkdownMenuTree from '@/views/Note/components/Markdown/MdMenuTree.vue';
-import MarkdownParser from '@/views/Note/components/Markdown/MdParser.vue';
 import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
@@ -15,6 +13,7 @@ import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog
 import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
 import { ElMessageBox } from 'element-plus';
 import { deleteNoteFileAPI, deleteNoteFolderAPI } from '@/api/note';
+import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
@@ -22,14 +21,8 @@ let projectId = Number(useRoute().params.id?.[0]);
 const { loading: parserLoading, startLoading, stopLoading } = useLoading();
 const { noteTreeData, getData, getNoteText, responseData, pageLoading } = useNoteDetail(projectId);
 const markdownText = ref<string>();
-const markdownMenus = ref<string[]>([]);
 
-const parserRef = ref(null);
 const asideRef = ref<InstanceType<typeof ElAside> | null>(null);
-
-const updateMarkdownMenus = (newVal: string[]) => {
-    markdownMenus.value = newVal;
-};
 
 let showingNoteId: number;
 const handleFileChange = (id: number) => {
@@ -39,7 +32,6 @@ const handleFileChange = (id: number) => {
     getNoteText(id)
         .then((text: string) => {
             markdownText.value = text;
-            activePanelTab.value = 'outline';
         })
         .finally(() => {
             stopLoading();
@@ -134,13 +126,11 @@ const deleteNode = (hideContextMenu: () => void) => {
                         @select="handlePanelTabSelect"
                     >
                         <el-menu-item index="file">文件</el-menu-item>
-                        <el-menu-item index="outline">大纲</el-menu-item>
                     </el-menu>
                     <FileTree
                         class="tree"
-                        v-show="activePanelTab === 'file'"
                         :data="noteTreeData"
-                        @file-change="handleFileChange"
+                        @select-change="handleFileChange"
                         @context-menu-select-change="handleContextMenuSelectChange"
                     >
                         <template #context-menu="{ data, hideContextMenu }">
@@ -164,22 +154,11 @@ const deleteNode = (hideContextMenu: () => void) => {
                             </ul>
                         </template>
                     </FileTree>
-                    <MarkdownMenuTree
-                        class="tree"
-                        v-show="activePanelTab === 'outline'"
-                        :menus="markdownMenus"
-                        :expand-level="3"
-                    />
                 </el-aside>
                 <VerticalSizeSash v-if="asideRef?.$el" :targetDOM="asideRef?.$el" />
                 <el-main class="main" v-loading="parserLoading">
                     <el-empty v-if="markdownText === undefined" description="请选择笔记" />
-                    <MarkdownParser
-                        v-else
-                        ref="parserRef"
-                        :markdownText="markdownText"
-                        :updateMenus="updateMarkdownMenus"
-                    />
+                    <MdHtmlDisplay v-else :markdown-text="markdownText" />
                 </el-main>
             </el-container>
         </el-main>
