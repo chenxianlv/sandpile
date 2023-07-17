@@ -16,14 +16,14 @@ export interface TreeNode extends AnyObj {
 
 const props = defineProps<{ data: TreeNode[] }>();
 const emit = defineEmits<{
-    (e: 'fileChange', id: number): void;
+    (e: 'selectChange', id: number): void;
     (e: 'contextMenuSelectChange', node?: TreeNode): void;
 }>();
 
 const handleCurrentChange = (data: TreeNode) => {
     if (data.id === undefined || !data.isFile) return;
     contextMenuState.visible = false;
-    emit('fileChange', data.id);
+    emit('selectChange', data.id);
 };
 
 const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
