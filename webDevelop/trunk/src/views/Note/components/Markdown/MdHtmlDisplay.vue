@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Menu } from '@element-plus/icons-vue';
 import MarkdownMenuTree from '@/views/Note/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/views/Note/components/Markdown/MdParser.vue';
@@ -37,6 +37,24 @@ const menuContainerHeight = computed(() => {
     const rect = containerRectInfo.value;
     return rect ? rect.height - menuContainerMarginTop - menuContainerMarginBottom : 0;
 });
+
+const menuAutoCollapsedWidth = 800;
+const menuAutoCollapsed = ref(false); // 用户不干涉的情况下，菜单应有的折叠状态
+let menuAutoCollapsedLock = false;
+const menuCollapsed = ref(false); // 实际折叠状态
+
+watch(
+    () => containerRectInfo.value?.width ?? 0,
+    (newWidth) => {
+        menuAutoCollapsed.value = newWidth <= menuAutoCollapsedWidth;
+        if (!menuAutoCollapsedLock) menuCollapsed.value = menuAutoCollapsed.value;
+    }
+);
+
+const handleCollapseBtnClick = () => {
+    menuAutoCollapsedLock = menuCollapsed.value === menuAutoCollapsed.value;
+    menuCollapsed.value = !menuCollapsed.value;
+};
 </script>
 
 <template>
@@ -48,13 +66,20 @@ const menuContainerHeight = computed(() => {
                 :updateMenus="updateMarkdownMenus"
             />
         </div>
-        <div class="menu-placeholder"></div>
-        <div class="menu-container">
+        <div :class="['menu-placeholder', { collapsed: menuCollapsed }]"></div>
+        <div :class="['menu-container', { collapsed: menuCollapsed }]">
             <div class="menu-wrapper">
                 <MarkdownMenuTree class="menu-tree" :menus="markdownMenus" :expand-level="3" />
             </div>
-            <el-button type="primary" circle class="menu-switch-btn">
-                <el-icon><Menu /></el-icon>
+            <el-button
+                type="primary"
+                circle
+                class="menu-switch-btn"
+                @click="handleCollapseBtnClick"
+            >
+                <el-icon>
+                    <Menu />
+                </el-icon>
             </el-button>
         </div>
     </div>
@@ -80,16 +105,36 @@ const menuContainerHeight = computed(() => {
         height: 100%;
         width: calc(var(--menu-container-width, 0px) + var(--menu-container-right-margin, 0px));
         flex: none;
+        transition: all 0.3s;
+
+        &.collapsed {
+            width: 0;
+        }
     }
 
     .menu-container {
         width: var(--menu-container-width, 0px);
         height: v-bind('menuContainerHeight + "px"');
         border: 1px solid @border-color-light;
+        background-color: #fff;
 
         position: fixed;
         top: v-bind('menuContainerTop + "px"');
         right: var(--menu-container-right-margin, 0px);
+
+        transition: width 0.2s ease-out, border-width 0.2s ease-out, border-top 0.2s ease-out;
+
+        &.collapsed {
+            width: 0;
+            border-width: 0;
+            border-top: solid 1px transparent;
+
+            .menu-switch-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+            }
+        }
 
         .menu-wrapper {
             height: 100%;
@@ -112,6 +157,7 @@ const menuContainerHeight = computed(() => {
             width: 36px;
             height: 32px;
             border-radius: $height * 0.5 0 0 $height * 0.5;
+            transition: width 0.2s ease-out, height 0.2s ease-out, border-radius 0.2s ease-out;
         }
     }
 }
