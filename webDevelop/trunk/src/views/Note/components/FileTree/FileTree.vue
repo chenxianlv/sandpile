@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue';
 import { Document, Folder } from '@element-plus/icons-vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
+import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
 
 export interface TreeNode extends AnyObj {
     id?: number;
@@ -14,10 +15,19 @@ export interface TreeNode extends AnyObj {
     children?: Array<TreeNode>;
 }
 
-const props = defineProps<{ data: TreeNode[] }>();
+const props = withDefaults(
+    defineProps<{
+        data: TreeNode[];
+        draggable?: boolean;
+    }>(),
+    {
+        draggable: true,
+    }
+);
 const emit = defineEmits<{
     (e: 'selectChange', id: number): void;
     (e: 'contextMenuSelectChange', node?: TreeNode): void;
+    (e: 'nodeChange', id: number, isFile: boolean, mergeObj: AnyObj): void;
 }>();
 
 const handleCurrentChange = (data: TreeNode) => {
@@ -52,17 +62,35 @@ const openContextMenuInBlank = (e: MouseEvent) => {
 const hideContextMenu = () => {
     contextMenuRef.value?.hide();
 };
+const allowDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) => {
+    if (type !== 'inner' && (dropNode.data.folderId !== -1 || draggingNode.data.folderId === -1)) {
+        return false;
+    } else if (type === 'inner' && dropNode.data.isFile) {
+        return false;
+    }
+    return true;
+};
+const handleNodeDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) => {
+    const newFolderId = type === 'inner' ? dropNode.data.id : dropNode.data.folderId;
+    emit('nodeChange', draggingNode.data.id, draggingNode.data.isFile, { folderId: newFolderId });
+
+    const requestApi = draggingNode.data.isFile ? updateNoteFileAPI : updateNoteFolderAPI;
+    requestApi({ id: draggingNode.data.id, folderId: newFolderId }).then(() => {});
+};
 </script>
 
 <template>
     <div>
         <el-tree
             :data="props.data"
+            :draggable="props.draggable"
+            :allow-drop="allowDrop"
             default-expand-all
             highlight-current
             @current-change="handleCurrentChange"
             @node-contextmenu="openContextMenu"
             @click.right="openContextMenuInBlank"
+            @node-drop="handleNodeDrop"
             v-bind="$attrs"
         >
             <template #default="{ data }">

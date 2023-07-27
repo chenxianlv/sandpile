@@ -79,15 +79,21 @@ export function useNoteDetail(projectId: number) {
             const { notes, noteFolders } = cloneDeep(newVal);
             const newTreeData: TempTreeNode[] = [];
 
-            const getParentArr = (folderId: number) => {
-                return folderId !== -1
-                    ? noteFolders?.find?.((i) => i.id === folderId)?.children
-                    : newTreeData;
-            };
+            const tempArr: FolderNode[] = [];
 
             noteFolders?.forEach((item) => {
                 item.children = [];
                 item.isFile = false;
+                tempArr.push(item);
+            });
+
+            const getParentArr = (folderId: number) => {
+                return folderId !== -1
+                    ? tempArr?.find?.((i) => i.id === folderId)?.children
+                    : newTreeData;
+            };
+
+            tempArr?.forEach((item) => {
                 getParentArr(item.folderId)?.push(item);
             });
 
@@ -97,9 +103,38 @@ export function useNoteDetail(projectId: number) {
             });
 
             noteTreeData.value = newTreeData;
+            nodeSort();
         },
         { deep: true }
     );
+
+    function nodeSort() {
+        function sub(nodeArr: TempTreeNode[]) {
+            nodeArr.forEach((node) => {
+                // @ts-ignore
+                if (node.children !== undefined) {
+                    // @ts-ignore
+                    node.children = sub(node.children);
+                }
+            });
+            return nodeArr.sort(
+                (a, b) =>
+                    Number((a.isFile && !b.isFile) || a.name.toUpperCase() > b.name.toUpperCase()) -
+                    1
+            );
+        }
+
+        noteTreeData.value = cloneDeep(sub(noteTreeData.value));
+    }
+
+    function nodeChange(id: number, isFile: boolean, mergeObj: AnyObj) {
+        const arr = isFile ? responseData.value.notes : responseData.value.noteFolders;
+        // @ts-ignore
+        const nodeIndex = arr?.findIndex((node) => node.id === id);
+        if (arr && nodeIndex !== -1 && nodeIndex !== undefined) {
+            arr[nodeIndex] = { ...arr[nodeIndex], ...mergeObj };
+        }
+    }
 
     /**
      * 获取指定节点的文本（有缓存机制）
@@ -116,5 +151,5 @@ export function useNoteDetail(projectId: number) {
         });
     }
 
-    return { noteTreeData, getNoteText, responseData, pageLoading, getData };
+    return { noteTreeData, getNoteText, responseData, pageLoading, getData, nodeChange };
 }
