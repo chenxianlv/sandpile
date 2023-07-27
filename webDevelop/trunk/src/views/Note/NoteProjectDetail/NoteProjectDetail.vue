@@ -19,7 +19,8 @@ window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
 
 const { loading: parserLoading, startLoading, stopLoading } = useLoading();
-const { noteTreeData, getData, getNoteText, responseData, pageLoading } = useNoteDetail(projectId);
+const { noteTreeData, getData, nodeChange, getNoteText, responseData, pageLoading } =
+    useNoteDetail(projectId);
 const markdownText = ref<string>();
 
 const asideRef = ref<InstanceType<typeof ElAside> | null>(null);
@@ -132,6 +133,7 @@ const deleteNode = (hideContextMenu: () => void) => {
                         :data="noteTreeData"
                         @select-change="handleFileChange"
                         @context-menu-select-change="handleContextMenuSelectChange"
+                        @node-change="nodeChange"
                     >
                         <template #context-menu="{ data, hideContextMenu }">
                             <ul class="option-menu">
