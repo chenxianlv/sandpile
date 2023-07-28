@@ -22,11 +22,13 @@ const { loading: submitBtnLoading, startLoading, stopLoading } = useLoading();
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void;
     (e: 'submitSuccess'): void;
+    (e: 'open'): void;
 }>();
 const resetDialog = () => {
     nextTick(() => {
         props.formRef?.resetFields();
         props.autoFocusRef?.focus();
+        emit('open');
     });
 };
 

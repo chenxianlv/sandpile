@@ -18,6 +18,11 @@ const formData = reactive<{
 }>({
     name: '',
 });
+
+const handleOpen = () => {
+    formData.name = props.targetNode?.name ?? '';
+};
+
 const rules = reactive<FormRules>({
     name: [
         {
@@ -44,6 +49,7 @@ const requestFn = () => {
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"
+        @open="handleOpen"
     >
         <template #default="{ submit }">
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
