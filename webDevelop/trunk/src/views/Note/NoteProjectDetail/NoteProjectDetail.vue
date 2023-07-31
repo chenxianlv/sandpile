@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold } from '@element-plus/icons-vue';
-import { useNoteDetail } from '@/views/Note/NoteProjectDetail/hooks';
+import { useNoteDetail, useNoteEdit } from '@/views/Note/NoteProjectDetail/hooks';
 import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
@@ -13,13 +13,18 @@ import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog
 import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
 import { ElMessageBox } from 'element-plus';
 import { deleteNoteFileAPI, deleteNoteFolderAPI } from '@/api/note';
+import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id?.[0]);
 
-const { loading: parserLoading, startLoading, stopLoading } = useLoading();
-const { noteTreeData, getData, nodeChange, getNoteText, responseData, pageLoading } =
+const {
+    loading: parserLoading,
+    startLoading: startParserLoading,
+    stopLoading: stopParserLoading,
+} = useLoading();
+const { noteTreeData, getData, nodeChange, getNoteText, setNoteText, responseData, pageLoading } =
     useNoteDetail(projectId);
 const markdownText = ref<string>();
 
@@ -27,7 +32,7 @@ const asideRef = ref<InstanceType<typeof ElAside> | null>(null);
 
 let showingNoteId: number;
 const handleFileChange = (id: number) => {
-    startLoading();
+    startParserLoading();
     if (showingNoteId === id) return;
     showingNoteId = id;
     getNoteText(id)
@@ -35,7 +40,7 @@ const handleFileChange = (id: number) => {
             markdownText.value = text;
         })
         .finally(() => {
-            stopLoading();
+            stopParserLoading();
         });
 };
 
@@ -100,24 +105,46 @@ const deleteNode = (hideContextMenu: () => void) => {
         });
     }
 };
+
+const isEditing = ref(false);
+const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
+
+const { loading: mdSaveLoading, saveDisabled, onTextEdit, onSave } = useNoteEdit();
+const onTextareaInput = () => {
+    if (markdownText.value !== undefined) {
+        setNoteText(showingNoteId, markdownText.value);
+        onTextEdit(showingNoteId, markdownText.value);
+    }
+};
 </script>
 
 <template>
     <el-container v-loading="pageLoading">
         <el-header class="operation-bar">
-            <el-button
-                :icon="ArrowLeftBold"
-                class="backBtn"
-                circle
-                @click="$router.push({ name: 'select' })"
-            />
-            <span class="project-name" v-if="responseData?.projectName !== undefined">
-                {{ responseData?.projectName }}</span
-            >
+            <div class="left">
+                <el-button
+                    :icon="ArrowLeftBold"
+                    class="backBtn"
+                    circle
+                    @click="$router.push({ name: 'select' })"
+                />
+                <span class="project-name" v-if="responseData?.projectName !== undefined">
+                    {{ responseData?.projectName }}</span
+                >
+            </div>
+            <div class="right">
+                <el-button
+                    v-if="isEditing"
+                    :disabled="saveDisabled"
+                    :loading="mdSaveLoading"
+                    @click="onSave"
+                    >保存</el-button
+                >
+                <el-switch v-model="isEditing" active-text="编辑模式" inactive-text="阅读模式" />
+            </div>
         </el-header>
         <el-main>
-            <div v-if="isNaN(projectId)">404</div>
-            <el-container class="container" v-else>
+            <el-container class="container">
                 <el-aside class="aside" ref="asideRef">
                     <el-menu
                         class="panel-tab"
@@ -135,7 +162,7 @@ const deleteNode = (hideContextMenu: () => void) => {
                         @context-menu-select-change="handleContextMenuSelectChange"
                         @node-change="nodeChange"
                     >
-                        <template #context-menu="{ data, hideContextMenu }">
+                        <template #context-menu="{ data, hideContextMenu }" v-if="isEditing">
                             <ul class="option-menu">
                                 <li
                                     v-if="!data?.isFile"
@@ -160,7 +187,21 @@ const deleteNode = (hideContextMenu: () => void) => {
                 <VerticalSizeSash v-if="asideRef?.$el" :targetDOM="asideRef?.$el" />
                 <el-main class="main" v-loading="parserLoading">
                     <el-empty v-if="markdownText === undefined" description="请选择笔记" />
-                    <MdHtmlDisplay v-else :markdown-text="markdownText" />
+                    <div class="detail-container" v-else>
+                        <MarkdownTextarea
+                            v-if="isEditing"
+                            class="detail-item"
+                            ref="mdTextAreaRef"
+                            :input-debounce="200"
+                            v-model="markdownText"
+                            @input="onTextareaInput"
+                        />
+                        <VerticalSizeSash
+                            v-if="mdTextAreaRef?.$el"
+                            :targetDOM="mdTextAreaRef?.$el"
+                        />
+                        <MdHtmlDisplay class="detail-item" :markdown-text="markdownText" />
+                    </div>
                 </el-main>
             </el-container>
         </el-main>
@@ -194,20 +235,36 @@ const deleteNode = (hideContextMenu: () => void) => {
 .operation-bar {
     width: 100%;
     height: 40px;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(0, 0, 0, 0.01);
     border-bottom: 1px solid rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
+    justify-content: space-between;
 
-    .backBtn {
-        margin-left: 10px;
+    > div {
+        display: flex;
+        align-items: center;
     }
 
-    .project-name {
-        margin-left: 10px;
-        font-size: 16px;
-        line-height: $font-size;
-        color: @font-color-primary;
+    .left {
+        .backBtn {
+            margin-left: 15px;
+        }
+
+        .project-name {
+            margin-left: 10px;
+            font-size: 16px;
+            line-height: $font-size;
+            color: @font-color-primary;
+        }
+    }
+
+    .right {
+        padding: 0 20px;
+
+        > * {
+            margin-left: 10px;
+        }
     }
 }
 
@@ -221,6 +278,23 @@ const deleteNode = (hideContextMenu: () => void) => {
     .main {
         height: 100%;
         background-color: #fff;
+
+        .detail-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: relative;
+
+            > .detail-item {
+                width: 50%;
+                flex: auto;
+                border-right: solid 1px @border-color-light;
+            }
+
+            > .detail-item:last-child {
+                border-right: none;
+            }
+        }
     }
 
     .aside {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// 重要：使用该组件必须保证其父元素为定位元素
 import { onUnmounted, ref } from 'vue';
 import { $bus } from '@/common/eventBus';
 
@@ -59,9 +60,7 @@ const onMouseMove = (e: MouseEvent) => {
     if (!isDragging.value) return;
     // 减去一半宽度是为了使指针定位在sash的中央
     left.value =
-        e.pageX +
-        offset -
-        Math.floor((sashRef.value?.getBoundingClientRect().width ?? 0) * 0.5);
+        e.pageX + offset - Math.floor((sashRef.value?.getBoundingClientRect().width ?? 0) * 0.5);
 };
 </script>
 

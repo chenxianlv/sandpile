@@ -8,13 +8,15 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
+    (e: 'input'): void;
 }>();
 
 const textareaRef = ref<HTMLTextAreaElement>();
 
 const inputHandler = debounce(function () {
-    if (!textareaRef.value?.value) return;
+    if (textareaRef.value?.value === undefined) return;
     emit('update:modelValue', textareaRef.value.value);
+    emit('input');
 }, props.inputDebounce);
 
 const supportTab = (event: KeyboardEvent) => {

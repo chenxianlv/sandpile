@@ -1,7 +1,6 @@
 import { cloneDeep } from 'lodash-es';
-import { ref, watch } from 'vue';
-import type { NormalResponse } from '@/common/axios';
-import { getNoteTextAPI, getProjectDetailAPI } from '@/api/note';
+import { computed, reactive, ref, watch } from 'vue';
+import { getNoteTextAPI, getProjectDetailAPI, updateNoteFileAPI } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
@@ -127,6 +126,9 @@ export function useNoteDetail(projectId: number) {
         noteTreeData.value = cloneDeep(sub(noteTreeData.value));
     }
 
+    /**
+     * 用于手动变更节点对象
+     */
     function nodeChange(id: number, isFile: boolean, mergeObj: AnyObj) {
         const arr = isFile ? responseData.value.notes : responseData.value.noteFolders;
         // @ts-ignore
@@ -151,5 +153,60 @@ export function useNoteDetail(projectId: number) {
         });
     }
 
-    return { noteTreeData, getNoteText, responseData, pageLoading, getData, nodeChange };
+    /**
+     * 更新指定节点的文本（
+     */
+    function setNoteText(id: number, text: string) {
+        noteTextStorage.value[id] = text;
+    }
+
+    return {
+        noteTreeData,
+        getNoteText,
+        setNoteText,
+        responseData,
+        pageLoading,
+        getData,
+        nodeChange,
+    };
+}
+
+export function useNoteEdit() {
+    const { loading, startLoading, stopLoading } = useLoading();
+
+    const changeMap: SimpleObj<string> = reactive({});
+    const saveDisabled = ref(false);
+
+    watch(
+        changeMap,
+        (newVal) => {
+            saveDisabled.value = Object.keys(newVal).length === 0;
+        },
+        { deep: true, immediate: true }
+    );
+
+    function onTextEdit(fileId: number, newText: string) {
+        changeMap[fileId] = newText;
+    }
+
+    function onSave() {
+        const promiseArr: Promise<any>[] = [];
+        startLoading();
+        Object.keys(changeMap).forEach((id) => {
+            const text = changeMap[id];
+            if (text !== undefined) {
+                delete changeMap[id];
+                promiseArr.push(
+                    updateNoteFileAPI({ id, text }).catch(() => {
+                        changeMap[id] = text;
+                    })
+                );
+            }
+        });
+        return Promise.all(promiseArr).finally(() => {
+            stopLoading();
+        });
+    }
+
+    return { loading, saveDisabled, onTextEdit, onSave };
 }
