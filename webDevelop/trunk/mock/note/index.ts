@@ -158,10 +158,11 @@ Mock.mock(new RegExp('.*' + 'note/deleteNoteFile'), (options) => {
 
 Mock.mock(new RegExp('.*' + 'note/updateNoteFile'), (options) => {
     const params = JSON.parse(options.body);
+    const id = Number(params.id);
 
     let target: NoteFile | undefined;
     Object.values(projectDetails).find((detail) => {
-        const temp = detail.notes?.find((item) => item.id === params.id);
+        const temp = detail.notes?.find((item) => item.id === id);
         if (temp) {
             target = temp;
         }
@@ -171,7 +172,7 @@ Mock.mock(new RegExp('.*' + 'note/updateNoteFile'), (options) => {
     if (target) {
         params.name !== undefined && (target.name = params.name);
         params.folderId !== undefined && (target.folderId = params.folderId);
-        params.text && (noteText[params.id] = params.text);
+        params.text && (noteText[id] = params.text);
     }
 
     return {
