@@ -107,6 +107,7 @@ const handleNodeDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) =>
             ref="contextMenuRef"
             v-model:visible="contextMenuState.visible"
             :click-event="contextMenuState.event"
+            v-if="$slots['context-menu']"
         >
             <slot
                 name="context-menu"
