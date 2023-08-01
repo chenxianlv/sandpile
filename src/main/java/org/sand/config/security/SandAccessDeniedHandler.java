@@ -2,7 +2,9 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.sand.common.ConstDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
+import org.sand.common.ResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -28,7 +30,7 @@ public class SandAccessDeniedHandler implements AccessDeniedHandler {
         response.setHeader("Content-Type","application/json;charset=utf-8");
 
         PrintWriter out = response.getWriter();
-        out.write(objectMapper.writeValueAsString(ResponseVO.error(0, e.getMessage())));
+        out.write(objectMapper.writeValueAsString(ResponseVO.error(ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS))));
         out.flush();
         out.close();
 

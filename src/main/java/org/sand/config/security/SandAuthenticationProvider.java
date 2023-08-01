@@ -26,10 +26,10 @@ public class SandAuthenticationProvider extends DaoAuthenticationProvider {
             return super.authenticate(auth);
 
         } catch (UsernameNotFoundException e) {
-            System.out.println("用户不存在");
+            // 用户不存在
             throw e;
         } catch (BadCredentialsException e) {
-            System.out.println("密码错误");
+            // 密码错误
             throw e;
         } catch (AuthenticationException e) {
             throw e;
