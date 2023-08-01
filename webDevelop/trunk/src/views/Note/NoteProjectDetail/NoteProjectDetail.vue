@@ -158,6 +158,7 @@ const onTextareaInput = () => {
                     <FileTree
                         class="tree"
                         :data="noteTreeData"
+                        :draggable="isEditing"
                         @select-change="handleFileChange"
                         @context-menu-select-change="handleContextMenuSelectChange"
                         @node-change="nodeChange"
