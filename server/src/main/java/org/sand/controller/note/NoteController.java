@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Api(tags = "学习笔记模块")
-@RestController
 @AllArgsConstructor
+@RestController
 @RequestMapping(value = "${project.baseUrl}/note")
 public class NoteController {
 
@@ -42,7 +42,7 @@ public class NoteController {
 
     // todo 适配查询条件
     @ApiOperation("列出符合查询条件的笔记项目")
-    @GetMapping("/listProjects")
+    @PostMapping("/listProjects")
     private ResponseVO<NoteProjectListVO> listProjects() {
         List<NoteProjectPO> noteProjectPOs = noteProjectService.list();
 
@@ -64,7 +64,7 @@ public class NoteController {
     }
 
     @ApiOperation("更新指定笔记项目的基本信息")
-    @PutMapping("/updateProject")
+    @PostMapping("/updateProject")
     private Object updateProjectInfo(@Validated @RequestBody NoteProjectUpdateDTO noteProjectUpdateDTO) {
 
         NoteProjectPO noteProjectPO = new NoteProjectPO();
@@ -99,14 +99,14 @@ public class NoteController {
     }
 
     @ApiOperation("删除指定笔记模块")
-    @DeleteMapping("/deleteProject")
+    @PostMapping("/deleteProject")
     private Object deleteProject(@Validated NoteProjectDeleteDTO noteProjectDeleteDTO) {
         noteProjectService.removeById(noteProjectDeleteDTO.getId());
         return ResponseVO.success();
     }
 
     @ApiOperation("获取指定笔记项目内部的笔记信息")
-    @GetMapping("/getProjectDetail")
+    @PostMapping("/getProjectDetail")
     private ResponseVO<NoteProjectDetailVO> getProjectDetail(@RequestParam("id") Integer projectId) {
 
         // 获取笔记项目内的笔记
@@ -141,7 +141,7 @@ public class NoteController {
     }
 
     @ApiOperation("获取指定笔记的信息")
-    @GetMapping("/getNoteInfo")
+    @PostMapping("/getNoteInfo")
     private ResponseVO<NoteDetailVO> getNoteDetail(@RequestParam Long id) {
         NoteDetailVO noteDetailVO = new NoteDetailVO();
         try {

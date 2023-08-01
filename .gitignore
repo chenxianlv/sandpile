@@ -1,5 +1,3 @@
-.idea
-target
 version
-**/application-prod.yml
-**/init_data.sql
+**/.idea
+**/.vscode

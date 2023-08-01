@@ -1,0 +1,3 @@
+target
+**/application-prod.yml
+**/init_data.sql
