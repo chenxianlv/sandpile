@@ -23,11 +23,6 @@ const router = createRouter({
                     name: 'detail',
                     component: () => import('@/views/Note/NoteProjectDetail/NoteProjectDetail.vue'),
                 },
-                {
-                    path: 'edit',
-                    name: 'edit',
-                    component: () => import('@/views/Note/NoteProjectEdit/NoteProjectEdit.vue'),
-                },
             ],
         },
         {
