@@ -3,6 +3,7 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.sand.common.ConstDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
 import org.sand.util.TokenUtils;
@@ -52,7 +53,7 @@ public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticatio
             String authToken = httpRequest.getHeader(tokenHeader);
 
             if (authToken == null) {
-                errorHandler(httpResponse, ResultException.of(10000, "请先登陆"));
+                errorHandler(httpResponse, ResultException.of(ErrorCodeEnum.LOG_IN_FIRST));
             }
 
             String username = tokenUtils.validToken(authToken);

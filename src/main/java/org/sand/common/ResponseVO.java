@@ -44,7 +44,7 @@ public class ResponseVO<T> {
     public static <T> ResponseVO<T> error(ResultException exception) {
         ResponseVO<T> responseVO = new ResponseVO<>();
         responseVO.errorCode = exception.getErrorCode();
-        responseVO.errorInfo = exception.getErrorMessage();
+        responseVO.errorInfo = exception.getErrorInfo();
         responseVO.status = ResponseStatusEnum.ERROR.getValue();
         return responseVO;
     }

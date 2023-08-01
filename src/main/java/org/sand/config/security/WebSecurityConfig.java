@@ -2,7 +2,9 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.sand.common.ConstDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
+import org.sand.common.ResultException;
 import org.sand.util.TokenUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -71,7 +73,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.exceptionHandling()
                 .accessDeniedHandler(sandAccessDeniedHandler)
                 .authenticationEntryPoint(((request, response, authException) ->
-                        unauthorizedErrorResponse(response, 0, "请先登录")));
+                        unauthorizedErrorResponse(response, ResultException.of(ErrorCodeEnum.LOG_IN_FIRST))));
 
         http.formLogin()
                 .loginProcessingUrl(baseUrl + "/base/login")
@@ -97,12 +99,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private void unauthorizedErrorResponse(HttpServletResponse response,
-                                           Integer errorCode, String errorInfo) throws IOException {
+                                           ResultException exception) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setHeader("Content-Type", "application/json;charset=utf-8");
 
         PrintWriter out = response.getWriter();
-        out.write(objectMapper.writeValueAsString(ResponseVO.error(errorCode, errorInfo)));
+        out.write(objectMapper.writeValueAsString(ResponseVO.error(exception)));
         out.flush();
         out.close();
     }
