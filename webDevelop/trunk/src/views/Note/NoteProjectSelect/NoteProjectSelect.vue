@@ -92,8 +92,6 @@ const showDeleteDialog = (row: NoteProject) => {
                 v-model="filterString"
             />
             <el-button type="primary" @click="addDialogVisible = true">新建项目 </el-button>
-            <el-divider direction="vertical" :style="{ height: '100%' }" />
-            <user-avatar />
         </header>
         <div class="table-container">
             <el-table
