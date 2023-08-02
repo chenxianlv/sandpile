@@ -7,10 +7,14 @@ import org.springframework.core.env.Environment;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+import java.util.Collections;
+import java.util.List;
 
 
 @Configuration
@@ -28,7 +32,9 @@ public class SwaggerConfig {
                 .select() // select()函数返回一个ApiSelectorBuilder实例,用来控制接口被swagger做成文档
                 .apis(RequestHandlerSelectors.basePackage("org.sand.controller")) // 用于指定扫描哪个包下的接口
                 .paths(PathSelectors.any())// 选择所有的API,如果你想只为部分API生成文档，可以配置这里
-                .build();
+                .build()
+                .securityContexts(Collections.singletonList(securityContexts()))
+                .securitySchemes(List.of(securitySchemes()));
     }
 
     /**
@@ -41,5 +47,26 @@ public class SwaggerConfig {
                 .termsOfServiceUrl("") // 用于定义服务的域名
                 .version("1.0") // 可以用来定义版本。
                 .build(); //
+    }
+
+    /**
+     * 用于在swagger页上设置认证信息，并附带认证信息于请求头中
+     */
+    private SecurityScheme securitySchemes() {
+        return new ApiKey("Authorization", "Authorization", "header");
+    }
+
+    private SecurityContext securityContexts() {
+        return SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.any()) // 认证信息作用的接口
+                .build();
+    }
+
+    private List<SecurityReference> defaultAuth() {
+        AuthorizationScope authorizationScope = new AuthorizationScope("xxx", "描述信息");
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = authorizationScope;
+        return List.of(new SecurityReference("Authorization", authorizationScopes));
     }
 }
