@@ -18,10 +18,16 @@ public class FTPTest {
 
     @Test
     public void main() throws IOException {
-        FTPClient ftpClient = ftpUtils.connectFtp();
-        String text = ftpUtils.readFile(ftpClient, "./Sandpile/SSM框架.md");
-        ftpUtils.closeFtpClient(ftpClient);
-        System.out.println(text);
+//        FTPClient ftpClient = ftpUtils.connectFtp();
+//        String text = ftpUtils.readFile(ftpClient, "./Sandpile/SSM框架.md");
+//        ftpUtils.closeFtpClient(ftpClient);
+//        System.out.println(text);
+
+                FTPClient ftpClient = ftpUtils.connectFtp();
+        ftpUtils.createFile(ftpClient,"123sdfa.txt");
+//        ftpUtils.getFileNameList(ftpClient,"./sandpile");
+
+
 //        FTPClient ftpClient = ftpUtils.connectFtp();
 //        System.out.println(ftpClient.makeDirectory("/test"));
 //        System.out.println(ftpClient.getDataConnectionMode());
