@@ -9,4 +9,8 @@ public interface NoteService extends IService<NotePO> {
 
     String getNoteText(Long id) throws IOException;
 
+    void setNoteText(Long id, String text) throws IOException;
+
+    NotePO create() throws IOException;
+
 }

@@ -3,7 +3,7 @@ package org.sand.model.vo.note;
 import lombok.Data;
 
 @Data
-public class NoteProjectAddVO {
+public class AddProjectVO {
 
     private Long id;
 
