@@ -1,6 +1,7 @@
 package org.sand.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -9,10 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 
 @Slf4j
@@ -32,7 +30,7 @@ public class FTPUtils {
     private int port = 21;
 
     @Value("${ftp.path}")
-    private String path = "./";
+    private String rootFolderPath = "./";
 
 
     /**
@@ -125,7 +123,7 @@ public class FTPUtils {
         BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
         try {
-            String remote = new String((path + filePath).getBytes("GBK"), StandardCharsets.ISO_8859_1);
+            String remote = new String((rootFolderPath + filePath).getBytes("GBK"), StandardCharsets.ISO_8859_1);
             br = new BufferedReader(new InputStreamReader(ftpClient.retrieveFileStream(remote)));
             br.lines().forEach((line) -> {
                 sb.append(line);
@@ -147,20 +145,35 @@ public class FTPUtils {
         return sb.toString();
     }
 
-    public boolean createFile(FTPClient ftpClient, String fileName) {
-        try {
-            if (existFile(ftpClient, path + "/" + fileName)) {
-                log.error("文件 " + path + "/" + fileName + " 已存在");
-                return false;
-            }
+    /**
+     * 新建文件
+     *
+     * @param ftpClient
+     * @param folderPath 文件所在目录相对项目根目录的路径，格式同linux，项目根目录写为"/"
+     * @param fileName 文件名
+     * @throws IOException
+     */
+    public void createFile(FTPClient ftpClient, String folderPath, String fileName) throws IOException {
+        if (Objects.equals(folderPath, "/")) folderPath = "";
+        String filePath = folderPath + "/" + fileName;
 
-            InputStream input = new FileInputStream(File.createTempFile("tmp", ".txt"));
-            uploadFile(ftpClient, path, fileName, input);
-            return true;
-        } catch (IOException e) {
-            log.error("文件上传失败" + e);
-            return false;
+        // TODO 重构
+        if (existFile(ftpClient,  rootFolderPath + filePath)) {
+            throw new IOException("file is existed");
         }
+
+        InputStream input = new FileInputStream(File.createTempFile(fileName, null));
+        uploadFile(ftpClient, folderPath, fileName, input);
+
+    }
+
+    public void updateFileText(FTPClient ftpClient, String folderPath, String fileName, String newText) throws IOException {
+        if (Objects.equals(folderPath, "/")) folderPath = "";
+        String filePath = folderPath + "/" + fileName;
+
+        InputStream input = new ByteArrayInputStream(newText.getBytes());
+        uploadFile(ftpClient, folderPath, fileName, input);
+
     }
 
     //    /**
@@ -210,17 +223,15 @@ public class FTPUtils {
     /**
      * 上传文件
      *
-     * @param serviceDec     ftp服务保存地址
+     * @param folderPath  文件所在目录相对项目根目录的路径，格式同linux，项目根目录写为"/"
      * @param fileName       上传到ftp的文件名
-     * @param originfilename 待上传文件的名称（绝对地址） *
+     * @param localFilePath 待上传文件的名称（绝对地址） *
      * @return
      */
-    public boolean uploadFile(FTPClient ftpClient, String serviceDec, String fileName, String originfilename) {
+    public boolean uploadFile(FTPClient ftpClient, String folderPath, String fileName, String localFilePath) {
         log.info("开始上传文件");
-        try (InputStream input = new FileInputStream(new File(originfilename))) {
-            return uploadFile(ftpClient, path, fileName, input);
-        } catch (FileNotFoundException e) {
-            log.error("文件上传失败" + e);
+        try (InputStream input = new FileInputStream(localFilePath)) {
+            return uploadFile(ftpClient, folderPath, fileName, input);
         } catch (IOException e) {
             log.error("文件上传失败" + e);
         }
@@ -230,27 +241,20 @@ public class FTPUtils {
     /**
      * 上传文件
      *
-     * @param serviceDec  ftp服务保存地址
+     * @param folderPath  文件所在目录相对项目根目录的路径，格式同linux，项目根目录写为"/"
      * @param fileName    上传到ftp的文件名
      * @param inputStream 输入文件流
-     * @return
+     * @return 是否上传成功
      */
-    private boolean uploadFile(FTPClient ftpClient, String serviceDec, String fileName, InputStream inputStream) {
+    private boolean uploadFile(FTPClient ftpClient, String folderPath, String fileName, InputStream inputStream) {
         try {
-            log.info("开始上传文件");
-            ftpClient.setFileType(ftpClient.BINARY_FILE_TYPE);
-            createDirecroty(ftpClient, serviceDec);
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            createDirecroty(ftpClient, rootFolderPath + folderPath);
             ftpClient.storeFile(fileName, inputStream);
-            inputStream.close();
-            ftpClient.logout();
-            log.info("上传文件成功");
         } catch (Exception e) {
             log.error("上传文件失败" + e);
         } finally {
             try {
-                if (ftpClient.isConnected()) {
-                    ftpClient.disconnect();
-                }
                 if (null != inputStream) {
                     inputStream.close();
                 }

@@ -24,7 +24,7 @@ public class FTPTest {
 //        System.out.println(text);
 
                 FTPClient ftpClient = ftpUtils.connectFtp();
-        ftpUtils.createFile(ftpClient,"123sdfa.txt");
+        ftpUtils.updateFileText(ftpClient,"/", "123456.txt", "abcabc44546");
 //        ftpUtils.getFileNameList(ftpClient,"./sandpile");
 
 
