@@ -20,8 +20,8 @@ public class ResponseVO<T> {
 
     private T data;
 
-    public static <T> ResponseVO<T> success() {
-        ResponseVO<T> responseVO = new ResponseVO<>();
+    public static ResponseVO<?> success() {
+        ResponseVO<?> responseVO = new ResponseVO<>();
         responseVO.status = ResponseStatusEnum.SUCCESS.getValue();
         return responseVO;
     }

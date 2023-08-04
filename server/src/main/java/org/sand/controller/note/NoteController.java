@@ -4,10 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
+import org.sand.common.ConstDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
-import org.sand.model.dto.note.NoteProjectAddDTO;
-import org.sand.model.dto.note.NoteProjectDeleteDTO;
-import org.sand.model.dto.note.NoteProjectUpdateDTO;
+import org.sand.common.ResultException;
+import org.sand.model.dto.note.*;
 import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
@@ -19,7 +19,10 @@ import org.sand.service.note.NoteService;
 import org.sand.service.user.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -43,12 +46,12 @@ public class NoteController {
     // todo 适配查询条件
     @ApiOperation("列出符合查询条件的笔记项目")
     @PostMapping("/listProjects")
-    private ResponseVO<NoteProjectListVO> listProjects() {
+    private ResponseVO<?> listProjects() {
         List<NoteProjectPO> noteProjectPOs = noteProjectService.list();
 
-        NoteProjectListVO noteProjectListVO = new NoteProjectListVO();
+        ListProjectsVO listProjectsVO = new ListProjectsVO();
 
-        noteProjectListVO.setNoteProjects(noteProjectPOs.stream().map((noteProjectPO) -> {
+        listProjectsVO.setNoteProjects(noteProjectPOs.stream().map((noteProjectPO) -> {
             NoteProjectVO noteProjectVO = new NoteProjectVO();
             BeanUtils.copyProperties(noteProjectPO, noteProjectVO);
 
@@ -60,15 +63,15 @@ public class NoteController {
             return noteProjectVO;
         }).collect(Collectors.toList()));
 
-        return ResponseVO.success(noteProjectListVO);
+        return ResponseVO.success(listProjectsVO);
     }
 
     @ApiOperation("更新指定笔记项目的基本信息")
     @PostMapping("/updateProject")
-    private Object updateProjectInfo(@Validated @RequestBody NoteProjectUpdateDTO noteProjectUpdateDTO) {
+    private ResponseVO<?> updateProject(@Validated @RequestBody UpdateProjectDTO updateProjectDTO) {
 
         NoteProjectPO noteProjectPO = new NoteProjectPO();
-        BeanUtils.copyProperties(noteProjectUpdateDTO, noteProjectPO);
+        BeanUtils.copyProperties(updateProjectDTO, noteProjectPO);
 
         noteProjectService.updateById(noteProjectPO);
         return ResponseVO.success();
@@ -77,10 +80,10 @@ public class NoteController {
 
     @ApiOperation("新建一个空的笔记项目")
     @PostMapping("/addProject")
-    private Object addProject(@Validated @RequestBody NoteProjectAddDTO noteProjectAddDTO, Principal principal) {
+    private ResponseVO<?> addProject(@Validated @RequestBody AddProjectDTO addProjectDTO, Principal principal) {
 
         NoteProjectPO noteProjectPO = new NoteProjectPO();
-        BeanUtils.copyProperties(noteProjectAddDTO, noteProjectPO);
+        BeanUtils.copyProperties(addProjectDTO, noteProjectPO);
 
         if (principal != null) {
             UserPO userPO = userService.getByUserAccount(principal.getName());
@@ -91,35 +94,38 @@ public class NoteController {
 
         noteProjectService.save(noteProjectPO);
 
-        NoteProjectAddVO noteProjectAddVO = new NoteProjectAddVO();
-        noteProjectAddVO.setId(noteProjectPO.getId());
+        AddProjectVO addProjectVO = new AddProjectVO();
+        addProjectVO.setId(noteProjectPO.getId());
 
-        return ResponseVO.success(noteProjectAddVO);
+        return ResponseVO.success(addProjectVO);
 
     }
 
     @ApiOperation("删除指定笔记模块")
     @PostMapping("/deleteProject")
-    private Object deleteProject(@Validated NoteProjectDeleteDTO noteProjectDeleteDTO) {
-        noteProjectService.removeById(noteProjectDeleteDTO.getId());
+    private ResponseVO<?> deleteProject(@Validated @RequestBody DeleteProjectDTO deleteProjectDTO) {
+        if (!noteProjectService.removeById(deleteProjectDTO.getId())) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED));
+        }
         return ResponseVO.success();
     }
 
     @ApiOperation("获取指定笔记项目内部的笔记信息")
     @PostMapping("/getProjectDetail")
-    private ResponseVO<NoteProjectDetailVO> getProjectDetail(@RequestParam("id") Integer projectId) {
+    private ResponseVO<?> getProjectDetail(@Validated @RequestBody GetProjectDetailDTO getProjectDetailDTO) {
+        Long id = getProjectDetailDTO.getId();
 
         // 获取笔记项目内的笔记
         LambdaQueryWrapper<NotePO> lqw = new LambdaQueryWrapper<>();
-        lqw.eq(NotePO::getProjectId, projectId);
+        lqw.eq(NotePO::getProjectId, id);
         List<NotePO> notePOs = noteService.list(lqw);
 
         // 获取笔记项目内的笔记文件夹
         LambdaQueryWrapper<NoteFolderPO> lqw2 = new LambdaQueryWrapper<>();
-        lqw2.eq(NoteFolderPO::getProjectId, projectId);
-        List<NoteFolderPO> noteFolderPOs  = noteFolderService.list(lqw2);
+        lqw2.eq(NoteFolderPO::getProjectId, id);
+        List<NoteFolderPO> noteFolderPOs = noteFolderService.list(lqw2);
 
-        NoteProjectDetailVO vo = new NoteProjectDetailVO();
+        GetProjectDetailVO vo = new GetProjectDetailVO();
 
         vo.setNotes(notePOs.stream().map((notePO) -> {
             NoteVO noteVO = new NoteVO();
@@ -133,7 +139,7 @@ public class NoteController {
             return noteFolderVO;
         }).collect(Collectors.toList()));
 
-        NoteProjectPO noteProjectPO = noteProjectService.getById(projectId);
+        NoteProjectPO noteProjectPO = noteProjectService.getById(id);
         vo.setProjectName(noteProjectPO.getProjectName());
 
         return ResponseVO.success(vo);
@@ -141,15 +147,97 @@ public class NoteController {
     }
 
     @ApiOperation("获取指定笔记的信息")
-    @PostMapping("/getNoteInfo")
-    private ResponseVO<NoteDetailVO> getNoteDetail(@RequestParam Long id) {
-        NoteDetailVO noteDetailVO = new NoteDetailVO();
+    @PostMapping("/getNoteText")
+    private ResponseVO<?> getNoteText(@Validated @RequestBody GetNoteTextDTO dto) {
+        Long id = dto.getId();
+
+        GetNoteTextVO getNoteTextVO = new GetNoteTextVO();
         try {
-            noteDetailVO.setText(noteService.getNoteText(id));
+            getNoteTextVO.setText(noteService.getNoteText(id));
         } catch (IOException e) {
-            return ResponseVO.error(50000, "FTP连接失败");
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.FTP_CONNECT_FAILED));
         }
-        return ResponseVO.success(noteDetailVO);
+        return ResponseVO.success(getNoteTextVO);
+    }
+
+    @ApiOperation("在笔记项目中新建文件")
+    @PostMapping("/addNoteFile")
+    private ResponseVO<?> addNoteFile(@Validated @RequestBody AddNoteFileDTO dto) {
+        try {
+            NotePO notePO = noteService.create();
+            BeanUtils.copyProperties(dto, notePO);
+            noteService.save(notePO);
+        } catch (IOException e) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.FTP_CREATE_FILE_FAILED));
+        }
+        return ResponseVO.success();
+    }
+
+    @ApiOperation("在笔记项目中删除文件")
+    @PostMapping("/deleteNoteFile")
+    private ResponseVO<?> deleteNoteFile(@Validated @RequestBody DeleteNoteFileDTO dto) {
+        if (!noteService.removeById(dto.getId())) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED));
+        }
+        return ResponseVO.success();
+    }
+
+    @ApiOperation("在笔记项目中更新文件")
+    @PostMapping("/updateNoteFile")
+    private ResponseVO<?> updateNoteFile(@Validated @RequestBody UpdateNoteFileDTO dto) {
+        NotePO notePO = noteService.getById(dto.getId());
+        BeanUtils.copyProperties(dto, notePO, "text");
+
+        if (!noteService.updateById(notePO)) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED));
+        }
+
+        String text = dto.getText();
+        if (text != null) {
+            try {
+                noteService.setNoteText(dto.getId(), text);
+            } catch (IOException e) {
+                return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED));
+            }
+        }
+
+        return ResponseVO.success();
+    }
+
+    @ApiOperation("在笔记项目中新建文件夹")
+    @PostMapping("/addNoteFolder")
+    private ResponseVO<?> addNoteFolder(@Validated @RequestBody AddNoteFolderDTO dto) {
+        NoteFolderPO noteFolderPO = new NoteFolderPO();
+        BeanUtils.copyProperties(dto, noteFolderPO);
+        if (!noteFolderService.save(noteFolderPO)) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED));
+        }
+
+        return ResponseVO.success();
+    }
+
+    @ApiOperation("在笔记项目中删除文件夹")
+    @PostMapping("/deleteNoteFolder")
+    private ResponseVO<?> deleteNoteFolder(@Validated @RequestBody DeleteNoteFolderDTO dto) {
+        if (!noteFolderService.removeById(dto.getId())) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED));
+        }
+
+        return ResponseVO.success();
+    }
+
+    @ApiOperation("在笔记项目中更新文件夹")
+    @PostMapping("/updateNoteFolder")
+    private ResponseVO<?> updateNoteFolder(@Validated @RequestBody UpdateNoteFolderDTO dto) {
+        NoteFolderPO noteFolderPO = noteFolderService.getById(dto.getId());
+        BeanUtils.copyProperties(dto, noteFolderPO);
+
+        if (!noteFolderService.updateById(noteFolderPO)) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED));
+        }
+
+        return ResponseVO.success();
+
     }
 
 }

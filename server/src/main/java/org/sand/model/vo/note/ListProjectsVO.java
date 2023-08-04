@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NoteProjectListVO {
+public class ListProjectsVO {
 
     @ApiModelProperty("笔记项目列表")
     private List<NoteProjectVO> noteProjects;

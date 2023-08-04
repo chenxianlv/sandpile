@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 
 @Data
-public class NoteProjectAddDTO {
+public class AddProjectDTO {
 
     @NotEmpty
     private String projectName;

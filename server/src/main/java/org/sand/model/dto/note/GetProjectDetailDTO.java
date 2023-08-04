@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class NoteProjectDeleteDTO {
+public class GetProjectDetailDTO {
 
     @NotNull
     private Long id;

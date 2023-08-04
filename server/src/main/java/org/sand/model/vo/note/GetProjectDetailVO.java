@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NoteProjectDetailVO {
+public class GetProjectDetailVO {
 
     private String projectName;
 
