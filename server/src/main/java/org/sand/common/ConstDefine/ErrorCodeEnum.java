@@ -17,10 +17,14 @@ public enum ErrorCodeEnum {
     FTP_CONNECT_FAILED(12001, "ftp connect failed"),
     FTP_CREATE_FILE_FAILED(12002, "ftp create file failed"),
 
-    MODEL_ADD_FAILED(20001, "model add failed"),
-    MODEL_DELETE_FAILED(20002, "model delete failed"),
-    MODEL_UPDATE_FAILED(20003, "model update failed"),
-    MODEL_SEARCH_FAILED(20004, "model search failed"),
+    MODEL_ADD_FAILED(21001, "model add failed"),
+
+    MODEL_DELETE_FAILED(22001, "model delete failed"),
+
+    MODEL_UPDATE_FAILED(23001, "model update failed"),
+
+    MODEL_SEARCH_FAILED(24001, "model search failed"),
+    MODEL_NOT_FOUND(24002, "model not found"),
     ;
 
     private final Integer errorCode;

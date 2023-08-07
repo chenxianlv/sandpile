@@ -17,6 +17,7 @@ import org.sand.service.note.NoteFolderService;
 import org.sand.service.note.NoteProjectService;
 import org.sand.service.note.NoteService;
 import org.sand.service.user.UserService;
+import org.sand.util.DBUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +44,8 @@ public class NoteController {
 
     private final UserService userService;
 
+    private final DBUtils dbUtils;
+
     // todo 适配查询条件
     @ApiOperation("列出符合查询条件的笔记项目")
     @PostMapping("/listProjects")
@@ -68,29 +71,26 @@ public class NoteController {
 
     @ApiOperation("更新指定笔记项目的基本信息")
     @PostMapping("/updateProject")
-    private ResponseVO<?> updateProject(@Validated @RequestBody UpdateProjectDTO updateProjectDTO) {
+    private ResponseVO<?> updateProject(@Validated @RequestBody UpdateProjectDTO dto, Principal principal) {
+        NoteProjectPO noteProjectPO = noteProjectService.getById(dto.getId());
+        if (noteProjectPO == null) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_NOT_FOUND));
+        }
 
-        NoteProjectPO noteProjectPO = new NoteProjectPO();
-        BeanUtils.copyProperties(updateProjectDTO, noteProjectPO);
+        BeanUtils.copyProperties(dto, noteProjectPO);
+        dbUtils.updateUpdateInfo(noteProjectPO, principal);
 
         noteProjectService.updateById(noteProjectPO);
         return ResponseVO.success();
-
     }
 
     @ApiOperation("新建一个空的笔记项目")
     @PostMapping("/addProject")
     private ResponseVO<?> addProject(@Validated @RequestBody AddProjectDTO addProjectDTO, Principal principal) {
-
         NoteProjectPO noteProjectPO = new NoteProjectPO();
-        BeanUtils.copyProperties(addProjectDTO, noteProjectPO);
 
-        if (principal != null) {
-            UserPO userPO = userService.getByUserAccount(principal.getName());
-            noteProjectPO.setCreateUserId(userPO.getId());
-        } else {
-            noteProjectPO.setCreateUserId(0L);
-        }
+        BeanUtils.copyProperties(addProjectDTO, noteProjectPO);
+        dbUtils.updateCreateInfo(noteProjectPO, principal);
 
         noteProjectService.save(noteProjectPO);
 
@@ -98,7 +98,6 @@ public class NoteController {
         addProjectVO.setId(noteProjectPO.getId());
 
         return ResponseVO.success(addProjectVO);
-
     }
 
     @ApiOperation("删除指定笔记模块")
@@ -107,6 +106,7 @@ public class NoteController {
         if (!noteProjectService.removeById(deleteProjectDTO.getId())) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED));
         }
+
         return ResponseVO.success();
     }
 
@@ -149,27 +149,31 @@ public class NoteController {
     @ApiOperation("获取指定笔记的信息")
     @PostMapping("/getNoteText")
     private ResponseVO<?> getNoteText(@Validated @RequestBody GetNoteTextDTO dto) {
-        Long id = dto.getId();
-
         GetNoteTextVO getNoteTextVO = new GetNoteTextVO();
+
         try {
-            getNoteTextVO.setText(noteService.getNoteText(id));
+            getNoteTextVO.setText(noteService.getNoteText(dto.getId()));
         } catch (IOException e) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.FTP_CONNECT_FAILED));
         }
+
         return ResponseVO.success(getNoteTextVO);
     }
 
     @ApiOperation("在笔记项目中新建文件")
     @PostMapping("/addNoteFile")
-    private ResponseVO<?> addNoteFile(@Validated @RequestBody AddNoteFileDTO dto) {
+    private ResponseVO<?> addNoteFile(@Validated @RequestBody AddNoteFileDTO dto, Principal principal) {
         try {
             NotePO notePO = noteService.create();
+
             BeanUtils.copyProperties(dto, notePO);
+            dbUtils.updateCreateInfo(notePO, principal);
+
             noteService.save(notePO);
         } catch (IOException e) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.FTP_CREATE_FILE_FAILED));
         }
+
         return ResponseVO.success();
     }
 
@@ -179,23 +183,28 @@ public class NoteController {
         if (!noteService.removeById(dto.getId())) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED));
         }
+
         return ResponseVO.success();
     }
 
     @ApiOperation("在笔记项目中更新文件")
     @PostMapping("/updateNoteFile")
-    private ResponseVO<?> updateNoteFile(@Validated @RequestBody UpdateNoteFileDTO dto) {
+    private ResponseVO<?> updateNoteFile(@Validated @RequestBody UpdateNoteFileDTO dto, Principal principal) {
         NotePO notePO = noteService.getById(dto.getId());
+        if (notePO == null) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_NOT_FOUND));
+        }
+
         BeanUtils.copyProperties(dto, notePO, "text");
+        dbUtils.updateUpdateInfo(notePO, principal);
 
         if (!noteService.updateById(notePO)) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED));
         }
 
-        String text = dto.getText();
-        if (text != null) {
+        if (dto.getText() != null) {
             try {
-                noteService.setNoteText(dto.getId(), text);
+                noteService.setNoteText(dto.getId(), dto.getText());
             } catch (IOException e) {
                 return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED));
             }
@@ -206,9 +215,12 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中新建文件夹")
     @PostMapping("/addNoteFolder")
-    private ResponseVO<?> addNoteFolder(@Validated @RequestBody AddNoteFolderDTO dto) {
+    private ResponseVO<?> addNoteFolder(@Validated @RequestBody AddNoteFolderDTO dto, Principal principal) {
         NoteFolderPO noteFolderPO = new NoteFolderPO();
+
         BeanUtils.copyProperties(dto, noteFolderPO);
+        dbUtils.updateCreateInfo(noteFolderPO, principal);
+
         if (!noteFolderService.save(noteFolderPO)) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED));
         }
@@ -228,16 +240,19 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中更新文件夹")
     @PostMapping("/updateNoteFolder")
-    private ResponseVO<?> updateNoteFolder(@Validated @RequestBody UpdateNoteFolderDTO dto) {
+    private ResponseVO<?> updateNoteFolder(@Validated @RequestBody UpdateNoteFolderDTO dto, Principal principal) {
         NoteFolderPO noteFolderPO = noteFolderService.getById(dto.getId());
+        if (noteFolderPO == null) {
+            return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_NOT_FOUND));
+        }
+
         BeanUtils.copyProperties(dto, noteFolderPO);
+        dbUtils.updateUpdateInfo(noteFolderPO, principal);
 
         if (!noteFolderService.updateById(noteFolderPO)) {
             return ResponseVO.error(ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED));
         }
 
         return ResponseVO.success();
-
     }
-
 }
