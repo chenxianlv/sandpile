@@ -5,13 +5,13 @@ const noteProjects: Array<{
     id: number;
     projectName: string;
     createUserName: string;
-    createTime: string;
+    createTime: number;
 }> = [
     {
         id: 1,
         projectName: '前端笔记',
         createUserName: 'administrator',
-        createTime: '2023-06-04 22:31:21',
+        createTime: 1691394228000,
     },
 ];
 
@@ -89,7 +89,7 @@ Mock.mock(new RegExp('.*' + 'note/addProject'), (options) => {
         id: noteProjectIdCount++,
         projectName: params.projectName,
         createUserName: 'administrator',
-        createTime: '2023-06-04 22:31:21',
+        createTime: 1691394228000,
     });
 
     return {
