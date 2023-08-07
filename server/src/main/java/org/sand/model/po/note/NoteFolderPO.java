@@ -1,18 +1,12 @@
 package org.sand.model.po.note;
 
-import com.baomidou.mybatisplus.annotation.*;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-
-import java.util.Date;
+import org.sand.model.po.common.BasicTablePO;
 
 @Data
 @TableName("note_folder_info")
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class NoteFolderPO {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class NoteFolderPO extends BasicTablePO {
 
     private String name;
 
@@ -20,16 +14,4 @@ public class NoteFolderPO {
 
     private Long folderId;
 
-    @TableLogic
-    private Boolean deleteFlag;
-
-    private Date createTime;
-
-    private Long createUserId;
-
-    private Data updateTime;
-
-    private Long updateUserId;
-
-    private String remark;
 }

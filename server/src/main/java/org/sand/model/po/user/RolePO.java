@@ -1,33 +1,19 @@
 package org.sand.model.po.user;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.sand.model.po.common.BasicTablePO;
 
-import java.util.Date;
 import java.util.List;
 
 @TableName("user_role")
 @Data
-public class RolePO {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class RolePO extends BasicTablePO {
 
     private String roleName;
 
     @TableField(exist = false)
     private List<AccessPO> accessList;
 
-    @TableLogic
-    private Boolean deleteFlag;
-
-    private Date createTime;
-
-    private Long createUserId;
-
-    private Data updateTime;
-
-    private Long updateUserId;
-
-    private String remark;
 }

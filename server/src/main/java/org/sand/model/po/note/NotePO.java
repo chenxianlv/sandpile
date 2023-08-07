@@ -1,19 +1,12 @@
 package org.sand.model.po.note;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-
-import java.util.Date;
+import org.sand.model.po.common.BasicTablePO;
 
 @Data
 @TableName("note_info")
-public class NotePO {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class NotePO extends BasicTablePO {
 
     private String name;
 
@@ -23,16 +16,4 @@ public class NotePO {
 
     private Long projectId;
 
-    @TableLogic
-    private Boolean deleteFlag;
-
-    private Date createTime;
-
-    private Long createUserId;
-
-    private Data updateTime;
-
-    private Long updateUserId;
-
-    private String remark;
 }

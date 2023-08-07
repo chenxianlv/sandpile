@@ -1,16 +1,12 @@
 package org.sand.model.po.user;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.sand.model.po.common.IntermediateTablePO;
 
 @Data
 @TableName("user_role_access")
-public class RoleAccessPO {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class RoleAccessPO extends IntermediateTablePO {
 
     private Long roleId;
 

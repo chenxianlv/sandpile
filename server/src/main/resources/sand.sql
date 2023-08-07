@@ -118,12 +118,15 @@ CREATE TABLE `user_role`
 DROP TABLE IF EXISTS `user_access`;
 CREATE TABLE `user_access`
 (
-    `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `access_name` VARCHAR(50)     NOT NULL COMMENT '权限名',
-    `access_url`  VARCHAR(255)    NOT NULL COMMENT '资源路径',
-    `delete_flag` BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被删除',
-    `create_time` TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `remark`      VARCHAR(255)    NULL COMMENT '备注',
+    `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `access_name`    VARCHAR(50)     NOT NULL COMMENT '权限名',
+    `access_url`     VARCHAR(255)    NOT NULL COMMENT '资源路径',
+    `delete_flag`    BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被删除',
+    `create_time`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `create_user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建者ID',
+    `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
+    `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改者ID',
+    `remark`         VARCHAR(255)    NULL COMMENT '备注',
     PRIMARY KEY (`id`)
 ) COMMENT '权限（资源）表';
 
