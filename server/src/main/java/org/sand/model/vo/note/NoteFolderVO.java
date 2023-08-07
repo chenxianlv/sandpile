@@ -1,9 +1,10 @@
 package org.sand.model.vo.note;
 
 import lombok.Data;
+import org.sand.model.vo.common.BasicVO;
 
 @Data
-public class NoteFolderVO {
+public class NoteFolderVO extends BasicVO {
 
     private Long id;
 

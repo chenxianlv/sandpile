@@ -1,11 +1,10 @@
 package org.sand.model.vo.note;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import org.sand.model.vo.common.BasicVO;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class NoteVO {
+public class NoteVO extends BasicVO {
 
     private Long id;
 
