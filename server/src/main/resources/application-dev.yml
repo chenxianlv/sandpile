@@ -16,6 +16,9 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  jackson:
+    time-zone: UTC
+    date-format: yyyy-MM-dd HH:mm:ss
 
 mybatis-plus:
   global-config:
@@ -42,4 +45,3 @@ token:
 
 project:
   baseUrl: /api
-  time-zone: GMT+8
