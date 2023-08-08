@@ -120,7 +120,7 @@ CREATE TABLE `user_access`
 (
     `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `access_name`    VARCHAR(50)     NOT NULL COMMENT '权限名',
-    `access_url`     VARCHAR(255)    NOT NULL COMMENT '资源路径',
+    `access_url`     VARCHAR(255)    NULL COMMENT '资源路径，用于spring security自动检验；该项为空则表示需自定义逻辑进行鉴权',
     `delete_flag`    BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被删除',
     `create_time`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `create_user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建者ID',
