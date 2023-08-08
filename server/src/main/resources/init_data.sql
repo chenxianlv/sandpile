@@ -38,30 +38,42 @@ VALUES ('HTML', '/HTML.md', -1, 1, 1),
 
 INSERT INTO `note_folder_info`(`id`, `name`, `project_id`, `folder_id`, `create_user_id`)
 VALUES (1, '库', 1, -1, 1),
- (2, '库中库', 1, 1, 1);
+       (2, '库中库', 1, 1, 1);
 
 # # admin的密码为1234，若要自定义密码，需在前端用想要的用户名和密码登录，查看发送请求中的password字段，将密码复制至EncryptTest类中进行加密，把加密后的密码作为数据库的user_password字段的值即可
 # INSERT INTO `user_user`(`id`, `user_account`, `user_name`, `user_password`, `create_user_id`)
 # VALUES (1, 'admin', 'administrator', '$2a$10$hbCVGHiRIfjtfrywxZRMU.ue0dhu8CmYo.iLQ4oIaZxkL1AJGfv.C', 1);
 # #        (2, 'XXX', 'XXX', 'XXX', 1);
 
-INSERT INTO `user_role`(`id`, `role_name`, `create_user_id`)
-VALUES (1, 'root', 1),
-       (2, 'manager', 1);
+INSERT INTO `user_role`(`id`, `role_name`, `create_user_id`, `remark`)
+VALUES (1, 'root', 1, '超级用户，拥有所有权限'),
+       (2, 'manager', 1, '管理员，拥有编辑任意用户笔记项目的权限'),
+       (3, 'normalUser', 1, '普通用户，无法对其他用户的笔记项目进行操作，允许查看开放的笔记项目');
 
-INSERT INTO `user_access`(`id`, `access_name`, `access_url`, `create_user_id`)
-VALUES (1, 'updateProject', '/api/note/updateProject', 1),
-       (2, 'addProject', '/api/note/addProject', 1),
-       (3, 'deleteProject', '/api/note/deleteProject', 1);
+INSERT INTO `user_access`(`id`, `access_name`, `access_url`, `create_user_id`, `remark`)
+VALUES (1, 'editOwnedProject', null, 1, '对已拥有项目，具备增删改项目本身及内部文件的权限'),
+       (2, 'editAllProject', null, 1, '对所有项目，具备增删改项目本身及内部文件的权限'),
+       (3, 'readOwnedProject', null, 1, '对已拥有项目，具备读取项目本身及内部文件的权限'),
+       (4, 'readAllProject', null, 1, '对所有项目，具备读取项目本身及内部文件的权限'),
+       (5, 'addProject', '/api/note/addProject', 1, '新增笔记项目')
+       ;
 
 INSERT INTO `user_user_role`(`user_id`, `role_id`)
-VALUES (1, 1),
-       (2, 2);
+VALUES (1, 1);
 
 INSERT INTO `user_role_access`(`role_id`, `access_id`)
 VALUES (1, 1),
        (1, 2),
        (1, 3),
+       (1, 4),
+       (1, 5),
+
        (2, 1),
        (2, 2),
-       (2, 3);
+       (2, 3),
+       (2, 4),
+       (2, 5),
+
+       (3, 1),
+       (3, 3),
+       (3, 5);
