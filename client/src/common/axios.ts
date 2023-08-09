@@ -44,25 +44,39 @@ baseRequest.interceptors.response.use(
         return res;
     },
     (error: any) => {
-        console.log(error);
-        if (error instanceof AxiosError) {
-            const url = error.config?.url;
-            if (url && CUSTOM_ERROR_HANDLE_URL.includes(url)) {
-                return Promise.reject(error);
-            }
+        return Promise.reject(error);
+    }
+);
 
-            const res = error.response;
-            if (res?.data?.errorInfo) {
-                ElMessage.warning(res?.data.errorInfo);
-            } else {
-                ElMessage.warning('网络异常');
-            }
-
-            if (res?.status === 401) {
-                useUserStore().logout();
-                useLoginStore().open();
-            }
+// 失败拦截器置于成功拦截器后，因为写在一起时，成功拦截器内若将promise置为失败，则无法触发失败回调
+baseRequest.interceptors.response.use(
+    (res: AxiosResponse) => {
+        return res;
+    },
+    (error: AxiosError | AxiosResponse) => {
+        const url = error.config?.url;
+        if (url && CUSTOM_ERROR_HANDLE_URL.includes(url)) {
+            return Promise.reject(error);
         }
+
+        let res: AxiosResponse;
+        if ((error as AxiosResponse)?.data) {
+            res = error as AxiosResponse;
+        } else {
+            res = (error as AxiosError).response as AxiosResponse;
+        }
+
+        if (res?.data?.errorInfo) {
+            ElMessage.warning(res?.data.errorInfo);
+        } else {
+            ElMessage.warning('网络异常');
+        }
+
+        if (res?.status === 401) {
+            useUserStore().logout();
+            useLoginStore().open();
+        }
+
         return Promise.reject(error);
     }
 );
