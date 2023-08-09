@@ -125,11 +125,17 @@ public class FTPUtils {
         try {
             String remote = new String((rootFolderPath + filePath).getBytes("GBK"), StandardCharsets.ISO_8859_1);
             br = new BufferedReader(new InputStreamReader(ftpClient.retrieveFileStream(remote)));
+
+           // fixme 使用lines读取时，若最后一行为空行，则会缺失最后一行，应该用如下方法读取，但该方法读取时，换行符可能为\r\n，由于前端暂不支持\r\n的解析，暂不使用该方法读取
+//            char[] buff = new char[500];
+//            for (int charsRead; (charsRead = br.read(buff)) != -1; ) {
+//                sb.append(buff, 0, charsRead);
+//            }
+
             br.lines().forEach((line) -> {
                 sb.append(line);
                 sb.append('\n');
             });
-            sb.delete(sb.length() - 1, sb.length());
 
         } catch (Exception e) {
             log.error("FTP文件读取失败！", e);

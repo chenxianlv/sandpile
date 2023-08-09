@@ -32,7 +32,7 @@ public class SandSecurityMetadataSource implements FilterInvocationSecurityMetad
 
         AccessPO accessPO = accessService.getByUrl(url);
 
-        if (accessPO == null ){
+        if (accessPO == null) {
             return SecurityConfig.createList();
         }
 
