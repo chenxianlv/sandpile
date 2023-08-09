@@ -113,13 +113,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         String baseUrl = environment.getProperty("project.baseUrl", "");
 
+        // 此处的设置的url会直接放行，因此匿名用户也可访问，数据库中的权限均需用户登录才能进行判断
         web.ignoring()
                 .antMatchers("/swagger-ui.html")
                 .antMatchers("/webjars/**")
                 .antMatchers("/v2/**")
                 .antMatchers("/swagger-resources/**")
-                .antMatchers(baseUrl + "/note/listProjects")
-                .antMatchers(baseUrl + "/note/getNoteInfo")
-                .antMatchers(baseUrl + "/note/getProjectDetail");
+                .antMatchers(baseUrl + "/note/listProjects");
     }
 }

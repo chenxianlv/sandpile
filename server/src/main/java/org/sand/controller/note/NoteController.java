@@ -19,6 +19,7 @@ import org.sand.service.note.NoteService;
 import org.sand.service.user.UserService;
 import org.sand.util.DBUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,14 +71,15 @@ public class NoteController {
 
     @ApiOperation("更新指定笔记项目的基本信息")
     @PostMapping("/updateProject")
-    public ResponseVO<?> updateProject(@Validated @RequestBody UpdateProjectDTO dto, Principal principal) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> updateProject(@Validated @RequestBody UpdateProjectDTO dto, Authentication authentication) throws ResultException {
         NoteProjectPO noteProjectPO = noteProjectService.getById(dto.getId());
         if (noteProjectPO == null) {
             throw ResultException.of(ErrorCodeEnum.MODEL_NOT_FOUND);
         }
 
         BeanUtils.copyProperties(dto, noteProjectPO);
-        dbUtils.updateUpdateInfo(noteProjectPO, principal);
+        dbUtils.updateUpdateInfo(noteProjectPO, authentication);
 
         noteProjectService.updateById(noteProjectPO);
         return ResponseVO.success();
@@ -86,11 +87,11 @@ public class NoteController {
 
     @ApiOperation("新建一个空的笔记项目")
     @PostMapping("/addProject")
-    public ResponseVO<?> addProject(@Validated @RequestBody AddProjectDTO addProjectDTO, Principal principal) {
+    public ResponseVO<?> addProject(@Validated @RequestBody AddProjectDTO addProjectDTO, Authentication authentication) {
         NoteProjectPO noteProjectPO = new NoteProjectPO();
 
         BeanUtils.copyProperties(addProjectDTO, noteProjectPO);
-        dbUtils.updateCreateInfo(noteProjectPO, principal);
+        dbUtils.updateCreateInfo(noteProjectPO, authentication);
 
         noteProjectService.save(noteProjectPO);
 
@@ -102,7 +103,8 @@ public class NoteController {
 
     @ApiOperation("删除指定笔记模块")
     @PostMapping("/deleteProject")
-    public ResponseVO<?> deleteProject(@Validated @RequestBody DeleteProjectDTO deleteProjectDTO) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> deleteProject(@Validated @RequestBody DeleteProjectDTO deleteProjectDTO, Authentication authentication) throws ResultException {
         if (!noteProjectService.removeById(deleteProjectDTO.getId())) {
             throw ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED);
         }
@@ -112,7 +114,8 @@ public class NoteController {
 
     @ApiOperation("获取指定笔记项目内部的笔记信息")
     @PostMapping("/getProjectDetail")
-    public ResponseVO<?> getProjectDetail(@Validated @RequestBody GetProjectDetailDTO getProjectDetailDTO) {
+    @NoteAuthorization
+    public ResponseVO<?> getProjectDetail(@Validated @RequestBody GetProjectDetailDTO getProjectDetailDTO, Authentication authentication) {
         Long id = getProjectDetailDTO.getId();
 
         // 获取笔记项目内的笔记
@@ -148,7 +151,8 @@ public class NoteController {
 
     @ApiOperation("获取指定笔记的信息")
     @PostMapping("/getNoteText")
-    public ResponseVO<?> getNoteText(@Validated @RequestBody GetNoteTextDTO dto) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> getNoteText(@Validated @RequestBody GetNoteTextDTO dto, Authentication authentication) throws ResultException {
         GetNoteTextVO getNoteTextVO = new GetNoteTextVO();
 
         try {
@@ -162,12 +166,13 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中新建文件")
     @PostMapping("/addNoteFile")
-    public ResponseVO<?> addNoteFile(@Validated @RequestBody AddNoteFileDTO dto, Principal principal) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> addNoteFile(@Validated @RequestBody AddNoteFileDTO dto, Authentication authentication) throws ResultException {
         try {
             NotePO notePO = noteService.create();
 
             BeanUtils.copyProperties(dto, notePO);
-            dbUtils.updateCreateInfo(notePO, principal);
+            dbUtils.updateCreateInfo(notePO, authentication);
 
             noteService.save(notePO);
         } catch (IOException e) {
@@ -179,7 +184,8 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中删除文件")
     @PostMapping("/deleteNoteFile")
-    public ResponseVO<?> deleteNoteFile(@Validated @RequestBody DeleteNoteFileDTO dto) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> deleteNoteFile(@Validated @RequestBody DeleteNoteFileDTO dto, Authentication authentication) throws ResultException {
         if (!noteService.removeById(dto.getId())) {
             throw ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED);
         }
@@ -189,14 +195,15 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中更新文件")
     @PostMapping("/updateNoteFile")
-    public ResponseVO<?> updateNoteFile(@Validated @RequestBody UpdateNoteFileDTO dto, Principal principal) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> updateNoteFile(@Validated @RequestBody UpdateNoteFileDTO dto, Authentication authentication) throws ResultException {
         NotePO notePO = noteService.getById(dto.getId());
         if (notePO == null) {
             throw ResultException.of(ErrorCodeEnum.MODEL_NOT_FOUND);
         }
 
         BeanUtils.copyProperties(dto, notePO, "text");
-        dbUtils.updateUpdateInfo(notePO, principal);
+        dbUtils.updateUpdateInfo(notePO, authentication);
 
         if (!noteService.updateById(notePO)) {
             throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
@@ -215,11 +222,12 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中新建文件夹")
     @PostMapping("/addNoteFolder")
-    public ResponseVO<?> addNoteFolder(@Validated @RequestBody AddNoteFolderDTO dto, Principal principal) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> addNoteFolder(@Validated @RequestBody AddNoteFolderDTO dto, Authentication authentication) throws ResultException {
         NoteFolderPO noteFolderPO = new NoteFolderPO();
 
         BeanUtils.copyProperties(dto, noteFolderPO);
-        dbUtils.updateCreateInfo(noteFolderPO, principal);
+        dbUtils.updateCreateInfo(noteFolderPO, authentication);
 
         if (!noteFolderService.save(noteFolderPO)) {
             throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
@@ -230,7 +238,8 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中删除文件夹")
     @PostMapping("/deleteNoteFolder")
-    public ResponseVO<?> deleteNoteFolder(@Validated @RequestBody DeleteNoteFolderDTO dto) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> deleteNoteFolder(@Validated @RequestBody DeleteNoteFolderDTO dto, Authentication authentication) throws ResultException {
         if (!noteFolderService.removeById(dto.getId())) {
             throw ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED);
         }
@@ -240,14 +249,15 @@ public class NoteController {
 
     @ApiOperation("在笔记项目中更新文件夹")
     @PostMapping("/updateNoteFolder")
-    public ResponseVO<?> updateNoteFolder(@Validated @RequestBody UpdateNoteFolderDTO dto, Principal principal) throws ResultException {
+    @NoteAuthorization
+    public ResponseVO<?> updateNoteFolder(@Validated @RequestBody UpdateNoteFolderDTO dto, Authentication authentication) throws ResultException {
         NoteFolderPO noteFolderPO = noteFolderService.getById(dto.getId());
         if (noteFolderPO == null) {
             throw ResultException.of(ErrorCodeEnum.MODEL_NOT_FOUND);
         }
 
         BeanUtils.copyProperties(dto, noteFolderPO);
-        dbUtils.updateUpdateInfo(noteFolderPO, principal);
+        dbUtils.updateUpdateInfo(noteFolderPO, authentication);
 
         if (!noteFolderService.updateById(noteFolderPO)) {
             throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
