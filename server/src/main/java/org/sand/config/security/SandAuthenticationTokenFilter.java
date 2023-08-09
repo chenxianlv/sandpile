@@ -53,7 +53,7 @@ public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticatio
             String authToken = httpRequest.getHeader(tokenHeader);
 
             if (authToken == null) {
-                errorHandler(httpResponse, ResultException.of(ErrorCodeEnum.LOG_IN_FIRST));
+                throw ResultException.of(ErrorCodeEnum.LOG_IN_FIRST);
             }
 
             String username = tokenUtils.validToken(authToken);
@@ -73,13 +73,6 @@ public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticatio
         } catch (ResultException e) {
             // token认证失败的场景
             errorHandler(httpResponse, e);
-            httpResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-            httpResponse.setHeader("Content-Type", "application/json;charset=utf-8");
-
-            PrintWriter out = httpResponse.getWriter();
-            out.write(objectMapper.writeValueAsString(ResponseVO.error(e)));
-            out.flush();
-            out.close();
         }
     }
 
