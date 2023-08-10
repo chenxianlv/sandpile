@@ -17,7 +17,7 @@ import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 
 window.location.hash = '';
-let projectId = Number(useRoute().params.id?.[0]);
+let projectId = Number(useRoute().params.id);
 
 const {
     loading: parserLoading,
