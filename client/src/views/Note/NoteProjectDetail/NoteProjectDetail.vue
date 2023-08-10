@@ -26,22 +26,28 @@ const {
 } = useLoading();
 const { noteTreeData, getData, nodeChange, getNoteText, setNoteText, responseData, pageLoading } =
     useNoteDetail(projectId);
-const markdownText = ref<string>();
+const markdownText = ref<string>('');
 
 const asideRef = ref<InstanceType<typeof ElAside> | null>(null);
 
-let showingNoteId: number;
-const handleFileChange = (id: number) => {
+const showingNoteId = ref<number | null>(null);
+watch(showingNoteId, (newId) => {
+    if (newId === null) {
+        markdownText.value = '';
+        return;
+    }
     startParserLoading();
-    if (showingNoteId === id) return;
-    showingNoteId = id;
-    getNoteText(id)
+    getNoteText(newId)
         .then((text: string) => {
             markdownText.value = text;
         })
         .finally(() => {
             stopParserLoading();
         });
+});
+const handleFileChange = (id: number) => {
+    if (showingNoteId.value === id) return;
+    showingNoteId.value = id;
 };
 
 const contextMenuSelectNode = ref<TreeNode>();
@@ -77,7 +83,7 @@ const openRenameDialog = (hideContextMenu: () => void) => {
     hideContextMenu();
 };
 const deleteNode = (hideContextMenu: () => void) => {
-    const node = contextMenuSelectNode.value;
+    const node: TreeNode = contextMenuSelectNode.value;
     if (node) {
         hideContextMenu();
         ElMessageBox({
@@ -95,6 +101,13 @@ const deleteNode = (hideContextMenu: () => void) => {
                         ? deleteNoteFileAPI({ id: node.id })
                         : deleteNoteFolderAPI({ id: node.id });
                     promise.then(() => {
+                        console.log(node.isChildren(showingNoteId.value));
+                        if (
+                            (node.isFile && node.id === showingNoteId.value) ||
+                            node.isChildren(showingNoteId.value)
+                        ) {
+                            showingNoteId.value = null;
+                        }
                         done();
                         getData(projectId);
                     });
@@ -111,9 +124,9 @@ const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
 
 const { loading: mdSaveLoading, saveDisabled, onTextEdit, onSave } = useNoteEdit();
 const onTextareaInput = () => {
-    if (markdownText.value !== undefined) {
-        setNoteText(showingNoteId, markdownText.value);
-        onTextEdit(showingNoteId, markdownText.value);
+    if (showingNoteId.value !== null) {
+        setNoteText(showingNoteId.value, markdownText.value);
+        onTextEdit(showingNoteId.value, markdownText.value);
     }
 };
 </script>
@@ -138,8 +151,8 @@ const onTextareaInput = () => {
                     :disabled="saveDisabled"
                     :loading="mdSaveLoading"
                     @click="onSave"
-                    >保存</el-button
-                >
+                    >保存
+                </el-button>
                 <el-switch v-model="isEditing" active-text="编辑模式" inactive-text="阅读模式" />
             </div>
         </el-header>
@@ -187,7 +200,7 @@ const onTextareaInput = () => {
                 </el-aside>
                 <VerticalSizeSash v-if="asideRef?.$el" :targetDOM="asideRef?.$el" />
                 <el-main class="main" v-loading="parserLoading">
-                    <el-empty v-if="markdownText === undefined" description="请选择笔记" />
+                    <el-empty v-if="showingNoteId === null" description="请选择笔记" />
                     <div class="detail-container" v-else>
                         <MarkdownTextarea
                             v-if="isEditing"

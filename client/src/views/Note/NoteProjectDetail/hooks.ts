@@ -23,6 +23,11 @@ interface NoteNode extends TreeNode {
     text?: string;
 
     isFile: true;
+
+    /**
+     * 判断该节点是否有一个子孙节点，其id等于传入的id
+     */
+    isChildren: (targetId: number) => boolean;
 }
 
 interface FolderNode extends TreeNode {
@@ -37,9 +42,21 @@ interface FolderNode extends TreeNode {
     children: Array<TreeNode>;
 
     isFile: false;
+
+    /**
+     * 判断该节点是否有一个子孙节点，其id等于传入的id
+     */
+    isChildren: (targetId: number) => boolean;
 }
 
 export type TempTreeNode = NoteNode | FolderNode;
+
+function isChildren(this: TreeNode, targetId: number): boolean {
+    if (this.children === undefined) return false;
+    return this.children.some(
+        (node: TreeNode) => node.id === targetId || node.isChildren(targetId)
+    );
+}
 
 export function useNoteDetail(projectId: number) {
     const responseData = ref<{
@@ -83,6 +100,7 @@ export function useNoteDetail(projectId: number) {
             noteFolders?.forEach((item) => {
                 item.children = [];
                 item.isFile = false;
+                item.isChildren = isChildren.bind(item);
                 tempArr.push(item);
             });
 
@@ -98,6 +116,7 @@ export function useNoteDetail(projectId: number) {
 
             notes?.forEach((item) => {
                 item.isFile = true;
+                item.isChildren = isChildren.bind(item);
                 getParentArr(item.folderId)?.push(item);
             });
 
