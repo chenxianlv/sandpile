@@ -5,7 +5,7 @@ import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
 
 export interface TreeNode extends AnyObj {
-    id?: number;
+    id: number;
 
     /**
      * true表示是笔记文件，false表示是文件夹
@@ -13,6 +13,11 @@ export interface TreeNode extends AnyObj {
     isFile: boolean;
 
     children?: Array<TreeNode>;
+
+    /**
+     * 判断该节点是否有一个子孙节点，其id等于传入的id
+     */
+    isChildren: (targetId: number) => boolean;
 }
 
 const props = withDefaults(
@@ -31,7 +36,7 @@ const emit = defineEmits<{
 }>();
 
 const handleCurrentChange = (data: TreeNode) => {
-    if (data.id === undefined || !data.isFile) return;
+    if (!data.isFile) return;
     contextMenuState.visible = false;
     emit('selectChange', data.id);
 };
@@ -85,6 +90,7 @@ const handleNodeDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) =>
             :data="props.data"
             :draggable="props.draggable"
             :allow-drop="allowDrop"
+            node-key="id"
             default-expand-all
             highlight-current
             @current-change="handleCurrentChange"
