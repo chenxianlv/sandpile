@@ -44,7 +44,7 @@ public class NoteAuthenticationAOP {
 
     private final RoleService roleService;
 
-    @Before(value = "@annotation(org.sand.controller.note.NoteAuthorization))")
+    @Before(value = "@annotation(org.sand.controller.note.NoteAuthorization)")
     public void authorization(JoinPoint joinPoint) throws Exception, ResultException {
         // 获取请求参数
         Object[] args = joinPoint.getArgs();
