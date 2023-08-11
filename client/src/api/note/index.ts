@@ -1,4 +1,6 @@
 import baseRequest from '@/common/axios';
+import beforeCloseAPI from '@/common/beforeCloseAPI';
+import type { CallbackFn } from '@/common/beforeCloseAPI';
 
 export function listProjectsAPI() {
     return baseRequest({
@@ -60,6 +62,10 @@ export function updateNoteFileAPI(data: AnyObj) {
         url: '/note/updateNoteFile',
         data,
     });
+}
+
+export function updateNoteFileBeforeCloseAPI(callback: CallbackFn) {
+    return beforeCloseAPI.on('/note/updateNoteFile', callback);
 }
 
 export function addNoteFolderAPI(data: AnyObj) {

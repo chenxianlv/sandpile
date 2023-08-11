@@ -1,9 +1,15 @@
 import { cloneDeep } from 'lodash-es';
 import { computed, reactive, ref, watch } from 'vue';
-import { getNoteTextAPI, getProjectDetailAPI, updateNoteFileAPI } from '@/api/note';
+import {
+    getNoteTextAPI,
+    getProjectDetailAPI,
+    updateNoteFileAPI,
+    updateNoteFileBeforeCloseAPI,
+} from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
+import beforeCloseAPI from '@/common/beforeCloseAPI';
 
 export interface NoteProject {
     id: number;
@@ -197,14 +203,15 @@ export function useNoteEdit() {
     const saveDisabled = ref(false);
 
     watch(
-        changeMap,
+        () => Object.keys(changeMap).length,
         (newVal) => {
-            saveDisabled.value = Object.keys(newVal).length === 0;
+            saveDisabled.value = newVal === 0;
         },
-        { deep: true, immediate: true }
+        { immediate: true }
     );
 
     function onTextEdit(fileId: number, newText: string) {
+        console.log('edit');
         changeMap[fileId] = newText;
     }
 
@@ -212,20 +219,42 @@ export function useNoteEdit() {
         const promiseArr: Promise<any>[] = [];
         startLoading();
         Object.keys(changeMap).forEach((id) => {
+            // 先删除文本 若保存失败再将文本还原，防止重复发出请求
             const text = changeMap[id];
-            if (text !== undefined) {
-                delete changeMap[id];
-                promiseArr.push(
-                    updateNoteFileAPI({ id, text }).catch(() => {
-                        changeMap[id] = text;
-                    })
-                );
-            }
+            delete changeMap[id];
+            promiseArr.push(
+                updateNoteFileAPI({ id, text }).catch(() => {
+                    changeMap[id] = text;
+                })
+            );
         });
-        return Promise.all(promiseArr).finally(() => {
+        return Promise.allSettled(promiseArr).finally(() => {
             stopLoading();
         });
     }
+
+    // 当页面关闭时，发送未保存的请求
+    let beforeCloseIdArr: number[] = [];
+    watch(
+        () => Object.keys(changeMap).length,
+        () => {
+            beforeCloseIdArr.forEach((id) => beforeCloseAPI.off(id));
+            beforeCloseIdArr = [];
+
+            Object.keys(changeMap).forEach((id) => {
+                const beforeCloseId = updateNoteFileBeforeCloseAPI((send) => {
+                    // 先删除文本 若保存失败再将文本还原，防止重复发出请求
+                    const text = changeMap[id];
+                    delete changeMap[id];
+                    send({ id, text }).catch(() => {
+                        changeMap[id] = text;
+                    });
+                });
+                beforeCloseIdArr.push(beforeCloseId);
+            });
+        },
+        { immediate: true }
+    );
 
     return { loading, saveDisabled, onTextEdit, onSave };
 }
