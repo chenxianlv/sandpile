@@ -45,5 +45,6 @@ const supportTab = (event: KeyboardEvent) => {
 textarea {
     outline: none;
     box-shadow: none;
+    resize: none;
 }
 </style>
