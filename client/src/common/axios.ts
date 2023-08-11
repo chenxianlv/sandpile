@@ -1,18 +1,17 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
-import { CUSTOM_ERROR_HANDLE_URL, LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
+import { LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
 import apiConfig from '@/config/api';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/utils';
 
-const baseURL = '/api';
-const printEnabled = import.meta.env.DEV && apiConfig.printInDev;
+const printEnabled = import.meta.env.DEV && apiConfig.PRINT_IN_DEV;
 
 const baseRequest = axios.create({
     method: 'post',
-    baseURL,
+    baseURL: apiConfig.BASE_URL,
     timeout: 5000,
 });
 export default baseRequest;
@@ -55,7 +54,7 @@ baseRequest.interceptors.response.use(
     },
     (error: AxiosError | AxiosResponse) => {
         const url = error.config?.url;
-        if (url && CUSTOM_ERROR_HANDLE_URL.includes(url)) {
+        if (url && apiConfig.CUSTOM_ERROR_HANDLE_URL.includes(url)) {
             return Promise.reject(error);
         }
 
