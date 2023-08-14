@@ -1,8 +1,9 @@
+<link rel="stylesheet" href="../../../styles/variable.less">
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
-import { ArrowLeftBold } from '@element-plus/icons-vue';
+import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import { useNoteDetail, useNoteEdit } from '@/views/Note/NoteProjectDetail/hooks';
 import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
@@ -122,7 +123,15 @@ const deleteNode = (hideContextMenu: () => void) => {
 const isEditing = ref(false);
 const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
 
-const { loading: mdSaveLoading, saveDisabled, onTextEdit, onSave } = useNoteEdit();
+const {
+    loading: mdSaveLoading,
+    saveDisabled,
+    onTextEdit,
+    onSave,
+    saveState,
+    formattedTimeStr,
+} = useNoteEdit();
+
 const onTextareaInput = () => {
     if (showingNoteId.value !== null) {
         setNoteText(showingNoteId.value, markdownText.value);
@@ -146,6 +155,16 @@ const onTextareaInput = () => {
                 >
             </div>
             <div class="right">
+                <span
+                    v-show="isEditing && formattedTimeStr !== ''"
+                    :class="['save-status', saveState ? 'success' : 'failed']"
+                >
+                    <el-icon>
+                        <CircleCheckFilled v-if="saveState" />
+                        <CircleCloseFilled v-else />
+                    </el-icon>
+                    {{ '于 ' + formattedTimeStr + ' 保存' + (saveState ? '成功' : '失败') }}
+                </span>
                 <el-button
                     v-if="isEditing"
                     :disabled="saveDisabled"
@@ -275,6 +294,22 @@ const onTextareaInput = () => {
 
     .right {
         padding: 0 20px;
+
+        .save-status {
+            display: flex;
+            align-items: center;
+
+            font-size: 13px;
+            color: @font-color-secondary;
+
+            &.failed {
+                color: @font-color-danger-dark;
+            }
+
+            .el-icon {
+                margin-right: 4px;
+            }
+        }
 
         > * {
             margin-left: 10px;
