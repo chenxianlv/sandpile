@@ -1,6 +1,5 @@
-import apiConfig from '@/config/base/api';
+import baseConfig from '@/config/base';
 import { getLocalStorage } from '@/utils/utils';
-import { LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
 
 type SendFn = (data: AnyObj) => Promise<any>;
 export type CallbackFn = (send: SendFn) => any;
@@ -31,7 +30,7 @@ class BeforeCloseAPI {
         const headers: AnyObj = {
             'Content-Type': 'application/json; charset=utf-8',
         };
-        const token = getLocalStorage(LOCALSTORAGE_USER_PROP_NAME, true)?.token;
+        const token = getLocalStorage(baseConfig.storage.USER_PROP_NAME, true)?.token;
         if (token) {
             headers.Authorization = token;
         }
@@ -51,7 +50,7 @@ class BeforeCloseAPI {
 
     on(url: string, callback: CallbackFn) {
         const id = this.idCount++;
-        this.dataGetterMap.set(id, { url: apiConfig.BASE_URL + url, callback });
+        this.dataGetterMap.set(id, { url: baseConfig.api.BASE_URL + url, callback });
         return id;
     }
 

@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { LOADING_START_OFFSET_TIME, LOADING_MIN_DURATION_TIME } from '@/common/commonDefine';
+import baseConfig from '@/config/base';
 
 export function useLoading(config: { startOffsetTime?: number; minDurationTime?: number } = {}) {
     const loading = ref(false);
@@ -12,7 +12,7 @@ export function useLoading(config: { startOffsetTime?: number; minDurationTime?:
             loading.value = true;
             loadingStartTime = Date.now();
             timeout = undefined;
-        }, config.startOffsetTime ?? LOADING_START_OFFSET_TIME);
+        }, config.startOffsetTime ?? baseConfig.loading.START_OFFSET_TIME);
     };
 
     const stopLoading = () => {
@@ -25,7 +25,7 @@ export function useLoading(config: { startOffsetTime?: number; minDurationTime?:
             // 若已在loading
             if (loadingStartTime === undefined) return;
             const timeNeedToWait =
-                (config.minDurationTime ?? LOADING_MIN_DURATION_TIME) -
+                (config.minDurationTime ?? baseConfig.loading.MIN_DURATION_TIME) -
                 (Date.now() - loadingStartTime);
             if (timeNeedToWait > 0) {
                 setTimeout(() => {

@@ -4,13 +4,13 @@ import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import '@/styles/cleanUp.less';
 import '@/styles/common.less';
-import mockConfig from '@/config/base/mock';
+import baseConfig from '@/config/base';
 
 import App from './App.vue';
 import router from './router';
 
 if (import.meta.env.DEV) {
-    mockConfig.enabledInDev && import('../mock');
+    baseConfig.mock.ENABLED_IN_DEV && import('../mock');
 }
 
 const app = createApp(App);

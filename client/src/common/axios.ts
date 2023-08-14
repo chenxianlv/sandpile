@@ -1,17 +1,16 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
-import { LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
-import apiConfig from '@/config/base/api';
+import baseConfig from '@/config/base';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/utils';
 
-const printEnabled = import.meta.env.DEV && apiConfig.PRINT_IN_DEV;
+const printEnabled = import.meta.env.DEV && baseConfig.api.PRINT_IN_DEV;
 
 const baseRequest = axios.create({
     method: 'post',
-    baseURL: apiConfig.BASE_URL,
+    baseURL: baseConfig.api.BASE_URL,
     timeout: 5000,
 });
 export default baseRequest;
@@ -24,7 +23,7 @@ baseRequest.interceptors.request.use((config) => {
         config.params && console.log('params: ', config.params);
         config.data && console.log('data: ', config.data);
     }
-    const token = getLocalStorage(LOCALSTORAGE_USER_PROP_NAME, true)?.token;
+    const token = getLocalStorage(baseConfig.storage.USER_PROP_NAME, true)?.token;
     if (token) {
         config.headers.Authorization = token;
     }
@@ -54,7 +53,7 @@ baseRequest.interceptors.response.use(
     },
     (error: AxiosError | AxiosResponse) => {
         const url = error.config?.url;
-        if (url && apiConfig.CUSTOM_ERROR_HANDLE_URL.includes(url)) {
+        if (url && baseConfig.api.CUSTOM_ERROR_HANDLE_URL.includes(url)) {
             return Promise.reject(error);
         }
 

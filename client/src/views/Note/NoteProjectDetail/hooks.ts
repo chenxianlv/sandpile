@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash-es';
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { onBeforeUnmount, reactive, ref, watch } from 'vue';
 import {
     getNoteTextAPI,
     getProjectDetailAPI,
@@ -10,7 +10,7 @@ import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
-import noteConfig from '@/config/note/note';
+import noteConfig from '@/config/note';
 import { timeToNowFormatter } from '@/utils/formatter';
 
 export interface NoteProject {
