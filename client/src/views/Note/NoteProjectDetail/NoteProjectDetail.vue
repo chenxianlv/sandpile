@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="../../../styles/variable.less">
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
