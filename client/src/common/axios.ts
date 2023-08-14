@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 import { LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
-import apiConfig from '@/config/api';
+import apiConfig from '@/config/base/api';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/utils';
