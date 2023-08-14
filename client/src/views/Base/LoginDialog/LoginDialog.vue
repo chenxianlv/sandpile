@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { loginAPI } from '@/api/base';
-import type { NormalResponse } from '@/common/axios';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
-import { useLoading } from '@/utils/hooks';
 import { encryptPwd } from '@/utils/crypto';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 
@@ -43,6 +41,7 @@ const requestFn = async () => {
             username: data.userName,
             id: data.id,
             token: data.token,
+            authList: data.authList,
         });
         loginStore.close();
         history.go(0);
