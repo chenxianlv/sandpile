@@ -5,19 +5,35 @@ import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { logoutAPI } from '@/api/base';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
+import { ElMessageBox } from 'element-plus';
+import { useRouter } from 'vue-router';
 
 const userStore = useUserStore();
 const loginStore = useLoginStore();
+const router = useRouter();
 
 const popoverRef = ref<PopoverInstance>();
 const logout = () => {
-    logoutAPI()
-        .then(() => {
-            userStore.logout();
-        })
-        .finally(() => {
-            popoverRef.value?.hide();
-        });
+    popoverRef.value?.hide();
+    ElMessageBox({
+        message: '确认要退出登录吗？当前未提交的变更可能会丢失',
+        title: '退出登录',
+        type: 'warning',
+        confirmButtonText: '退出登录',
+        showCancelButton: true,
+        cancelButtonText: '取消',
+        beforeClose: (action, instance, done) => {
+            if (action === 'confirm') {
+                logoutAPI().then(() => {
+                    userStore.logout();
+                    done();
+                    router.push('/');
+                });
+            } else {
+                done();
+            }
+        },
+    });
 };
 </script>
 
