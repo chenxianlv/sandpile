@@ -45,6 +45,7 @@ const requestFn = async () => {
             token: data.token,
         });
         loginStore.close();
+        history.go(0);
     } catch (reason: any) {
         errorInfo.value = reason?.response?.data?.errorInfo ?? '登录失败';
         throw reason;
