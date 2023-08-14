@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash-es';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import {
     getNoteTextAPI,
     getProjectDetailAPI,
@@ -10,6 +10,8 @@ import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
+import noteConfig from '@/config/note/note';
+import { timeToNowFormatter } from '@/utils/formatter';
 
 export interface NoteProject {
     id: number;
@@ -201,6 +203,9 @@ export function useNoteEdit() {
 
     const changeMap: SimpleObj<string> = reactive({});
     const saveDisabled = ref(false);
+    // 是否保存成功
+    const saveState = ref(false);
+    const lastSaveTime = ref(-1);
 
     watch(
         () => Object.keys(changeMap).length,
@@ -211,11 +216,11 @@ export function useNoteEdit() {
     );
 
     function onTextEdit(fileId: number, newText: string) {
-        console.log('edit');
         changeMap[fileId] = newText;
     }
 
     function onSave() {
+        if (Object.keys(changeMap).length === 0) return;
         const promiseArr: Promise<any>[] = [];
         startLoading();
         Object.keys(changeMap).forEach((id) => {
@@ -223,15 +228,28 @@ export function useNoteEdit() {
             const text = changeMap[id];
             delete changeMap[id];
             promiseArr.push(
-                updateNoteFileAPI({ id, text }).catch(() => {
+                updateNoteFileAPI({ id, text }).catch((e) => {
                     changeMap[id] = text;
+                    return Promise.reject(e);
                 })
             );
         });
-        return Promise.allSettled(promiseArr).finally(() => {
-            stopLoading();
-        });
+        return Promise.allSettled(promiseArr)
+            .then((resArr) => {
+                console.log(resArr);
+                saveState.value = resArr.every(({ status }) => status === 'fulfilled');
+                lastSaveTime.value = Date.now();
+            })
+            .finally(() => {
+                stopLoading();
+            });
     }
+
+    const intervalId = setInterval(onSave, noteConfig.AUTO_SAVE_INTERVAL);
+    onBeforeUnmount(() => {
+        onSave();
+        clearInterval(intervalId);
+    });
 
     // 当页面关闭时，发送未保存的请求
     let beforeCloseIdArr: number[] = [];
@@ -256,5 +274,20 @@ export function useNoteEdit() {
         { immediate: true }
     );
 
-    return { loading, saveDisabled, onTextEdit, onSave };
+    // 格式化时间字符串，如 xx秒前
+    const formattedTimeStr = ref('');
+    const updateTimeStr = () => {
+        if (lastSaveTime.value === -1) {
+            formattedTimeStr.value = '';
+            return;
+        }
+        formattedTimeStr.value = timeToNowFormatter(lastSaveTime.value);
+    };
+    watch(lastSaveTime, updateTimeStr);
+    const timeUpdateIntervalId = setInterval(updateTimeStr, 1000);
+    onBeforeUnmount(() => {
+        clearInterval(timeUpdateIntervalId);
+    });
+
+    return { loading, saveDisabled, onTextEdit, onSave, saveState, formattedTimeStr };
 }
