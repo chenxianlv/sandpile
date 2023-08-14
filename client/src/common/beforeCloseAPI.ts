@@ -1,4 +1,4 @@
-import apiConfig from '@/config/api';
+import apiConfig from '@/config/base/api';
 import { getLocalStorage } from '@/utils/utils';
 import { LOCALSTORAGE_USER_PROP_NAME } from '@/common/commonDefine';
 

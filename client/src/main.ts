@@ -4,7 +4,7 @@ import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import '@/styles/cleanUp.less';
 import '@/styles/common.less';
-import mockConfig from '@/config/mock';
+import mockConfig from '@/config/base/mock';
 
 import App from './App.vue';
 import router from './router';
