@@ -11,4 +11,6 @@ public class UserLoginVO {
 
     private String token;
 
+    private Long[] authList;
+
 }

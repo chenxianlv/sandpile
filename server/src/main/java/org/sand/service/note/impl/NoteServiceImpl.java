@@ -1,6 +1,7 @@
 package org.sand.service.note.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.AllArgsConstructor;
 import org.apache.commons.net.ftp.FTPClient;
 import org.sand.mapper.note.NoteMapper;
 import org.sand.model.po.note.NotePO;
@@ -14,13 +15,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class NoteServiceImpl extends ServiceImpl<NoteMapper, NotePO> implements NoteService {
 
     private final FTPUtils ftpUtils;
-
-    public NoteServiceImpl(FTPUtils ftpUtils) {
-        this.ftpUtils = ftpUtils;
-    }
 
     @Override
     public String getNoteText(Long id) throws IOException {
