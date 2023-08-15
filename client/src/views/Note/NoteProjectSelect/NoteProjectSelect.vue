@@ -6,11 +6,13 @@ import { useRouter } from 'vue-router';
 import { Search, MoreFilled } from '@element-plus/icons-vue';
 import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 import type { NormalResponse } from '@/common/axios';
+import vAuth from '@/directives/vAuth';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
-import UserAvatar from '@/components/UserAvatar/UserAvatar.vue';
+import { useUserStore } from '@/stores/userStore';
 
 const noteProjects = ref<NoteProject[]>([]);
+const userStore = useUserStore();
 
 const listProjects = () => {
     listProjectsAPI()
@@ -30,9 +32,15 @@ const listProjects = () => {
 listProjects();
 
 const router = useRouter();
-const handleCellClick = (row: { id: number }, column: any) => {
-    if (column.columnKey === 'no-jump') return;
+const handleCellClick = (row: { id: number }, column: any, cell: any) => {
+    // 若正在编辑项目名，则不跳转
     if (row.id === editId.value) return;
+    // 若单元格为空，则跳转
+    if ((cell.children?.[0]?.children?.length ?? 0) === 0) {
+        router.push({ name: 'detail', params: { id: row.id } });
+        return;
+    }
+    if (column.columnKey === 'no-jump') return;
     router.push({ name: 'detail', params: { id: row.id } });
 };
 
@@ -80,6 +88,11 @@ const showDeleteDialog = (row: NoteProject) => {
     deleteRowData.value = row;
     deleteDialogVisible.value = true;
 };
+
+const getProjectRequiredEditAuthList = (data: NoteProject) => {
+    const isOwner = userStore.id !== undefined && data.owners.includes(userStore.id);
+    return isOwner ? [1] : [2];
+};
 </script>
 
 <template>
@@ -91,7 +104,9 @@ const showDeleteDialog = (row: NoteProject) => {
                 :prefix-icon="Search"
                 v-model="filterString"
             />
-            <el-button type="primary" @click="addDialogVisible = true">新建项目 </el-button>
+            <el-button v-auth="[5]" type="primary" @click="addDialogVisible = true"
+                >新建项目
+            </el-button>
         </header>
         <div class="table-container">
             <el-table
@@ -117,22 +132,24 @@ const showDeleteDialog = (row: NoteProject) => {
                     </template>
                 </el-table-column>
                 <el-table-column prop="createUserName" label="创建者"></el-table-column>
-                <el-table-column prop="createTime" label="创建时间"> </el-table-column>
+                <el-table-column prop="createTime" label="创建时间"></el-table-column>
                 <el-table-column width="45px" column-key="no-jump">
                     <template #default="{ row }">
-                        <el-popover placement="bottom-end" trigger="hover">
-                            <template #reference>
-                                <el-icon>
-                                    <MoreFilled />
-                                </el-icon>
-                            </template>
-                            <template #default>
-                                <ul class="option-menu">
-                                    <li @click="startEdit(row)">重命名</li>
-                                    <li @click="showDeleteDialog(row)">删除</li>
-                                </ul>
-                            </template>
-                        </el-popover>
+                        <div v-auth="getProjectRequiredEditAuthList(row)">
+                            <el-popover placement="bottom-end" trigger="hover">
+                                <template #reference>
+                                    <el-icon>
+                                        <MoreFilled />
+                                    </el-icon>
+                                </template>
+                                <template #default>
+                                    <ul class="option-menu">
+                                        <li @click="startEdit(row)">重命名</li>
+                                        <li @click="showDeleteDialog(row)">删除</li>
+                                    </ul>
+                                </template>
+                            </el-popover>
+                        </div>
                     </template>
                 </el-table-column>
             </el-table>
