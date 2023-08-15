@@ -15,6 +15,7 @@ import { ElMessageBox } from 'element-plus';
 import { deleteNoteFileAPI, deleteNoteFolderAPI } from '@/api/note';
 import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
+import { useUserStore } from '@/stores/userStore';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id);
@@ -137,6 +138,13 @@ const onTextareaInput = () => {
         onTextEdit(showingNoteId.value, markdownText.value);
     }
 };
+
+const userStore = useUserStore();
+const projectRequiredEditAuthList = computed(() => {
+    const isOwner =
+        userStore.id !== undefined && (responseData.value.owners?.includes(userStore.id) ?? false);
+    return isOwner ? [1] : [2];
+});
 </script>
 
 <template>
@@ -171,7 +179,12 @@ const onTextareaInput = () => {
                     @click="onSave"
                     >保存
                 </el-button>
-                <el-switch v-model="isEditing" active-text="编辑模式" inactive-text="阅读模式" />
+                <el-switch
+                    :disabled="!userStore.authenticate(projectRequiredEditAuthList)"
+                    v-model="isEditing"
+                    active-text="编辑模式"
+                    inactive-text="阅读模式"
+                />
             </div>
         </el-header>
         <el-main>

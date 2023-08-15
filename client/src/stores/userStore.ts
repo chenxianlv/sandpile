@@ -34,5 +34,8 @@ export const useUserStore = defineStore('user', {
             window.localStorage.removeItem(baseConfig.storage.USER_PROP_NAME);
             this.$reset();
         },
+        authenticate(requiredAuthIdArr: number[]) {
+            return requiredAuthIdArr.every((authId) => this.authList.includes(authId));
+        },
     },
 });

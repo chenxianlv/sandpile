@@ -16,6 +16,9 @@ import { timeToNowFormatter } from '@/utils/formatter';
 export interface NoteProject {
     id: number;
     projectName: string;
+    owners: number[];
+    readers?: number[];
+    openness: number;
     createUserName?: string;
     createTime: string;
 }
@@ -71,6 +74,9 @@ export function useNoteDetail(projectId: number) {
         notes?: NoteNode[];
         noteFolders?: FolderNode[];
         projectName?: string;
+        owners?: number[];
+        readers?: number[];
+        openness?: number;
     }>({});
     const noteTreeData = ref<TempTreeNode[]>([]);
     const noteTextStorage = ref<SimpleObj<string>>({});
