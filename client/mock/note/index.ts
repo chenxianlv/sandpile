@@ -1,15 +1,22 @@
 import Mock from 'mockjs';
 
 let noteProjectIdCount: number = 2;
-const noteProjects: Array<{
+type NoteProject = {
     id: number;
     projectName: string;
+    owners: number[];
+    readers?: number[];
+    openness: number;
     createUserName: string;
     createTime: number;
-}> = [
+};
+const noteProjects: Array<NoteProject> = [
     {
         id: 1,
         projectName: '前端笔记',
+        owners: [2],
+        readers: [3],
+        openness: 2,
         createUserName: 'administrator',
         createTime: 1691394228000,
     },
@@ -35,12 +42,18 @@ interface ProjectDetail {
         projectName: string;
         notes: NoteFile[];
         noteFolders: NoteFolder[];
+        owners: number[];
+        readers?: number[];
+        openness: number;
     };
 }
 
 const projectDetails: ProjectDetail = {
     1: {
         projectName: '前端笔记',
+        owners: [2],
+        readers: [3],
+        openness: 2,
         notes: [
             {
                 id: 1,
@@ -76,7 +89,10 @@ Mock.mock(new RegExp('.*' + 'note/listProjects'), () => {
 Mock.mock(new RegExp('.*' + 'note/updateProject'), (options) => {
     const params = JSON.parse(options.body);
     const target = noteProjects.find((item) => item.id === params.id);
-    target && (target.projectName = params.projectName);
+    target && params?.projectName && (target.projectName = params.projectName);
+    target && params?.owners && (target.owners = params.owners);
+    target && params?.openness && (target.openness = params.openness);
+    target && params?.readers && (target.readers = params.readers);
 
     return {
         status: 1,
@@ -85,12 +101,16 @@ Mock.mock(new RegExp('.*' + 'note/updateProject'), (options) => {
 
 Mock.mock(new RegExp('.*' + 'note/addProject'), (options) => {
     const params = JSON.parse(options.body);
-    noteProjects.push({
+    const newProject: NoteProject = {
         id: noteProjectIdCount++,
         projectName: params.projectName,
+        owners: params.owners,
+        openness: params.openness,
         createUserName: 'administrator',
-        createTime: 1691394228000,
-    });
+        createTime: Date.now(),
+    };
+    params.readers && (newProject.readers = params.readers);
+    noteProjects.push(newProject);
 
     return {
         status: 1,
