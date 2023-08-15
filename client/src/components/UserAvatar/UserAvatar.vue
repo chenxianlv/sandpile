@@ -6,11 +6,9 @@ import { logoutAPI } from '@/api/base';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 import { ElMessageBox } from 'element-plus';
-import { useRouter } from 'vue-router';
 
 const userStore = useUserStore();
 const loginStore = useLoginStore();
-const router = useRouter();
 
 const popoverRef = ref<PopoverInstance>();
 const logout = () => {
@@ -27,7 +25,7 @@ const logout = () => {
                 logoutAPI().then(() => {
                     userStore.logout();
                     done();
-                    router.push('/');
+                    location.pathname = '/';
                 });
             } else {
                 done();
