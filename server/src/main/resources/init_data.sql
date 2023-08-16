@@ -2,12 +2,12 @@
 # VALUES (1, '学习笔记', 'noteDisplay');
 
 # test
-INSERT INTO `note_project_info`(`id`, `project_name`, `create_user_id`)
-VALUES (1, '前端笔记', 1),
-       (2, '后端笔记', 1),
-       (3, '运维相关', 1),
-       (4, '计算机科学', 1),
-       (5, '3D建模', 1);
+INSERT INTO `note_project_info`(`id`, `project_name`, `openness`, `create_user_id`)
+VALUES (1, '前端笔记', 1, 1),
+       (2, '后端笔记', 1, 1),
+       (3, '运维相关', 2, 1),
+       (4, '计算机科学', 2, 1),
+       (5, '3D建模', 3, 1);
 
 INSERT INTO `note_info`(`name`, `file_path`, `folder_id`, `project_id`, `create_user_id`)
 VALUES ('HTML', '/HTML.md', -1, 1, 1),
@@ -39,6 +39,13 @@ VALUES ('HTML', '/HTML.md', -1, 1, 1),
 INSERT INTO `note_folder_info`(`id`, `name`, `project_id`, `folder_id`, `create_user_id`)
 VALUES (1, '库', 1, -1, 1),
        (2, '库中库', 1, 1, 1);
+
+INSERT INTO `note_project_owner`(`project_id`, `user_id`)
+VALUES (1, 1),
+       (2, 1),
+       (3, 1),
+       (4, 1),
+       (5, 1);
 
 # # admin的密码为1234，若要自定义密码，需在前端用想要的用户名和密码登录，查看发送请求中的password字段，将密码复制至EncryptTest类中进行加密，把加密后的密码作为数据库的user_password字段的值即可
 # INSERT INTO `user_user`(`id`, `user_account`, `user_name`, `user_password`, `create_user_id`)
