@@ -29,7 +29,7 @@ public class TokenUtils {
      * 过期时间：毫秒数
      */
     @Value("${token.timeout}")
-    private long EXPIRE_TIME;
+    private Long EXPIRE_TIME;
 
     /**
      * 生成Token

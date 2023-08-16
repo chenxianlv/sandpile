@@ -15,11 +15,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RolePO> implements 
     @Autowired
     private RoleMapper roleMapper;
 
-    public List<RolePO> listRolesByUserId(long userId){
+    public List<RolePO> listRolesByUserId(Long userId){
         return roleMapper.listRolesByUserId(userId);
     }
 
-    public List<RolePO> listRolesByAccessId(long accessId){
+    public List<RolePO> listRolesByAccessId(Long accessId){
         return roleMapper.listRolesByAccessId(accessId);
     }
 

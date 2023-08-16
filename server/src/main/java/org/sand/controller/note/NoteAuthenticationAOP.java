@@ -84,18 +84,18 @@ public class NoteAuthenticationAOP {
 
     }
 
-    private long searchProjectIdByNoteId(long noteId) {
+    private Long searchProjectIdByNoteId(Long noteId) {
         NotePO notePO = noteService.getById(noteId);
         if (notePO == null) {
-            return -1;
+            return -1L;
         }
         return notePO.getProjectId();
     }
 
-    private long searchProjectIdByNoteFolderId(long noteFolderId) {
+    private Long searchProjectIdByNoteFolderId(Long noteFolderId) {
         NoteFolderPO noteFolderPO = noteFolderService.getById(noteFolderId);
         if (noteFolderPO == null) {
-            return -1;
+            return -1L;
         }
         return noteFolderPO.getProjectId();
     }
@@ -103,7 +103,7 @@ public class NoteAuthenticationAOP {
     private AccessPO searchRequiredAccess(Object[] args, UserDTO userDTO) {
 
         String requiredAuth = ""; // 可取值有："edit"（编辑权限）、"read"（读取权限）
-        long projectId = -1;
+        Long projectId = -1L;
 
         // 根据不同的dto获取目标笔记项目的id
         for (Object arg : args) {
@@ -175,15 +175,13 @@ public class NoteAuthenticationAOP {
             return null;
         }
 
-        long accessId;
+        Long accessId = null;
         if (Objects.equals(userDTO.getId(), noteProjectPO.getCreateUserId())) {
             // 是所有者
             if (Objects.equals(requiredAuth, "edit")) {
                 accessId = 1L;
             } else if (Objects.equals(requiredAuth, "read")) {
                 accessId = 3L;
-            } else {
-                return null;
             }
         } else {
             // 不是所有者
@@ -191,8 +189,6 @@ public class NoteAuthenticationAOP {
                 accessId = 2L;
             } else if (Objects.equals(requiredAuth, "read")) {
                 accessId = 4L;
-            } else {
-                return null;
             }
         }
         return accessService.getById(accessId);

@@ -17,7 +17,7 @@ public class AccessServiceImpl extends ServiceImpl<AccessMapper, AccessPO> imple
     private final AccessMapper accessMapper;
 
     @Override
-    public List<AccessPO> listAccessByRoleId(long roleId) {
+    public List<AccessPO> listAccessByRoleId(Long roleId) {
         return accessMapper.listAccessByRoleId(roleId);
     }
 

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface AccessService  extends IService<AccessPO> {
 
-    List<AccessPO> listAccessByRoleId(long roleId);
+    List<AccessPO> listAccessByRoleId(Long roleId);
 
     AccessPO getByUrl(String url);
 
