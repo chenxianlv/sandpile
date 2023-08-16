@@ -8,6 +8,7 @@ import org.sand.common.ConstDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
 import org.sand.model.dto.note.*;
+import org.sand.model.po.common.BasicTablePO;
 import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
@@ -59,9 +60,14 @@ public class NoteController {
             BeanUtils.copyProperties(noteProjectPO, noteProjectVO);
 
             UserPO userPO = userService.getById(noteProjectPO.getCreateUserId());
-            if (userPO != null) {
-                noteProjectVO.setCreateUserName(userPO.getUserName());
-            }
+            noteProjectVO.setCreateUserName(userPO.getUserName());
+
+            noteProjectVO.setOwners(
+                    noteProjectService.listOwnerByProjectId(noteProjectPO.getId()).stream().map(BasicTablePO::getId).toArray(Long[]::new)
+            );
+            noteProjectVO.setReaders(
+                    noteProjectService.listReaderByProjectId(noteProjectPO.getId()).stream().map(BasicTablePO::getId).toArray(Long[]::new)
+            );
 
             return noteProjectVO;
         }).collect(Collectors.toList()));

@@ -12,6 +12,12 @@ public class NoteProjectVO extends BasicVO {
 
     private String projectName;
 
+    private Integer openness;
+
+    private Long[] owners;
+
+    private Long[] readers;
+
     private String createUserName;
 
     private Timestamp createTime;
