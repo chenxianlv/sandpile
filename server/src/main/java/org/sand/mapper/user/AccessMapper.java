@@ -9,6 +9,6 @@ import java.util.List;
 @Mapper
 public interface AccessMapper extends BaseMapper<AccessPO> {
 
-    List<AccessPO> listAccessByRoleId(long roleId);
+    List<AccessPO> listAccessByRoleId(Long roleId);
 
 }

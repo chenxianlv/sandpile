@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface RoleService extends IService<RolePO> {
 
-    List<RolePO> listRolesByUserId(long userId);
+    List<RolePO> listRolesByUserId(Long userId);
 
-    List<RolePO> listRolesByAccessId(long accessId);
+    List<RolePO> listRolesByAccessId(Long accessId);
 
 }
