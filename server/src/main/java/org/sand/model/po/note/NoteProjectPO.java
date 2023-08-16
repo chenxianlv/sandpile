@@ -10,4 +10,6 @@ public class NoteProjectPO extends BasicTablePO {
 
     private String projectName;
 
+    private Integer openness;
+
 }
