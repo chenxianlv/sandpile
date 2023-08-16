@@ -15,7 +15,7 @@
         SELECT <include refid="baseColumn" />
         FROM user_access AS acc RIGHT JOIN user_role_access AS mt
         ON acc.id = mt.access_id
-        WHERE acc.delete_flag = 0 and mt.role_id = #{roleId}
+        WHERE acc.delete_flag = 0 and mt.delete_flag = 0 and mt.role_id = #{roleId}
     </select>
 
 </mapper>
