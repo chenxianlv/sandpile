@@ -5,10 +5,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import org.sand.common.ConstDefine.ErrorCodeEnum;
-import org.sand.common.ConstDefine.NoteProjectOpennessEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
 import org.sand.model.dto.note.*;
+import org.sand.model.dto.user.UserDTO;
 import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
@@ -27,15 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Api(tags = "学习笔记模块")
 @AllArgsConstructor
 @RestController
 @RequestMapping(value = "${project.baseUrl}/note")
 public class NoteController {
+
+    public final NoteAuthenticationAOP noteAuthenticationAOP;
 
     public final NoteProjectService noteProjectService;
 
@@ -61,39 +61,13 @@ public class NoteController {
         listProjectsVO.setNoteProjects(noteProjectPOs.stream()
                 .filter(noteProjectPO -> {
                     // 读取笔记的权限判断
-                    Integer openness = noteProjectPO.getOpenness();
-                    Long projectId = noteProjectPO.getId();
 
-                    UserPO userPO = null;
+                    UserDTO userDTO = null;
                     if (authentication != null) {
-                        userPO = userService.getByUserAccount(authentication.getName());
+                        userDTO = (UserDTO) authentication.getPrincipal();
                     }
 
-                    if (Objects.equals(openness, NoteProjectOpennessEnum.FULL_PUBLIC.getValue())) {
-                        // 完全公开的笔记无需权限
-                        return true;
-                    } else if (userPO != null && Objects.equals(openness, NoteProjectOpennessEnum.HALF_PUBLIC.getValue())) {
-                        // 部分公开的笔记需要是读者或所有者才能查看
-                        UserPO finalUserPO = userPO;
-
-                        Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
-                        boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(finalUserPO.getId()));
-
-                        Long[] readerIds = noteProjectReaderService.listReaderIdsByProjectId(projectId);
-                        boolean readerFlag = Stream.of(readerIds).anyMatch(readerId -> readerId.equals(finalUserPO.getId()));
-
-                        return ownerFlag || readerFlag;
-                    } else if (userPO != null && Objects.equals(openness, NoteProjectOpennessEnum.PRIVATE.getValue())) {
-                        // 私有的笔记需要所有者才能查看
-                        UserPO finalUserPO = userPO;
-
-                        Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
-                        boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(finalUserPO.getId()));
-
-                        return ownerFlag;
-                    } else {
-                        return false;
-                    }
+                    return noteAuthenticationAOP.verify(noteProjectPO.getId(), userDTO, "read");
                 })
                 .map((noteProjectPO) -> {
                     NoteProjectVO noteProjectVO = new NoteProjectVO();
