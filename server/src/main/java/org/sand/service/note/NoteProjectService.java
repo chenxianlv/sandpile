@@ -4,9 +4,4 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.sand.model.po.note.NoteProjectPO;
 
 public interface NoteProjectService extends IService<NoteProjectPO> {
-
-    Long[] listOwnerIdsByProjectId(Long projectId);
-
-    Long[] listReaderIdsByProjectId(Long projectId);
-
 }
