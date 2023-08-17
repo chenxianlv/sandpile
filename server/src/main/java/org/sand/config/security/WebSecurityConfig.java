@@ -61,6 +61,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.csrf().disable();
 
+        http.anonymous()
+                .principal("anonymousUser")
+                .authorities("ROLE_ANONYMOUS");
+
         http.authorizeRequests().withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
             @Override
             public <O extends FilterSecurityInterceptor> O postProcess(O object) {
@@ -118,7 +122,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/swagger-ui.html")
                 .antMatchers("/webjars/**")
                 .antMatchers("/v2/**")
-                .antMatchers("/swagger-resources/**")
-                .antMatchers(baseUrl + "/note/listProjects");
+                .antMatchers("/swagger-resources/**");
     }
 }

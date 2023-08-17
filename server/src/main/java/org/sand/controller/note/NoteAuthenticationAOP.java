@@ -7,7 +7,9 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.sand.common.ConstDefine.AccessEnum;
 import org.sand.common.ConstDefine.ErrorCodeEnum;
+import org.sand.common.ConstDefine.NoteProjectOpennessEnum;
 import org.sand.common.ResultException;
 import org.sand.model.dto.note.*;
 import org.sand.model.dto.user.UserDTO;
@@ -16,6 +18,7 @@ import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
 import org.sand.model.po.user.AccessPO;
+import org.sand.model.po.user.UserPO;
 import org.sand.service.note.NoteFolderService;
 import org.sand.service.note.NoteProjectService;
 import org.sand.service.note.NoteService;
@@ -74,9 +77,6 @@ public class NoteAuthenticationAOP {
         }
 
         AccessPO requiredAccess = searchRequiredAccess(args, userDTO);
-        if (requiredAccess == null) {
-            throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
-        }
 
         if (!verifyAccess(requiredAccess, userDTO)) {
             throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
@@ -100,10 +100,10 @@ public class NoteAuthenticationAOP {
         return noteFolderPO.getProjectId();
     }
 
-    private AccessPO searchRequiredAccess(Object[] args, UserDTO userDTO) {
+    private AccessPO searchRequiredAccess(Object[] args, UserDTO userDTO) throws ResultException {
 
         String requiredAuth = ""; // 可取值有："edit"（编辑权限）、"read"（读取权限）
-        Long projectId = -1L;
+        Long projectId = null;
 
         // 根据不同的dto获取目标笔记项目的id
         for (Object arg : args) {
@@ -172,29 +172,55 @@ public class NoteAuthenticationAOP {
 
         NoteProjectPO noteProjectPO = noteProjectService.getById(projectId);
         if (noteProjectPO == null) {
-            return null;
+            throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
         }
+        List<UserPO> owners = noteProjectService.listOwnerByProjectId(projectId);
+        boolean ownerFlag = owners.stream().anyMatch(owner -> owner.getId().equals(userDTO.getId()));
 
-        Long accessId = null;
-        if (Objects.equals(userDTO.getId(), noteProjectPO.getCreateUserId())) {
-            // 是所有者
-            if (Objects.equals(requiredAuth, "edit")) {
-                accessId = 1L;
-            } else if (Objects.equals(requiredAuth, "read")) {
-                accessId = 3L;
+        Long requiredAccessId = null;
+        if (Objects.equals(requiredAuth, "edit")) {
+            // 编辑笔记的权限判断
+            if (ownerFlag) {
+                requiredAccessId = AccessEnum.EDIT_OWNED_PROJECT.getId();
+            } else {
+                requiredAccessId = AccessEnum.EDIT_ALL_PROJECT.getId();
             }
         } else {
-            // 不是所有者
-            if (Objects.equals(requiredAuth, "edit")) {
-                accessId = 2L;
-            } else if (Objects.equals(requiredAuth, "read")) {
-                accessId = 4L;
+            // 读取笔记的权限判断
+            Integer openness = noteProjectPO.getOpenness();
+
+            if (Objects.equals(openness, NoteProjectOpennessEnum.FULL_PUBLIC.getValue())) {
+                // 完全公开的笔记无需权限
+                requiredAccessId = null;
+            } else if (Objects.equals(openness, NoteProjectOpennessEnum.HALF_PUBLIC.getValue())) {
+                // 部分公开的笔记需要是读者或所有者才能查看
+
+                List<UserPO> readers = noteProjectService.listReaderByProjectId(projectId);
+                boolean readerFlag = readers.stream().anyMatch(reader -> reader.getId().equals(userDTO.getId()));
+
+                if (ownerFlag || readerFlag) {
+                    requiredAccessId = AccessEnum.READ_OWNED_PROJECT.getId(); // 读者和所有者所需的权限都划分至该权限中，可以进行细分
+                } else {
+                    requiredAccessId = AccessEnum.READ_ALL_PROJECT.getId();
+                }
+            } else if (Objects.equals(openness, NoteProjectOpennessEnum.PRIVATE.getValue())) {
+                // 私有的笔记需要所有者才能查看
+                if (ownerFlag) {
+                    requiredAccessId = AccessEnum.READ_OWNED_PROJECT.getId();
+                } else {
+                    requiredAccessId = AccessEnum.READ_ALL_PROJECT.getId();
+                }
+            } else {
+                throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
             }
         }
-        return accessService.getById(accessId);
+        return accessService.getById(requiredAccessId);
     }
 
     private boolean verifyAccess(AccessPO requireAccessPO, UserDTO userDTO) {
+        if (requireAccessPO == null) {
+            return true;
+        }
         List<Long> requireRoleIds = roleService.listRolesByAccessId(requireAccessPO.getId()).stream().map(BasicTablePO::getId).toList();
         return userDTO.getRoleList().stream().anyMatch(rolePO -> requireRoleIds.contains(rolePO.getId()));
     }
