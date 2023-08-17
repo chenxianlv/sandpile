@@ -62,7 +62,8 @@ VALUES (1, 'editOwnedProject', null, 1, '对已拥有项目，具备增删改项
        (2, 'editAllProject', null, 1, '对所有项目，具备增删改项目本身及内部文件的权限'),
        (3, 'readOwnedProject', null, 1, '对已拥有项目，具备读取项目本身及内部文件的权限'),
        (4, 'readAllProject', null, 1, '对所有项目，具备读取项目本身及内部文件的权限'),
-       (5, 'addProject', '/api/note/addProject', 1, '新增笔记项目')
+       (5, 'addProject', '/api/note/addProject', 1, '新增笔记项目'),
+       (6, 'listProject', '/api/note/listProject', 1, '查询笔记项目')
        ;
 
 INSERT INTO `user_user_role`(`user_id`, `role_id`)
@@ -74,13 +75,16 @@ VALUES (1, 1),
        (1, 3),
        (1, 4),
        (1, 5),
+       (1, 6),
 
        (2, 1),
        (2, 2),
        (2, 3),
        (2, 4),
        (2, 5),
+       (2, 6),
 
        (3, 1),
        (3, 3),
-       (3, 5);
+       (3, 5),
+       (3, 6);
