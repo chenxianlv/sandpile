@@ -78,9 +78,75 @@ public class NoteAuthenticationAOP {
             throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
         }
 
-        AccessPO requiredAccess = searchRequiredAccess(args, userDTO);
+        String requiredAuthType = ""; // 可取值有："edit"（编辑权限）、"read"（读取权限）
+        Long projectId = null;
 
-        if (!verifyAccess(requiredAccess, userDTO)) {
+        // 根据不同的dto获取目标笔记项目的id
+        for (Object arg : args) {
+            if (arg instanceof UpdateProjectDTO) {
+
+                requiredAuthType = "edit";
+                projectId = ((UpdateProjectDTO) arg).getId();
+                break;
+
+            } else if (arg instanceof DeleteProjectDTO) {
+
+                requiredAuthType = "edit";
+                projectId = ((DeleteProjectDTO) arg).getId();
+                break;
+
+            } else if (arg instanceof GetProjectDetailDTO) {
+
+                requiredAuthType = "read";
+                projectId = ((GetProjectDetailDTO) arg).getId();
+                break;
+
+            } else if (arg instanceof GetNoteTextDTO) {
+
+                requiredAuthType = "read";
+                projectId = searchProjectIdByNoteId(((GetNoteTextDTO) arg).getId());
+                break;
+
+            } else if (arg instanceof AddNoteFileDTO) {
+
+                requiredAuthType = "edit";
+                projectId = ((AddNoteFileDTO) arg).getProjectId();
+                break;
+
+            } else if (arg instanceof DeleteNoteFileDTO) {
+
+                requiredAuthType = "edit";
+                projectId = searchProjectIdByNoteId(((DeleteNoteFileDTO) arg).getId());
+                break;
+
+            } else if (arg instanceof UpdateNoteFileDTO) {
+
+                requiredAuthType = "edit";
+                projectId = searchProjectIdByNoteId(((UpdateNoteFileDTO) arg).getId());
+                break;
+
+            } else if (arg instanceof AddNoteFolderDTO) {
+
+                requiredAuthType = "edit";
+                projectId = ((AddNoteFolderDTO) arg).getProjectId();
+                break;
+
+            } else if (arg instanceof DeleteNoteFolderDTO) {
+
+                requiredAuthType = "edit";
+                projectId = searchProjectIdByNoteFolderId(((DeleteNoteFolderDTO) arg).getId());
+                break;
+
+            } else if (arg instanceof UpdateNoteFolderDTO) {
+
+                requiredAuthType = "edit";
+                projectId = searchProjectIdByNoteFolderId(((UpdateNoteFolderDTO) arg).getId());
+                break;
+
+            }
+        }
+
+        if (!verify(projectId, userDTO, requiredAuthType)) {
             throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
         }
 
@@ -102,86 +168,18 @@ public class NoteAuthenticationAOP {
         return noteFolderPO.getProjectId();
     }
 
-    private AccessPO searchRequiredAccess(Object[] args, UserDTO userDTO) throws ResultException {
-
-        String requiredAuth = ""; // 可取值有："edit"（编辑权限）、"read"（读取权限）
-        Long projectId = null;
-
-        // 根据不同的dto获取目标笔记项目的id
-        for (Object arg : args) {
-            if (arg instanceof UpdateProjectDTO) {
-
-                requiredAuth = "edit";
-                projectId = ((UpdateProjectDTO) arg).getId();
-                break;
-
-            } else if (arg instanceof DeleteProjectDTO) {
-
-                requiredAuth = "edit";
-                projectId = ((DeleteProjectDTO) arg).getId();
-                break;
-
-            } else if (arg instanceof GetProjectDetailDTO) {
-
-                requiredAuth = "read";
-                projectId = ((GetProjectDetailDTO) arg).getId();
-                break;
-
-            } else if (arg instanceof GetNoteTextDTO) {
-
-                requiredAuth = "read";
-                projectId = searchProjectIdByNoteId(((GetNoteTextDTO) arg).getId());
-                break;
-
-            } else if (arg instanceof AddNoteFileDTO) {
-
-                requiredAuth = "edit";
-                projectId = ((AddNoteFileDTO) arg).getProjectId();
-                break;
-
-            } else if (arg instanceof DeleteNoteFileDTO) {
-
-                requiredAuth = "edit";
-                projectId = searchProjectIdByNoteId(((DeleteNoteFileDTO) arg).getId());
-                break;
-
-            } else if (arg instanceof UpdateNoteFileDTO) {
-
-                requiredAuth = "edit";
-                projectId = searchProjectIdByNoteId(((UpdateNoteFileDTO) arg).getId());
-                break;
-
-            } else if (arg instanceof AddNoteFolderDTO) {
-
-                requiredAuth = "edit";
-                projectId = ((AddNoteFolderDTO) arg).getProjectId();
-                break;
-
-            } else if (arg instanceof DeleteNoteFolderDTO) {
-
-                requiredAuth = "edit";
-                projectId = searchProjectIdByNoteFolderId(((DeleteNoteFolderDTO) arg).getId());
-                break;
-
-            } else if (arg instanceof UpdateNoteFolderDTO) {
-
-                requiredAuth = "edit";
-                projectId = searchProjectIdByNoteFolderId(((UpdateNoteFolderDTO) arg).getId());
-                break;
-
-            }
-        }
-
+    public boolean verify(Long projectId, UserDTO userDTO, String requiredAuthType) {
         NoteProjectPO noteProjectPO = noteProjectService.getById(projectId);
         if (noteProjectPO == null) {
-            throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
+            return false;
         }
-        Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
-        boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(userDTO.getId()));
 
         Long requiredAccessId = null;
-        if (Objects.equals(requiredAuth, "edit")) {
+        if (userDTO != null && Objects.equals(requiredAuthType, "edit")) {
             // 编辑笔记的权限判断
+            Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
+            boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(userDTO.getId()));
+
             if (ownerFlag) {
                 requiredAccessId = AccessEnum.EDIT_OWNED_PROJECT.getId();
             } else {
@@ -194,8 +192,10 @@ public class NoteAuthenticationAOP {
             if (Objects.equals(openness, NoteProjectOpennessEnum.FULL_PUBLIC.getValue())) {
                 // 完全公开的笔记无需权限
                 requiredAccessId = null;
-            } else if (Objects.equals(openness, NoteProjectOpennessEnum.HALF_PUBLIC.getValue())) {
+            } else if (userDTO != null && Objects.equals(openness, NoteProjectOpennessEnum.HALF_PUBLIC.getValue())) {
                 // 部分公开的笔记需要是读者或所有者才能查看
+                Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
+                boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(userDTO.getId()));
 
                 Long[] readerIds = noteProjectReaderService.listReaderIdsByProjectId(projectId);
                 boolean readerFlag = Stream.of(readerIds).anyMatch(readerId -> readerId.equals(userDTO.getId()));
@@ -205,25 +205,31 @@ public class NoteAuthenticationAOP {
                 } else {
                     requiredAccessId = AccessEnum.READ_ALL_PROJECT.getId();
                 }
-            } else if (Objects.equals(openness, NoteProjectOpennessEnum.PRIVATE.getValue())) {
+            } else if (userDTO != null && Objects.equals(openness, NoteProjectOpennessEnum.PRIVATE.getValue())) {
                 // 私有的笔记需要所有者才能查看
+                Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
+                boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(userDTO.getId()));
+
                 if (ownerFlag) {
                     requiredAccessId = AccessEnum.READ_OWNED_PROJECT.getId();
                 } else {
                     requiredAccessId = AccessEnum.READ_ALL_PROJECT.getId();
                 }
             } else {
-                throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
+                return false;
             }
         }
-        return accessService.getById(requiredAccessId);
-    }
 
-    private boolean verifyAccess(AccessPO requireAccessPO, UserDTO userDTO) {
-        if (requireAccessPO == null) {
+        if (requiredAccessId == null) {
+            return true;
+        };
+
+        AccessPO requiredAccessPO = accessService.getById(requiredAccessId);
+        if (requiredAccessPO == null) {
             return true;
         }
-        List<Long> requireRoleIds = roleService.listRolesByAccessId(requireAccessPO.getId()).stream().map(BasicTablePO::getId).toList();
-        return userDTO.getRoleList().stream().anyMatch(rolePO -> requireRoleIds.contains(rolePO.getId()));
+
+        List<Long> requiredRoleIds = roleService.listRolesByAccessId(requiredAccessPO.getId()).stream().map(BasicTablePO::getId).toList();
+        return userDTO.getRoleList().stream().anyMatch(rolePO -> requiredRoleIds.contains(rolePO.getId()));
     }
 }
