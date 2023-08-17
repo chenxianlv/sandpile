@@ -18,9 +18,7 @@ import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
 import org.sand.model.po.user.AccessPO;
-import org.sand.service.note.NoteFolderService;
-import org.sand.service.note.NoteProjectService;
-import org.sand.service.note.NoteService;
+import org.sand.service.note.*;
 import org.sand.service.user.AccessService;
 import org.sand.service.user.RoleService;
 import org.springframework.security.core.Authentication;
@@ -38,6 +36,10 @@ import java.util.stream.Stream;
 public class NoteAuthenticationAOP {
 
     private final NoteProjectService noteProjectService;
+
+    private final NoteProjectOwnerService noteProjectOwnerService;
+
+    private final NoteProjectReaderService noteProjectReaderService;
 
     private final NoteService noteService;
 
@@ -174,7 +176,7 @@ public class NoteAuthenticationAOP {
         if (noteProjectPO == null) {
             throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
         }
-        Long[] ownerIds = noteProjectService.listOwnerIdsByProjectId(projectId);
+        Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
         boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(userDTO.getId()));
 
         Long requiredAccessId = null;
@@ -195,7 +197,7 @@ public class NoteAuthenticationAOP {
             } else if (Objects.equals(openness, NoteProjectOpennessEnum.HALF_PUBLIC.getValue())) {
                 // 部分公开的笔记需要是读者或所有者才能查看
 
-                Long[] readerIds = noteProjectService.listReaderIdsByProjectId(projectId);
+                Long[] readerIds = noteProjectReaderService.listReaderIdsByProjectId(projectId);
                 boolean readerFlag = Stream.of(readerIds).anyMatch(readerId -> readerId.equals(userDTO.getId()));
 
                 if (ownerFlag || readerFlag) {

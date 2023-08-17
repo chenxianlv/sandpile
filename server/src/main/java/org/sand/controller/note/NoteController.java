@@ -14,9 +14,7 @@ import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
 import org.sand.model.po.user.UserPO;
 import org.sand.model.vo.note.*;
-import org.sand.service.note.NoteFolderService;
-import org.sand.service.note.NoteProjectService;
-import org.sand.service.note.NoteService;
+import org.sand.service.note.*;
 import org.sand.service.user.UserService;
 import org.sand.util.DBUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +38,10 @@ import java.util.stream.Stream;
 public class NoteController {
 
     public final NoteProjectService noteProjectService;
+
+    private final NoteProjectOwnerService noteProjectOwnerService;
+
+    private final NoteProjectReaderService noteProjectReaderService;
 
     public final NoteService noteService;
 
@@ -74,10 +76,10 @@ public class NoteController {
                         // 部分公开的笔记需要是读者或所有者才能查看
                         UserPO finalUserPO = userPO;
 
-                        Long[] ownerIds = noteProjectService.listOwnerIdsByProjectId(projectId);
+                        Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
                         boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(finalUserPO.getId()));
 
-                        Long[] readerIds = noteProjectService.listReaderIdsByProjectId(projectId);
+                        Long[] readerIds = noteProjectReaderService.listReaderIdsByProjectId(projectId);
                         boolean readerFlag = Stream.of(readerIds).anyMatch(readerId -> readerId.equals(finalUserPO.getId()));
 
                         return ownerFlag || readerFlag;
@@ -85,7 +87,7 @@ public class NoteController {
                         // 私有的笔记需要所有者才能查看
                         UserPO finalUserPO = userPO;
 
-                        Long[] ownerIds = noteProjectService.listOwnerIdsByProjectId(projectId);
+                        Long[] ownerIds = noteProjectOwnerService.listOwnerIdsByProjectId(projectId);
                         boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(finalUserPO.getId()));
 
                         return ownerFlag;
@@ -101,10 +103,10 @@ public class NoteController {
                     noteProjectVO.setCreateUserName(userPO.getUserName());
 
                     noteProjectVO.setOwners(
-                            noteProjectService.listOwnerIdsByProjectId(noteProjectPO.getId())
+                            noteProjectOwnerService.listOwnerIdsByProjectId(noteProjectPO.getId())
                     );
                     noteProjectVO.setReaders(
-                            noteProjectService.listReaderIdsByProjectId(noteProjectPO.getId())
+                            noteProjectReaderService.listReaderIdsByProjectId(noteProjectPO.getId())
                     );
 
                     return noteProjectVO;
@@ -124,20 +126,43 @@ public class NoteController {
 
         BeanUtils.copyProperties(dto, noteProjectPO);
         dbUtils.updateUpdateInfo(noteProjectPO, authentication);
-
         noteProjectService.updateById(noteProjectPO);
+
+        if (dto.getOwners() != null) {
+            if(!noteProjectOwnerService.updateOwners(dto.getId(), dto.getOwners())) {
+                throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
+            }
+        }
+        if (dto.getReaders() != null) {
+            if(!noteProjectReaderService.updateReaders(dto.getId(), dto.getReaders())) {
+                throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
+            }
+        }
+
         return ResponseVO.success();
     }
 
     @ApiOperation("新建一个空的笔记项目")
     @PostMapping("/addProject")
-    public ResponseVO<?> addProject(@Validated @RequestBody AddProjectDTO addProjectDTO, Authentication authentication) {
+    public ResponseVO<?> addProject(@Validated @RequestBody AddProjectDTO dto, Authentication authentication) throws ResultException {
         NoteProjectPO noteProjectPO = new NoteProjectPO();
 
-        BeanUtils.copyProperties(addProjectDTO, noteProjectPO);
+        BeanUtils.copyProperties(dto, noteProjectPO);
         dbUtils.updateCreateInfo(noteProjectPO, authentication);
 
-        noteProjectService.save(noteProjectPO);
+        if (!noteProjectService.save(noteProjectPO)) {
+            throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
+        }
+
+        if(!noteProjectOwnerService.updateOwners(noteProjectPO.getId(), dto.getOwners())) {
+            throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
+        }
+
+        if (dto.getReaders() != null) {
+            if(!noteProjectReaderService.updateReaders(noteProjectPO.getId(), dto.getReaders())) {
+                throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
+            }
+        }
 
         AddProjectVO addProjectVO = new AddProjectVO();
         addProjectVO.setId(noteProjectPO.getId());
@@ -148,8 +173,8 @@ public class NoteController {
     @ApiOperation("删除指定笔记模块")
     @PostMapping("/deleteProject")
     @NoteAuthorization
-    public ResponseVO<?> deleteProject(@Validated @RequestBody DeleteProjectDTO deleteProjectDTO, Authentication authentication) throws ResultException {
-        if (!noteProjectService.removeById(deleteProjectDTO.getId())) {
+    public ResponseVO<?> deleteProject(@Validated @RequestBody DeleteProjectDTO dto, Authentication authentication) throws ResultException {
+        if (!noteProjectService.removeById(dto.getId())) {
             throw ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED);
         }
 
@@ -159,9 +184,9 @@ public class NoteController {
     @ApiOperation("获取指定笔记项目内部的笔记信息")
     @PostMapping("/getProjectDetail")
     @NoteAuthorization
-    public ResponseVO<?> getProjectDetail(@Validated @RequestBody GetProjectDetailDTO getProjectDetailDTO, Authentication authentication) {
+    public ResponseVO<?> getProjectDetail(@Validated @RequestBody GetProjectDetailDTO dto, Authentication authentication) {
         System.out.println(authentication);
-        Long id = getProjectDetailDTO.getId();
+        Long id = dto.getId();
 
         // 获取笔记项目内的笔记
         LambdaQueryWrapper<NotePO> lqw = new LambdaQueryWrapper<>();
