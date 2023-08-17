@@ -9,7 +9,6 @@ import org.sand.common.ConstDefine.NoteProjectOpennessEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
 import org.sand.model.dto.note.*;
-import org.sand.model.po.common.BasicTablePO;
 import org.sand.model.po.note.NoteFolderPO;
 import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
@@ -32,6 +31,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Api(tags = "学习笔记模块")
 @AllArgsConstructor
@@ -49,7 +49,6 @@ public class NoteController {
 
     public final DBUtils dbUtils;
 
-    // todo 支持几个新增字段的修改功能
     @ApiOperation("列出符合查询条件的笔记项目")
     @PostMapping("/listProjects")
     public ResponseVO<?> listProjects(Authentication authentication) {
@@ -75,19 +74,19 @@ public class NoteController {
                         // 部分公开的笔记需要是读者或所有者才能查看
                         UserPO finalUserPO = userPO;
 
-                        List<UserPO> owners = noteProjectService.listOwnerByProjectId(projectId);
-                        boolean ownerFlag = owners.stream().anyMatch(owner -> owner.getId().equals(finalUserPO.getId()));
+                        Long[] ownerIds = noteProjectService.listOwnerIdsByProjectId(projectId);
+                        boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(finalUserPO.getId()));
 
-                        List<UserPO> readers = noteProjectService.listReaderByProjectId(projectId);
-                        boolean readerFlag = readers.stream().anyMatch(reader -> reader.getId().equals(finalUserPO.getId()));
+                        Long[] readerIds = noteProjectService.listReaderIdsByProjectId(projectId);
+                        boolean readerFlag = Stream.of(readerIds).anyMatch(readerId -> readerId.equals(finalUserPO.getId()));
 
                         return ownerFlag || readerFlag;
                     } else if (userPO != null && Objects.equals(openness, NoteProjectOpennessEnum.PRIVATE.getValue())) {
                         // 私有的笔记需要所有者才能查看
                         UserPO finalUserPO = userPO;
 
-                        List<UserPO> owners = noteProjectService.listOwnerByProjectId(projectId);
-                        boolean ownerFlag = owners.stream().anyMatch(owner -> owner.getId().equals(finalUserPO.getId()));
+                        Long[] ownerIds = noteProjectService.listOwnerIdsByProjectId(projectId);
+                        boolean ownerFlag = Stream.of(ownerIds).anyMatch(ownerId -> ownerId.equals(finalUserPO.getId()));
 
                         return ownerFlag;
                     } else {
@@ -102,10 +101,10 @@ public class NoteController {
                     noteProjectVO.setCreateUserName(userPO.getUserName());
 
                     noteProjectVO.setOwners(
-                            noteProjectService.listOwnerByProjectId(noteProjectPO.getId()).stream().map(BasicTablePO::getId).toArray(Long[]::new)
+                            noteProjectService.listOwnerIdsByProjectId(noteProjectPO.getId())
                     );
                     noteProjectVO.setReaders(
-                            noteProjectService.listReaderByProjectId(noteProjectPO.getId()).stream().map(BasicTablePO::getId).toArray(Long[]::new)
+                            noteProjectService.listReaderIdsByProjectId(noteProjectPO.getId())
                     );
 
                     return noteProjectVO;
