@@ -58,13 +58,14 @@ VALUES (1, 'root', 1, '超级用户，拥有所有权限'),
        (3, 'normalUser', 1, '普通用户，无法对其他用户的笔记项目进行操作，允许查看开放的笔记项目');
 
 INSERT INTO `user_access`(`id`, `access_name`, `access_url`, `create_user_id`, `remark`)
-VALUES (1, 'editOwnedProject', null, 1, '对已拥有项目，具备增删改项目本身及内部文件的权限'),
-       (2, 'editAllProject', null, 1, '对所有项目，具备增删改项目本身及内部文件的权限'),
-       (3, 'readOwnedProject', null, 1, '对已拥有项目，具备读取项目本身及内部文件的权限'),
-       (4, 'readAllProject', null, 1, '对所有项目，具备读取项目本身及内部文件的权限'),
-       (5, 'addProject', '/api/note/addProject', 1, '新增笔记项目'),
-       (6, 'listProject', '/api/note/listProject', 1, '查询笔记项目')
-       ;
+VALUES (10001, 'listUserSummaries', '/api/user/listUserSummaries', 1, '根据id或用户名查询用户概况'),
+       (20001, 'editOwnedProject', null, 1, '对已拥有项目，具备增删改项目本身及内部文件的权限'),
+       (20002, 'editAllProject', null, 1, '对所有项目，具备增删改项目本身及内部文件的权限'),
+       (20003, 'readOwnedProject', null, 1, '对已拥有项目，具备读取项目本身及内部文件的权限'),
+       (20004, 'readAllProject', null, 1, '对所有项目，具备读取项目本身及内部文件的权限'),
+       (20005, 'addProject', '/api/note/addProject', 1, '新增笔记项目'),
+       (20006, 'listProjects', '/api/note/listProjects', 1, '查询笔记项目')
+;
 
 INSERT INTO `user_user_role`(`user_id`, `role_id`)
 VALUES (1, 1);

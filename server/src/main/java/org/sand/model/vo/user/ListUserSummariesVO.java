@@ -5,8 +5,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ListUsersVO {
+public class ListUserSummariesVO {
 
-    List<ListUsersUserVO> users;
+    List<UserSummaryVO> users;
 
 }
