@@ -1,4 +1,4 @@
-package org.sand.controller.note;
+package org.sand.controller.note.aop;
 
 import java.lang.annotation.*;
 
