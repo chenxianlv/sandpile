@@ -7,7 +7,7 @@ import org.sand.model.po.common.BasicTablePO;
 import org.sand.model.po.user.AccessPO;
 import org.sand.model.po.user.RolePO;
 import org.sand.model.po.user.UserPO;
-import org.sand.model.vo.base.UserLoginVO;
+import org.sand.model.vo.user.UserLoginVO;
 import org.sand.service.user.AccessService;
 import org.sand.service.user.RoleService;
 import org.sand.service.user.UserService;

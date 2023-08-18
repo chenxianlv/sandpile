@@ -1,4 +1,4 @@
-package org.sand.model.vo.base;
+package org.sand.model.vo.user;
 
 import lombok.Data;
 
