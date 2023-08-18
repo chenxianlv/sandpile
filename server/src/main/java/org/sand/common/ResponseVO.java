@@ -2,7 +2,7 @@ package org.sand.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import org.sand.common.ConstDefine.ResponseStatusEnum;
+import org.sand.common.constDefine.ResponseStatusEnum;
 
 /**
  * 通用返回结果，服务端响应的数据最终都会封装成此对象

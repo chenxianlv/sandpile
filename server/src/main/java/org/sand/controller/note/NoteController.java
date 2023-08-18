@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
-import org.sand.common.ConstDefine.ErrorCodeEnum;
+import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
 import org.sand.model.dto.note.*;
@@ -159,7 +159,6 @@ public class NoteController {
     @PostMapping("/getProjectDetail")
     @NoteAuthorization
     public ResponseVO<?> getProjectDetail(@Validated @RequestBody GetProjectDetailDTO dto, Authentication authentication) {
-        System.out.println(authentication);
         Long id = dto.getId();
 
         // 获取笔记项目内的笔记

@@ -2,7 +2,7 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.sand.common.ConstDefine.ErrorCodeEnum;
+import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
 import org.sand.util.TokenUtils;

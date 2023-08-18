@@ -1,4 +1,4 @@
-package org.sand.common.ConstDefine;
+package org.sand.common.constDefine;
 
 import lombok.Getter;
 
