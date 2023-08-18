@@ -91,7 +91,7 @@ const showDeleteDialog = (row: NoteProject) => {
 
 const getProjectRequiredEditAuthList = (data: NoteProject) => {
     const isOwner = userStore.id !== undefined && data.owners.includes(userStore.id);
-    return isOwner ? [1] : [2];
+    return isOwner ? [20001] : [20002];
 };
 </script>
 
@@ -104,7 +104,7 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
                 :prefix-icon="Search"
                 v-model="filterString"
             />
-            <el-button v-auth="[5]" type="primary" @click="addDialogVisible = true"
+            <el-button v-auth="[20005]" type="primary" @click="addDialogVisible = true"
                 >新建项目
             </el-button>
         </header>
