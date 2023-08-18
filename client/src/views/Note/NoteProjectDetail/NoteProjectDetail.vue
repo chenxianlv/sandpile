@@ -143,7 +143,7 @@ const userStore = useUserStore();
 const projectRequiredEditAuthList = computed(() => {
     const isOwner =
         userStore.id !== undefined && (responseData.value.owners?.includes(userStore.id) ?? false);
-    return isOwner ? [1] : [2];
+    return isOwner ? [20001] : [20002];
 });
 </script>
 
