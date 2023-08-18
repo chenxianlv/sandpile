@@ -8,7 +8,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import org.sand.common.ConstDefine.ErrorCodeEnum;
+import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.common.ResultException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

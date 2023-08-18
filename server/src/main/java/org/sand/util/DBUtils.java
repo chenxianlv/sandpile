@@ -42,8 +42,6 @@ public class DBUtils {
     }
 
     private Long getCurrentUTCTime() {
-        System.out.println(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis());
-
         return Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis();
     }
 

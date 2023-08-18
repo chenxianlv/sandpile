@@ -1,4 +1,4 @@
-package org.sand.common.ConstDefine;
+package org.sand.common.constDefine;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +16,8 @@ public enum ErrorCodeEnum {
 
     FTP_CONNECT_FAILED(12001, "ftp connect failed"),
     FTP_CREATE_FILE_FAILED(12002, "ftp create file failed"),
+
+    PARAMETERS_NOT_VALID(13001, "parameters not valid"),
 
     MODEL_ADD_FAILED(21001, "model add failed"),
 
