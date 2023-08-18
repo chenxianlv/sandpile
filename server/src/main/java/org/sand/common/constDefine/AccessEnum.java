@@ -6,12 +6,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AccessEnum {
-    EDIT_OWNED_PROJECT(1L),
-    EDIT_ALL_PROJECT(2L),
-    READ_OWNED_PROJECT(3L),
-    READ_ALL_PROJECT(4L),
-    ADD_PROJECT(5L),
-    LIST_PROJECT(6L);
+    LIST_USER_SUMMARIES(10001L),
+    EDIT_OWNED_PROJECT(20001L),
+    EDIT_ALL_PROJECT(20002L),
+    READ_OWNED_PROJECT(20003L),
+    READ_ALL_PROJECT(20004L),
+    ADD_PROJECT(20005L),
+    LIST_PROJECTS(20006L);
 
     private final Long id;
 }

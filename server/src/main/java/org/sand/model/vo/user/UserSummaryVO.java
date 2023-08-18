@@ -3,7 +3,7 @@ package org.sand.model.vo.user;
 import lombok.Data;
 
 @Data
-public class ListUsersUserVO {
+public class UserSummaryVO {
 
     private Long id;
 
