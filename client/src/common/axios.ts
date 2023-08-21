@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, CanceledError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 import baseConfig from '@/config/base';
@@ -57,7 +57,12 @@ baseRequest.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        let res: AxiosResponse;
+        // 请求取消的情况
+        if ((error as AxiosError)?.code === 'ERR_CANCELED') {
+            return Promise.reject(error);
+        }
+
+        let res: AxiosResponse | undefined;
         if ((error as AxiosResponse)?.data) {
             res = error as AxiosResponse;
         } else {
