@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { QuestionFilled } from '@element-plus/icons-vue';
-import { addProjectAPI } from '@/api/note';
+import { addProjectAPI, updateProjectAPI } from '@/api/note';
 import noteConfig from '@/config/note';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
+import type { UserSummary } from '@/components/UserSelect/UserSelect.vue';
+import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
+import { useUserStore } from '@/stores/userStore';
+
+const props = defineProps<{
+    mode: 'add' | 'edit';
+    data?: NoteProject;
+}>();
 
 const formRef = ref<FormInstance>();
 const autoFocusRef = ref<InputInstance>();
@@ -40,11 +48,33 @@ const rules = reactive<FormRules>({
     openness: [{ required: true, message: '请选择开放程度', trigger: 'blur' }],
 });
 
-const requestFn = () => addProjectAPI(formData);
+const userStore = useUserStore();
+const defaultOwnerOptions = ref<Array<UserSummary>>([]);
+const defaultReaderOptions = ref<Array<UserSummary>>([]);
+
+const requestFn = () =>
+    props.mode === 'add'
+        ? addProjectAPI(formData)
+        : updateProjectAPI({ id: props.data!.id, ...formData });
 const onOpen = () => {
-    nextTick(() => {
-        ownerSelectRef.value?.selectCurrentUser();
-    });
+    if (props.mode === 'add') {
+        // 新增项目时，自动选择所有者为当前用户
+        if (userStore.id !== undefined && userStore.username !== undefined) {
+            defaultOwnerOptions.value = [{ id: userStore.id, username: userStore.username }];
+            formData.owners = [userStore.id];
+        }
+    } else {
+        props.data?.projectName !== undefined && (formData.projectName = props.data.projectName);
+        props.data?.openness !== undefined && (formData.openness = props.data.openness);
+        if (props.data?.owners !== undefined) {
+            defaultOwnerOptions.value = props.data.owners;
+            formData.owners = props.data.owners.map((item) => item.id);
+        }
+        if (props.data?.readers !== undefined) {
+            defaultReaderOptions.value = props.data.readers;
+            formData.readers = props.data.readers.map((item) => item.id);
+        }
+    }
 };
 const helpText = `完全开放：所有用户包括匿名用户均可查看
 部分开放：仅读者及所有者可以查看
@@ -54,7 +84,7 @@ const helpText = `完全开放：所有用户包括匿名用户均可查看
 <template>
     <FormDialog
         width="520px"
-        title="新建笔记项目"
+        :title="mode === 'add' ? '新建笔记项目' : '编辑笔记项目'"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"
@@ -79,7 +109,7 @@ const helpText = `完全开放：所有用户包括匿名用户均可查看
                 <el-form-item prop="owners" label="所有者">
                     <UserSelect
                         v-model="formData.owners"
-                        current-user-option
+                        :default-options="defaultOwnerOptions"
                         ref="ownerSelectRef"
                     ></UserSelect>
                 </el-form-item>
@@ -106,7 +136,10 @@ const helpText = `完全开放：所有用户包括匿名用户均可查看
                     label="读者"
                     v-if="formData.openness === noteConfig.NOTE_PROJECT_OPENNESS_ENUM.HALF_PUBLIC"
                 >
-                    <UserSelect v-model="formData.readers"></UserSelect>
+                    <UserSelect
+                        v-model="formData.readers"
+                        :default-options="defaultReaderOptions"
+                    ></UserSelect>
                 </el-form-item>
             </el-form>
         </template>

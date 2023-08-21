@@ -1,40 +1,42 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { listUserSummaries } from '@/api/user';
 import { useUserStore } from '@/stores/userStore';
 
-type UserSummary = {
+export interface UserSummary {
     username: string;
     id: number;
-};
+}
+
 const props = withDefaults(
     defineProps<{
         modelValue?: number[];
         /**
-         * 若已登录，则不输入任何字符的情况下，会添加当前用户至可选项中
+         * 不输入任何字符的情况下，会显示的选项
          */
-        currentUserOption?: boolean;
+        defaultOptions?: Array<UserSummary>;
     }>(),
     {
         modelValue: () => [],
-        currentUserOption: false,
+        defaultOptions: () => [],
     }
 );
 const emit = defineEmits<{
     (e: 'update:modelValue', value: number[]): void;
 }>();
 
-const userStore = useUserStore();
 const userList = ref<Array<UserSummary>>([]);
 
 const initUserList = () => {
-    const arr = [];
-    if (props.currentUserOption && userStore.id !== undefined && userStore.username !== undefined) {
-        arr.push({ id: userStore.id, username: userStore.username });
-    }
-    userList.value = arr;
+    userList.value = [...props.defaultOptions];
 };
-initUserList();
+watch(
+    () => props.defaultOptions,
+    () => {
+        initUserList();
+    },
+    { immediate: true }
+);
 
 const requesting = ref(false);
 const abortController = new AbortController();
@@ -57,12 +59,10 @@ const requestFn = (pattern: string) => {
             requesting.value = false;
         });
 };
-const selectCurrentUser = () => {
-    if (typeof userStore.id === 'number') {
-        emit('update:modelValue', [...props.modelValue, userStore.id]);
-    }
-};
-defineExpose({ selectCurrentUser });
+// const select = (id: number) => {
+//     emit('update:modelValue', [...props.modelValue, id]);
+// };
+// defineExpose({ select });
 </script>
 
 <template>

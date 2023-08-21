@@ -12,12 +12,14 @@ import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import noteConfig from '@/config/note';
 import { timeToNowFormatter } from '@/utils/formatter';
+// @ts-ignore
+import type { UserSummary } from '@/components/UserSelect/UserSelect.vue';
 
 export interface NoteProject {
     id: number;
     projectName: string;
-    owners: number[];
-    readers?: number[];
+    owners: Array<UserSummary>;
+    readers?: Array<UserSummary>;
     openness: number;
     createUserName?: string;
     createTime: string;
