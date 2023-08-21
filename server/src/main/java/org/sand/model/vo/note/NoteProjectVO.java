@@ -2,8 +2,10 @@ package org.sand.model.vo.note;
 
 import lombok.Data;
 import org.sand.model.vo.common.BasicVO;
+import org.sand.model.vo.user.UserSummaryVO;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 public class NoteProjectVO extends BasicVO {
@@ -14,9 +16,9 @@ public class NoteProjectVO extends BasicVO {
 
     private Integer openness;
 
-    private Long[] owners;
+    private List<UserSummaryVO> owners;
 
-    private Long[] readers;
+    private List<UserSummaryVO> readers;
 
     private String createUserName;
 

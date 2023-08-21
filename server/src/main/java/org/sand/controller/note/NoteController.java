@@ -16,6 +16,7 @@ import org.sand.model.po.note.NotePO;
 import org.sand.model.po.note.NoteProjectPO;
 import org.sand.model.po.user.UserPO;
 import org.sand.model.vo.note.*;
+import org.sand.model.vo.user.UserSummaryVO;
 import org.sand.service.note.*;
 import org.sand.service.user.UserService;
 import org.sand.util.DBUtils;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,10 +81,22 @@ public class NoteController {
                     noteProjectVO.setCreateUserName(userPO.getUserName());
 
                     noteProjectVO.setOwners(
-                            noteProjectOwnerService.listOwnerIdsByProjectId(noteProjectPO.getId())
+                            Arrays.stream(noteProjectOwnerService.listOwnerIdsByProjectId(noteProjectPO.getId())).map(userId -> {
+                                UserPO owner = userService.getById(userId);
+                                UserSummaryVO userVO = new UserSummaryVO();
+                                BeanUtils.copyProperties(owner, userVO);
+                                userVO.setUsername(owner.getUserName());
+                                return userVO;
+                            }).collect(Collectors.toList())
                     );
                     noteProjectVO.setReaders(
-                            noteProjectReaderService.listReaderIdsByProjectId(noteProjectPO.getId())
+                            Arrays.stream(noteProjectReaderService.listReaderIdsByProjectId(noteProjectPO.getId())).map(userId -> {
+                                UserPO owner = userService.getById(userId);
+                                UserSummaryVO userVO = new UserSummaryVO();
+                                BeanUtils.copyProperties(owner, userVO);
+                                userVO.setUsername(owner.getUserName());
+                                return userVO;
+                            }).collect(Collectors.toList())
                     );
 
                     return noteProjectVO;
@@ -105,12 +119,12 @@ public class NoteController {
         noteProjectService.updateById(noteProjectPO);
 
         if (dto.getOwners() != null) {
-            if(!noteProjectOwnerService.updateOwners(dto.getId(), dto.getOwners())) {
+            if (!noteProjectOwnerService.updateOwners(dto.getId(), dto.getOwners())) {
                 throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
             }
         }
         if (dto.getReaders() != null) {
-            if(!noteProjectReaderService.updateReaders(dto.getId(), dto.getReaders())) {
+            if (!noteProjectReaderService.updateReaders(dto.getId(), dto.getReaders())) {
                 throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
             }
         }
@@ -130,12 +144,12 @@ public class NoteController {
             throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
         }
 
-        if(!noteProjectOwnerService.updateOwners(noteProjectPO.getId(), dto.getOwners())) {
+        if (!noteProjectOwnerService.updateOwners(noteProjectPO.getId(), dto.getOwners())) {
             throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
         }
 
         if (dto.getReaders() != null) {
-            if(!noteProjectReaderService.updateReaders(noteProjectPO.getId(), dto.getReaders())) {
+            if (!noteProjectReaderService.updateReaders(noteProjectPO.getId(), dto.getReaders())) {
                 throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
             }
         }
