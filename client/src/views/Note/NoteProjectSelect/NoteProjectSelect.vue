@@ -33,8 +33,6 @@ listProjects();
 
 const router = useRouter();
 const handleCellClick = (row: { id: number }, column: any, cell: any) => {
-    // 若正在编辑项目名，则不跳转
-    if (row.id === editId.value) return;
     // 若单元格为空，则跳转
     if ((cell.children?.[0]?.children?.length ?? 0) === 0) {
         router.push({ name: 'detail', params: { id: row.id } });
@@ -53,44 +51,21 @@ const noteProjectsAfterFilter = computed(() => {
     });
 });
 
-const editId = ref<number>();
-const editText = ref<string>('');
-const editInputDisabled = ref(false);
-const inputFocus = (id: string) => {
-    nextTick(() => {
-        const inputEl = document.getElementById(id);
-        inputEl?.focus();
-    });
-};
-const startEdit = (row: NoteProject) => {
-    editId.value = row.id;
-    editText.value = row.projectName;
-    inputFocus('sp-edit-input-' + row.id);
-};
-const submitEdit = () => {
-    editInputDisabled.value = true;
-    updateProjectAPI({ id: editId.value, projectName: editText.value })
-        .then(() => {
-            listProjects();
-        })
-        .catch(() => {})
-        .finally(() => {
-            editId.value = undefined;
-            editText.value = '';
-            editInputDisabled.value = false;
-        });
-};
-
 const addDialogVisible = ref<boolean>(false);
 const deleteDialogVisible = ref<boolean>(false);
-const deleteRowData = ref<NoteProject | undefined>();
+const editDialogVisible = ref<boolean>(false);
+const selectedRowData = ref<NoteProject | undefined>();
 const showDeleteDialog = (row: NoteProject) => {
-    deleteRowData.value = row;
+    selectedRowData.value = row;
     deleteDialogVisible.value = true;
+};
+const showEditDialog = (row: NoteProject) => {
+    selectedRowData.value = row;
+    editDialogVisible.value = true;
 };
 
 const getProjectRequiredEditAuthList = (data: NoteProject) => {
-    const isOwner = userStore.id !== undefined && data.owners.includes(userStore.id);
+    const isOwner = userStore.id !== undefined && data.owners.some(({ id }) => id === userStore.id);
     return isOwner ? [20001] : [20002];
 };
 </script>
@@ -116,21 +91,11 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
                 height="100%"
                 row-key="id"
             >
-                <el-table-column prop="projectName" label="笔记项目名" :width="350">
-                    <template #default="{ row }">
-                        <el-input
-                            :id="'sp-edit-input-' + row.id"
-                            v-if="editId === row.id"
-                            v-model="editText"
-                            maxlength="50"
-                            show-word-limit
-                            :disabled="editInputDisabled"
-                            @keydown.enter="(e:KeyboardEvent) => e.target?.blur?.()"
-                            @blur="submitEdit"
-                        />
-                        <span v-else>{{ row.projectName }}</span>
-                    </template>
-                </el-table-column>
+                <el-table-column
+                    prop="projectName"
+                    label="笔记项目名"
+                    :width="350"
+                ></el-table-column>
                 <el-table-column prop="createUserName" label="创建者"></el-table-column>
                 <el-table-column prop="createTime" label="创建时间"></el-table-column>
                 <el-table-column width="45px" column-key="no-jump">
@@ -144,7 +109,7 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
                                 </template>
                                 <template #default>
                                     <ul class="option-menu">
-                                        <li @click="startEdit(row)">重命名</li>
+                                        <li @click="showEditDialog(row)">编辑</li>
                                         <li @click="showDeleteDialog(row)">删除</li>
                                     </ul>
                                 </template>
@@ -156,15 +121,22 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
         </div>
         <DeleteDialog
             v-model="deleteDialogVisible"
-            :row-data="deleteRowData"
+            :row-data="selectedRowData"
             @submit-success="listProjects"
         />
-        <AddDialog v-model="addDialogVisible" @submit-success="listProjects" />
+        <AddDialog mode="add" v-model="addDialogVisible" @submit-success="listProjects" />
+        <AddDialog
+            mode="edit"
+            v-model="editDialogVisible"
+            :data="selectedRowData"
+            @submit-success="listProjects"
+        />
     </div>
 </template>
 
 <style lang="less" scoped>
 @import url('@/styles/variable.less');
+
 .container {
     box-sizing: border-box;
     width: 100%;
