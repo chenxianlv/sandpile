@@ -12,6 +12,7 @@ import org.sand.service.user.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,13 +29,14 @@ public class UserController {
 
     @ApiOperation("根据id或用户名查询用户概况")
     @PostMapping("/listUserSummaries")
-    public ResponseVO<?> listUserSummaries(@Validated ListUsersDTO dto) {
+    public ResponseVO<?> listUserSummaries(@Validated  @RequestBody ListUsersDTO dto) {
         List<UserPO> userPOs = userService.listUsersByIdOrUserName(dto.getPattern());
 
         ListUserSummariesVO listUserSummariesVO = new ListUserSummariesVO();
         listUserSummariesVO.setUsers(userPOs.stream().map(userPO -> {
             UserSummaryVO userVO = new UserSummaryVO();
             BeanUtils.copyProperties(userPO, userVO);
+            userVO.setUsername(userPO.getUserName());
             return userVO;
         }).collect(Collectors.toList()));
 
