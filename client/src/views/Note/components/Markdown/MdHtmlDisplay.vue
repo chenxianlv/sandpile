@@ -31,11 +31,11 @@ const menuContainerMarginTop = 16;
 const menuContainerMarginBottom = 16;
 const menuContainerTop = computed(() => {
     const rect = containerRectInfo.value;
-    return rect ? rect.top + menuContainerMarginTop : 0;
+    return (rect ? rect.top + menuContainerMarginTop : 0) + 'px';
 });
 const menuContainerHeight = computed(() => {
     const rect = containerRectInfo.value;
-    return rect ? rect.height - menuContainerMarginTop - menuContainerMarginBottom : 0;
+    return (rect ? rect.height - menuContainerMarginTop - menuContainerMarginBottom : 0) + 'px';
 });
 
 const menuAutoCollapsedWidth = 800;
@@ -114,12 +114,12 @@ const handleCollapseBtnClick = () => {
 
     .menu-container {
         width: var(--menu-container-width, 0px);
-        height: v-bind('menuContainerHeight + "px"');
+        height: v-bind(menuContainerHeight);
         border: 1px solid @border-color-light;
         background-color: #fff;
 
         position: fixed;
-        top: v-bind('menuContainerTop + "px"');
+        top: v-bind(menuContainerTop);
         right: var(--menu-container-right-margin, 0px);
 
         transition: width 0.2s ease-out, border-width 0.2s ease-out, border-top 0.2s ease-out;
