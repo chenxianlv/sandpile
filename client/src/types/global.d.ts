@@ -4,7 +4,7 @@ interface AnyObj {
 interface SimpleObj<T> {
     [prop: string]: T;
 }
-interface ResponseData extends AnyObj {
-    data?: AnyObj;
+interface ResponseData<T = undefined> extends AnyObj {
+    data: T;
     status: number;
 }

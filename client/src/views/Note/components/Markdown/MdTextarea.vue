@@ -34,7 +34,6 @@ const supportTab = (event: KeyboardEvent) => {
         @keydown.tab="supportTab"
         :value="props.modelValue"
         autocomplete="off"
-        autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
         placeholder="输入原文"

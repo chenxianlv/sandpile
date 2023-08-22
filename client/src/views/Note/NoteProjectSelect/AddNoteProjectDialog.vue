@@ -3,12 +3,12 @@ import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { QuestionFilled } from '@element-plus/icons-vue';
 import { addProjectAPI, updateProjectAPI } from '@/api/note';
+import type { UserSummary } from '@/api/user';
+import type { NoteProject } from '@/api/note';
 import noteConfig from '@/config/note';
+import { useUserStore } from '@/stores/userStore';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
-import type { UserSummary } from '@/components/UserSelect/UserSelect.vue';
-import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
-import { useUserStore } from '@/stores/userStore';
 
 const props = defineProps<{
     mode: 'add' | 'edit';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, Ref, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
@@ -143,7 +143,8 @@ const onTextareaInput = () => {
 const userStore = useUserStore();
 const projectRequiredEditAuthList = computed(() => {
     const isOwner =
-        userStore.id !== undefined && (responseData.value.owners?.includes(userStore.id) ?? false);
+        userStore.id !== undefined &&
+        (responseData.value?.owners?.some((owner) => owner.id === userStore.id) ?? false);
     return isOwner ? [20001] : [20002];
 });
 </script>
