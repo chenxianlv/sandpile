@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, Ref, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
@@ -68,21 +68,22 @@ const handlePanelTabSelect = (tab: string) => {
     activePanelTab.value = tab;
 };
 
-const addFileDialogVisible = ref(false);
-const openAddFileDialog = (hideContextMenu: () => void) => {
-    addFileDialogVisible.value = true;
+type DialogVisibleState = {
+    addFile: boolean;
+    addFolder: boolean;
+    rename: boolean;
+};
+const dialogVisibleState: DialogVisibleState = reactive({
+    addFile: false,
+    addFolder: false,
+    rename: false,
+});
+
+const openDialog = (key: keyof DialogVisibleState, hideContextMenu: () => void) => {
+    dialogVisibleState[key] = true;
     hideContextMenu();
 };
-const addFolderDialogVisible = ref(false);
-const openAddFolderDialog = (hideContextMenu: () => void) => {
-    addFolderDialogVisible.value = true;
-    hideContextMenu();
-};
-const renameDialogVisible = ref(false);
-const openRenameDialog = (hideContextMenu: () => void) => {
-    renameDialogVisible.value = true;
-    hideContextMenu();
-};
+
 const deleteNode = (hideContextMenu: () => void) => {
     const node: TreeNode = contextMenuSelectNode.value;
     if (node) {
@@ -211,17 +212,17 @@ const projectRequiredEditAuthList = computed(() => {
                             <ul class="option-menu">
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="openAddFileDialog(hideContextMenu)"
+                                    @click="openDialog('addFile', hideContextMenu)"
                                 >
                                     新建文件
                                 </li>
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="openAddFolderDialog(hideContextMenu)"
+                                    @click="openDialog('addFolder', hideContextMenu)"
                                 >
                                     新建文件夹
                                 </li>
-                                <li v-if="data" @click="openRenameDialog(hideContextMenu)">
+                                <li v-if="data" @click="openDialog('rename', hideContextMenu)">
                                     重命名
                                 </li>
                                 <li v-if="data" @click="deleteNode(hideContextMenu)">删除</li>
@@ -252,19 +253,19 @@ const projectRequiredEditAuthList = computed(() => {
         </el-main>
     </el-container>
     <AddFileDialog
-        v-model="addFileDialogVisible"
+        v-model="dialogVisibleState.addFile"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"
     />
     <AddFolderDialog
-        v-model="addFolderDialogVisible"
+        v-model="dialogVisibleState.addFolder"
         :folderId="contextMenuSelectNodeFolderId"
         :projectId="projectId"
         @submit-success="getData(projectId)"
     />
     <RenameTreeNodeDialog
-        v-model="renameDialogVisible"
+        v-model="dialogVisibleState.rename"
         :targetNode="contextMenuSelectNode"
         @submit-success="getData(projectId)"
     />
