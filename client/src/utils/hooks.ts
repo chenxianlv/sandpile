@@ -8,7 +8,7 @@ export function useLoading(config: { startOffsetTime?: number; minDurationTime?:
 
     const startLoading = () => {
         if (timeout !== undefined) return;
-        timeout = setTimeout(() => {
+        timeout = window.setTimeout(() => {
             loading.value = true;
             loadingStartTime = Date.now();
             timeout = undefined;

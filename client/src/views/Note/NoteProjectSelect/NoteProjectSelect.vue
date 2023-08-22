@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { listProjectsAPI, updateProjectAPI } from '@/api/note';
-import { computed, nextTick, ref } from 'vue';
-import dayjs from 'dayjs';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+// @ts-ignore
 import { Search, MoreFilled } from '@element-plus/icons-vue';
-import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
-import type { NormalResponse } from '@/common/axios';
+import dayjs from 'dayjs';
+import { listProjectsAPI } from '@/api/note';
+import type { NoteProject } from '@/api/note';
 import vAuth from '@/directives/vAuth';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
@@ -16,16 +16,14 @@ const userStore = useUserStore();
 
 const listProjects = () => {
     listProjectsAPI()
-        .then((res: NormalResponse) => {
-            const data = res?.data?.data?.noteProjects;
-            if (!data) return;
+        .then((res) => {
             const timeFormatter = (item: any) => {
                 if (item?.createTime) {
                     item.createTime = dayjs(item.createTime).format('YYYY/MM/DD HH:mm:ss');
                 }
                 return item;
             };
-            noteProjects.value = data?.map?.(timeFormatter) ?? [];
+            noteProjects.value = res.data.data.noteProjects.map(timeFormatter);
         })
         .catch(() => {});
 };

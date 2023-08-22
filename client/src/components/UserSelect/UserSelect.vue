@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { listUserSummaries } from '@/api/user';
-import { useUserStore } from '@/stores/userStore';
-
-export interface UserSummary {
-    username: string;
-    id: number;
-}
+import type { UserSummary } from '@/api/user';
 
 const props = withDefaults(
     defineProps<{

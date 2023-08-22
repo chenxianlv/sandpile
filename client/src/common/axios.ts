@@ -1,4 +1,4 @@
-import axios, { AxiosError, CanceledError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 import baseConfig from '@/config/base';
@@ -84,4 +84,4 @@ baseRequest.interceptors.response.use(
     }
 );
 
-export type NormalResponse = AxiosResponse<ResponseData>;
+export type NormalResponse<T = undefined> = Promise<AxiosResponse<ResponseData<T>>>;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
+import type { NoteProject } from '@/api/note';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 
 const props = defineProps<{

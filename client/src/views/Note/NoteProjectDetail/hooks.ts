@@ -6,24 +6,13 @@ import {
     updateNoteFileAPI,
     updateNoteFileBeforeCloseAPI,
 } from '@/api/note';
+import type { NoteProjectDetail } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import noteConfig from '@/config/note';
 import { timeToNowFormatter } from '@/utils/formatter';
-// @ts-ignore
-import type { UserSummary } from '@/components/UserSelect/UserSelect.vue';
-
-export interface NoteProject {
-    id: number;
-    projectName: string;
-    owners: Array<UserSummary>;
-    readers?: Array<UserSummary>;
-    openness: number;
-    createUserName?: string;
-    createTime: string;
-}
 
 interface NoteNode extends TreeNode {
     id: number;
@@ -64,22 +53,8 @@ interface FolderNode extends TreeNode {
 
 export type TempTreeNode = NoteNode | FolderNode;
 
-function isChildren(this: TreeNode, targetId: number): boolean {
-    if (this.children === undefined) return false;
-    return this.children.some(
-        (node: TreeNode) => node.id === targetId || node.isChildren(targetId)
-    );
-}
-
 export function useNoteDetail(projectId: number) {
-    const responseData = ref<{
-        notes?: NoteNode[];
-        noteFolders?: FolderNode[];
-        projectName?: string;
-        owners?: number[];
-        readers?: number[];
-        openness?: number;
-    }>({});
+    const responseData = ref<NoteProjectDetail>();
     const noteTreeData = ref<TempTreeNode[]>([]);
     const noteTextStorage = ref<SimpleObj<string>>({});
     const { loading: pageLoading, startLoading, stopLoading } = useLoading();
@@ -108,16 +83,27 @@ export function useNoteDetail(projectId: number) {
     watch(
         responseData,
         (newVal) => {
+            if (newVal === undefined) return;
             const { notes, noteFolders } = cloneDeep(newVal);
             const newTreeData: TempTreeNode[] = [];
 
             const tempArr: FolderNode[] = [];
 
             noteFolders?.forEach((item) => {
-                item.children = [];
-                item.isFile = false;
-                item.isChildren = isChildren.bind(item);
-                tempArr.push(item);
+                const folderNode: FolderNode = {
+                    name: item.name,
+                    id: item.id,
+                    folderId: item.folderId,
+                    children: [],
+                    isFile: false,
+                    isChildren(this: TreeNode, targetId: number): boolean {
+                        if (this.children === undefined) return false;
+                        return this.children.some(
+                            (node: TreeNode) => node.id === targetId || node.isChildren(targetId)
+                        );
+                    },
+                };
+                tempArr.push(folderNode);
             });
 
             const getParentArr = (folderId: number) => {
@@ -131,9 +117,19 @@ export function useNoteDetail(projectId: number) {
             });
 
             notes?.forEach((item) => {
-                item.isFile = true;
-                item.isChildren = isChildren.bind(item);
-                getParentArr(item.folderId)?.push(item);
+                const noteNode: NoteNode = {
+                    name: item.name,
+                    id: item.id,
+                    folderId: item.folderId,
+                    isFile: true,
+                    isChildren(this: TreeNode, targetId: number): boolean {
+                        if (this.children === undefined) return false;
+                        return this.children.some(
+                            (node: TreeNode) => node.id === targetId || node.isChildren(targetId)
+                        );
+                    },
+                };
+                getParentArr(noteNode.folderId)?.push(noteNode);
             });
 
             noteTreeData.value = newTreeData;
@@ -165,8 +161,7 @@ export function useNoteDetail(projectId: number) {
      * 用于手动变更节点对象
      */
     function nodeChange(id: number, isFile: boolean, mergeObj: AnyObj) {
-        const arr = isFile ? responseData.value.notes : responseData.value.noteFolders;
-        // @ts-ignore
+        const arr = isFile ? responseData.value?.notes : responseData.value?.noteFolders;
         const nodeIndex = arr?.findIndex((node) => node.id === id);
         if (arr && nodeIndex !== -1 && nodeIndex !== undefined) {
             arr[nodeIndex] = { ...arr[nodeIndex], ...mergeObj };
@@ -182,7 +177,6 @@ export function useNoteDetail(projectId: number) {
 
         return getNoteTextAPI({ id }).then((res) => {
             const text = res?.data?.data?.text;
-            if (text === undefined) return;
             noteTextStorage.value[id] = text;
             return text;
         });
@@ -236,7 +230,7 @@ export function useNoteEdit() {
             const text = changeMap[id];
             delete changeMap[id];
             promiseArr.push(
-                updateNoteFileAPI({ id, text }).catch((e) => {
+                updateNoteFileAPI({ id: Number(id), text }).catch((e) => {
                     changeMap[id] = text;
                     return Promise.reject(e);
                 })

@@ -36,7 +36,7 @@ defineExpose({
     <Teleport to="body">
         <div
             ref="containerRef"
-            :class="['el-popper is-light el-popover', 'context-menu', { visible }]"
+            :class="['el-popper is-light el-popover', 'context-menu', { visible: props.visible }]"
             :style="{
                 left: props.clickEvent ? props.clickEvent.pageX + X_OFFSET + 'px' : undefined,
                 top: props.clickEvent ? props.clickEvent.pageY + Y_OFFSET + 'px' : undefined,

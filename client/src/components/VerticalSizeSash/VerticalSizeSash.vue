@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 重要：使用该组件必须保证其父元素为定位元素
+// 重要提醒：使用该组件必须保证其父元素为定位元素
 import { onUnmounted, ref } from 'vue';
 import { $bus } from '@/common/eventBus';
 
