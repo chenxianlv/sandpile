@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-// @ts-ignore
 import { Search, MoreFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { listProjectsAPI } from '@/api/note';
