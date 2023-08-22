@@ -123,11 +123,16 @@ const helpText = `完全开放：所有用户包括匿名用户均可查看
                             {{ type }}
                         </el-radio-button>
                     </el-radio-group>
-                    <el-popover placement="top-end" :content="helpText" width="300px">
+                    <el-popover placement="top-end" width="300px">
                         <template #reference>
                             <el-icon class="icon_button">
                                 <QuestionFilled />
                             </el-icon>
+                        </template>
+                        <template #default>
+                            <span style="white-space: pre-wrap">
+                                {{ helpText }}
+                            </span>
                         </template>
                     </el-popover>
                 </el-form-item>
