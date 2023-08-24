@@ -228,7 +228,7 @@ public class NoteController {
     @NoteAuthorization
     public ResponseVO<?> addNoteFile(@Validated @RequestBody AddNoteFileDTO dto, Authentication authentication) throws ResultException {
         try {
-            NotePO notePO = noteService.create();
+            NotePO notePO = noteService.createNote();
 
             BeanUtils.copyProperties(dto, notePO);
             dbUtils.updateCreateInfo(notePO, authentication);
@@ -320,6 +320,26 @@ public class NoteController {
 
         if (!noteFolderService.updateById(noteFolderPO)) {
             throw ResultException.of(ErrorCodeEnum.MODEL_UPDATE_FAILED);
+        }
+
+        return ResponseVO.success();
+    }
+
+    @ApiOperation("通过上传文件的形式添加文件")
+    @PostMapping("/uploadNoteFile")
+    @NoteAuthorization
+    public ResponseVO<?> uploadNoteFile(@Validated UploadNoteFileDTO dto, Authentication authentication) throws ResultException {
+        try {
+            String filePath = noteService.uploadNote(dto.getFile());
+            NotePO notePO = new NotePO();
+            BeanUtils.copyProperties(dto, notePO);
+            notePO.setFilePath(filePath);
+            if (!noteService.save(notePO)) {
+                throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
+            }
+
+        } catch (IOException e) {
+            throw ResultException.of(ErrorCodeEnum.FTP_CREATE_FILE_FAILED);
         }
 
         return ResponseVO.success();

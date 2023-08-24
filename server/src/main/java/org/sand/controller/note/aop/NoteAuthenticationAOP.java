@@ -143,6 +143,12 @@ public class NoteAuthenticationAOP {
                 projectId = searchProjectIdByNoteFolderId(((UpdateNoteFolderDTO) arg).getId());
                 break;
 
+            } else if (arg instanceof UploadNoteFileDTO) {
+
+                requiredAuthType = "edit";
+                projectId = ((UploadNoteFileDTO) arg).getProjectId();
+                break;
+
             }
         }
 

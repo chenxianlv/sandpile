@@ -9,6 +9,7 @@ import org.sand.service.note.NoteService;
 import org.sand.util.FTPUtils;
 import org.sand.util.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -19,6 +20,8 @@ import java.util.UUID;
 public class NoteServiceImpl extends ServiceImpl<NoteMapper, NotePO> implements NoteService {
 
     private final FTPUtils ftpUtils;
+
+    private final String newFilePath = "/"; // 新文件暂时只创建在根目录
 
     @Override
     public String getNoteText(Long id) throws IOException {
@@ -41,19 +44,30 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, NotePO> implements 
     }
 
     @Override
-    public NotePO create() throws IOException {
+    public NotePO createNote() throws IOException {
         FTPClient ftpClient = ftpUtils.connectFtp();
-        String folderPath = "/"; // 暂时只创建在根目录
         String fileName = UUID.randomUUID() + ".md"; // 暂时只创建md文件
 
-        ftpUtils.createFile(ftpClient, folderPath, fileName);
+        ftpUtils.createFile(ftpClient, newFilePath, fileName);
         ftpUtils.closeFtpClient(ftpClient);
 
-        String filePath = (Objects.equals(folderPath, "/") ? "" : folderPath) + "/" + fileName;
+        String filePath = (Objects.equals(newFilePath, "/") ? "" : newFilePath) + "/" + fileName;
 
         NotePO notePO = new NotePO();
         notePO.setFilePath(filePath);
         return notePO;
+    }
+
+
+    @Override
+    public String uploadNote(MultipartFile file) throws IOException {
+        FTPClient ftpClient = ftpUtils.connectFtp();
+        String fileName = UUID.randomUUID() + ".md"; // 暂时只创建md文件
+
+        ftpUtils.uploadFile(ftpClient, newFilePath, fileName, file.getInputStream());
+        ftpUtils.closeFtpClient(ftpClient);
+
+        return (Objects.equals(newFilePath, "/") ? "" : newFilePath) + "/" + fileName;
     }
 
 }

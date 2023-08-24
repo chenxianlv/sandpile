@@ -252,7 +252,7 @@ public class FTPUtils {
      * @param inputStream 输入文件流
      * @return 是否上传成功
      */
-    private boolean uploadFile(FTPClient ftpClient, String folderPath, String fileName, InputStream inputStream) {
+    public boolean uploadFile(FTPClient ftpClient, String folderPath, String fileName, InputStream inputStream) {
         try {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             createDirecroty(ftpClient, rootFolderPath + folderPath);
