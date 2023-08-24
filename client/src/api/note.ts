@@ -48,7 +48,9 @@ export function addProjectAPI(data: {
     owners: number[];
     readers: number[];
     openness: number;
-}): NormalResponse {
+}): NormalResponse<{
+    id: number;
+}> {
     return baseRequest({
         url: '/note/addProject',
         data,
@@ -95,7 +97,9 @@ export function addNoteFileAPI(data: {
     projectId: number;
     name: string;
     folderId: number;
-}): NormalResponse {
+}): NormalResponse<{
+    id: number;
+}> {
     return baseRequest({
         url: '/note/addNoteFile',
         data,
@@ -129,7 +133,9 @@ export function addNoteFolderAPI(data: {
     projectId: number;
     name: string;
     folderId: number;
-}): NormalResponse {
+}): NormalResponse<{
+    id: number;
+}> {
     return baseRequest({
         url: '/note/addNoteFolder',
         data,
