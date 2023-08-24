@@ -153,3 +153,22 @@ export function updateNoteFolderAPI(data: {
         data,
     });
 }
+
+export function uploadNoteFileAPI(data: {
+    projectId: number;
+    name: string;
+    folderId: number;
+    file: File;
+}): NormalResponse {
+    const formData = new FormData();
+    formData.append('projectId', String(data.projectId));
+    formData.append('folderId', String(data.folderId));
+    formData.append('name', data.name);
+    formData.append('file', data.file);
+
+    return baseRequest({
+        url: '/note/uploadNoteFile',
+        data: formData,
+        timeout: 0,
+    });
+}

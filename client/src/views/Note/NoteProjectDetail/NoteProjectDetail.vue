@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import type { ElAside } from 'element-plus';
+import type { ElAside, UploadFile } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import { useNoteDetail, useNoteEdit } from '@/views/Note/NoteProjectDetail/hooks';
 import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
@@ -11,8 +11,8 @@ import { useLoading } from '@/utils/hooks';
 import AddFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue';
 import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
 import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
-import { ElMessageBox } from 'element-plus';
-import { deleteNoteFileAPI, deleteNoteFolderAPI } from '@/api/note';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { deleteNoteFileAPI, deleteNoteFolderAPI, uploadNoteFileAPI } from '@/api/note';
 import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
@@ -121,6 +121,38 @@ const deleteNode = (hideContextMenu: () => void) => {
     }
 };
 
+const acceptFileTypes = ['.txt', '.md'];
+const onUploadFile = async (uploadFile: UploadFile, hideContextMenu: () => void) => {
+    hideContextMenu();
+    try {
+        if (!uploadFile.raw || uploadFile.size === undefined) throw new Error();
+
+        const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
+            if (result !== -1) return result;
+            const index = uploadFile.name.lastIndexOf(suffix);
+            if (index !== -1 && index + suffix.length === uploadFile.name.length) {
+                return index;
+            }
+            return result;
+        }, -1);
+        if (uploadFile.size >= 10 * 1024 * 1024) throw new Error('文件不得超过10MB');
+        if (suffixIndex === -1) throw new Error('不支持该文件格式');
+
+        const fileName = uploadFile.name.slice(0, suffixIndex);
+        await uploadNoteFileAPI({
+            file: uploadFile.raw,
+            projectId: projectId,
+            folderId: contextMenuSelectNode.value?.id ?? -1,
+            name: fileName,
+        });
+        ElMessage.success(`上传文件 ${fileName} 成功`);
+
+        await getData(projectId);
+    } catch (e: any) {
+        ElMessage.warning(e?.message ?? '未知错误');
+    }
+};
+
 const isEditing = ref(false);
 const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
 
@@ -222,6 +254,20 @@ const projectRequiredEditAuthList = computed(() => {
                                     @click="openDialog('addFolder', hideContextMenu)"
                                 >
                                     新建文件夹
+                                </li>
+                                <li v-if="!data?.isFile" class="custom upload">
+                                    <el-upload
+                                        class="upload-btn"
+                                        :on-change="
+                                            (uploadFile) =>
+                                                onUploadFile(uploadFile, hideContextMenu)
+                                        "
+                                        :auto-upload="false"
+                                        :show-file-list="false"
+                                        :accept="acceptFileTypes.join(',')"
+                                    >
+                                        <template #default> 上传文件</template>
+                                    </el-upload>
                                 </li>
                                 <li v-if="data" @click="openDialog('rename', hideContextMenu)">
                                     重命名
@@ -328,6 +374,18 @@ const projectRequiredEditAuthList = computed(() => {
         > * {
             margin-left: 10px;
         }
+    }
+}
+
+.option-menu li.upload .upload-btn {
+    width: 100%;
+    height: 100%;
+
+    /deep/ .el-upload {
+        padding-left: @option-menu-item-indentation;
+        width: 100%;
+        height: 100%;
+        justify-content: left;
     }
 }
 
