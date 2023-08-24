@@ -233,12 +233,17 @@ public class NoteController {
             BeanUtils.copyProperties(dto, notePO);
             dbUtils.updateCreateInfo(notePO, authentication);
 
-            noteService.save(notePO);
+            if (!noteService.save(notePO)) {
+                throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
+            }
+
+            AddNoteFileVO vo = new AddNoteFileVO();
+            vo.setId(notePO.getId());
+
+            return ResponseVO.success(vo);
         } catch (IOException e) {
             throw ResultException.of(ErrorCodeEnum.FTP_CREATE_FILE_FAILED);
         }
-
-        return ResponseVO.success();
     }
 
     @ApiOperation("在笔记项目中删除文件")
@@ -292,7 +297,10 @@ public class NoteController {
             throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
         }
 
-        return ResponseVO.success();
+        AddNoteFolderVO vo = new AddNoteFolderVO();
+        vo.setId(noteFolderPO.getId());
+
+        return ResponseVO.success(vo);
     }
 
     @ApiOperation("在笔记项目中删除文件夹")
