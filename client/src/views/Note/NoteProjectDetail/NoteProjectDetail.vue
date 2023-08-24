@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import type { ElAside, UploadFile } from 'element-plus';
+import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import { useNoteDetail, useNoteEdit } from '@/views/Note/NoteProjectDetail/hooks';
 import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
@@ -12,7 +12,12 @@ import AddFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue
 import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
 import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { deleteNoteFileAPI, deleteNoteFolderAPI, uploadNoteFileAPI } from '@/api/note';
+import {
+    addNoteFolderAPI,
+    deleteNoteFileAPI,
+    deleteNoteFolderAPI,
+    uploadNoteFileAPI,
+} from '@/api/note';
 import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
@@ -122,35 +127,108 @@ const deleteNode = (hideContextMenu: () => void) => {
 };
 
 const acceptFileTypes = ['.txt', '.md'];
-const onUploadFile = async (uploadFile: UploadFile, hideContextMenu: () => void) => {
+const uploadSingleFile = async (file?: File, folderId: number) => {
+    if (!file) throw new Error();
+
+    const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
+        if (result !== -1) return result;
+        const index = file.name.lastIndexOf(suffix);
+        if (index !== -1 && index + suffix.length === file.name.length) {
+            return index;
+        }
+        return result;
+    }, -1);
+    if (file.size >= 10 * 1024 * 1024) throw new Error('文件不得超过10MB');
+    if (suffixIndex === -1) throw new Error('不支持该文件格式');
+
+    const fileName = file.name.slice(0, suffixIndex);
+    await uploadNoteFileAPI({
+        file,
+        projectId: projectId,
+        folderId,
+        name: fileName,
+    });
+    return fileName;
+};
+
+const selectFileAndUpload = (hideContextMenu: () => void) => {
     hideContextMenu();
-    try {
-        if (!uploadFile.raw || uploadFile.size === undefined) throw new Error();
 
-        const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
-            if (result !== -1) return result;
-            const index = uploadFile.name.lastIndexOf(suffix);
-            if (index !== -1 && index + suffix.length === uploadFile.name.length) {
-                return index;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async () => {
+        try {
+            const fileName = await uploadSingleFile(
+                input.files?.[0],
+                contextMenuSelectNode.value?.id ?? -1
+            );
+            ElMessage.success(`上传文件 ${fileName} 成功`);
+        } catch (e: any) {
+            ElMessage.warning(e?.message ?? '未知错误');
+        } finally {
+            await getData(projectId);
+        }
+    };
+    input.click();
+};
+
+const selectFolderAndUpload = (hideContextMenu: () => void) => {
+    hideContextMenu();
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.directory = true;
+    input.webkitdirectory = true;
+    input.onchange = async () => {
+        try {
+            const files = input.files;
+            if (!files) throw new Error();
+            const folderIdMap: SimpleObj<number> = {};
+            const uploadFilePromiseArr = [];
+
+            for (const file of Object.values(files)) {
+                const path = file.webkitRelativePath.split('/');
+                let parentFolderId = contextMenuSelectNode.value?.id ?? -1;
+
+                for (let i = 0; i < path.length; i++) {
+                    const itemName = path[i];
+
+                    if (i < path.length - 1) {
+                        // 是文件夹
+
+                        let folderId = folderIdMap[itemName];
+                        if (folderId !== undefined) {
+                            // 文件夹已被创建
+                            parentFolderId = folderId;
+                        } else {
+                            // 文件夹未创建
+                            const res = await addNoteFolderAPI({
+                                name: itemName,
+                                projectId,
+                                folderId: parentFolderId,
+                            });
+                            folderId = res.data.data.id;
+                            folderIdMap[itemName] = folderId;
+                            parentFolderId = folderId;
+                        }
+                    } else {
+                        // 是文件
+                        uploadFilePromiseArr.push(uploadSingleFile(file, parentFolderId));
+                    }
+                }
             }
-            return result;
-        }, -1);
-        if (uploadFile.size >= 10 * 1024 * 1024) throw new Error('文件不得超过10MB');
-        if (suffixIndex === -1) throw new Error('不支持该文件格式');
-
-        const fileName = uploadFile.name.slice(0, suffixIndex);
-        await uploadNoteFileAPI({
-            file: uploadFile.raw,
-            projectId: projectId,
-            folderId: contextMenuSelectNode.value?.id ?? -1,
-            name: fileName,
-        });
-        ElMessage.success(`上传文件 ${fileName} 成功`);
-
-        await getData(projectId);
-    } catch (e: any) {
-        ElMessage.warning(e?.message ?? '未知错误');
-    }
+            const resArr = await Promise.allSettled(uploadFilePromiseArr);
+            for (const res of resArr) {
+                if (res.status === 'rejected') throw res.reason;
+            }
+            ElMessage.success(`上传文件夹 ${Object.keys(folderIdMap)[0] ?? ''} 成功`);
+        } catch (e: any) {
+            ElMessage.warning(e?.message ?? '未知错误');
+        } finally {
+            await getData(projectId);
+        }
+    };
+    input.click();
 };
 
 const isEditing = ref(false);
@@ -255,19 +333,17 @@ const projectRequiredEditAuthList = computed(() => {
                                 >
                                     新建文件夹
                                 </li>
-                                <li v-if="!data?.isFile" class="custom upload">
-                                    <el-upload
-                                        class="upload-btn"
-                                        :on-change="
-                                            (uploadFile) =>
-                                                onUploadFile(uploadFile, hideContextMenu)
-                                        "
-                                        :auto-upload="false"
-                                        :show-file-list="false"
-                                        :accept="acceptFileTypes.join(',')"
-                                    >
-                                        <template #default> 上传文件</template>
-                                    </el-upload>
+                                <li
+                                    v-if="!data?.isFile"
+                                    @click="selectFileAndUpload(hideContextMenu)"
+                                >
+                                    上传文件
+                                </li>
+                                <li
+                                    v-if="!data?.isFile"
+                                    @click="selectFolderAndUpload(hideContextMenu)"
+                                >
+                                    上传文件夹
                                 </li>
                                 <li v-if="data" @click="openDialog('rename', hideContextMenu)">
                                     重命名
@@ -374,18 +450,6 @@ const projectRequiredEditAuthList = computed(() => {
         > * {
             margin-left: 10px;
         }
-    }
-}
-
-.option-menu li.upload .upload-btn {
-    width: 100%;
-    height: 100%;
-
-    /deep/ .el-upload {
-        padding-left: @option-menu-item-indentation;
-        width: 100%;
-        height: 100%;
-        justify-content: left;
     }
 }
 
