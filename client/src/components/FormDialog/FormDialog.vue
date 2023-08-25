@@ -8,8 +8,17 @@ const props = withDefaults(
     defineProps<{
         modelValue?: boolean;
         width?: string;
+        /**
+         * 表单实例，用于在打开窗口时，自动清理表单
+         */
         formRef?: FormInstance;
+        /**
+         * 表单项实例，用于在打开窗口时，自动聚焦于该表单项
+         */
         autoFocusRef?: InputInstance | InputNumberInstance;
+        /**
+         * 请求方法，在点击提交按钮时调用，需返回一个promise对象，请求成功后自动关闭窗口
+         */
         requestFn?: () => Promise<any>;
     }>(),
     {
@@ -68,7 +77,7 @@ const submit = () => {
                 <slot name="submitBtnContent">确定</slot>
             </el-button>
         </template>
-        <template #default v-if="$slots.footer === undefined">
+        <template #default>
             <slot name="default" :submit="submit"></slot>
         </template>
         <template

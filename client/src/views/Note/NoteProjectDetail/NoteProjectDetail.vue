@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
@@ -21,6 +21,7 @@ import {
 import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
+import $bus from '@/common/eventBus';
 
 window.location.hash = '';
 let projectId = Number(useRoute().params.id);
@@ -232,6 +233,11 @@ const selectFolderAndUpload = (hideContextMenu: () => void) => {
 };
 
 const isEditing = ref(false);
+watch(isEditing, () => {
+    nextTick(() => {
+        $bus.emit('manualResize');
+    });
+});
 const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
 
 const {
@@ -333,6 +339,7 @@ const projectRequiredEditAuthList = computed(() => {
                                 >
                                     新建文件夹
                                 </li>
+                                <li class="divider" v-if="!data?.isFile" />
                                 <li
                                     v-if="!data?.isFile"
                                     @click="selectFileAndUpload(hideContextMenu)"
@@ -345,6 +352,7 @@ const projectRequiredEditAuthList = computed(() => {
                                 >
                                     上传文件夹
                                 </li>
+                                <li class="divider" v-if="!data?.isFile" />
                                 <li v-if="data" @click="openDialog('rename', hideContextMenu)">
                                     重命名
                                 </li>
@@ -368,6 +376,7 @@ const projectRequiredEditAuthList = computed(() => {
                         <VerticalSizeSash
                             v-if="mdTextAreaRef?.$el"
                             :targetDOM="mdTextAreaRef?.$el"
+                            percentage-mode
                         />
                         <MdHtmlDisplay class="detail-item" :markdown-text="markdownText" />
                     </div>

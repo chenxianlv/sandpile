@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Menu } from '@element-plus/icons-vue';
 import MarkdownMenuTree from '@/views/Note/components/Markdown/MdMenuTree.vue';
 import MarkdownParser from '@/views/Note/components/Markdown/MdParser.vue';
+import $bus from '@/common/eventBus';
 
 const props = defineProps<{ markdownText?: string }>();
 
@@ -21,10 +22,12 @@ const updateContainerPosInfo = () => {
 
 onMounted(() => {
     addEventListener('resize', updateContainerPosInfo);
+    $bus.on('manualResize', updateContainerPosInfo);
     updateContainerPosInfo();
 });
 onUnmounted(() => {
     removeEventListener('resize', updateContainerPosInfo);
+    $bus.off('manualResize', updateContainerPosInfo);
 });
 
 const menuContainerMarginTop = 16;
@@ -38,7 +41,7 @@ const menuContainerHeight = computed(() => {
     return (rect ? rect.height - menuContainerMarginTop - menuContainerMarginBottom : 0) + 'px';
 });
 
-const menuAutoCollapsedWidth = 800;
+const menuAutoCollapsedWidth = 930;
 const menuAutoCollapsed = ref(false); // 用户不干涉的情况下，菜单应有的折叠状态
 let menuAutoCollapsedLock = false;
 const menuCollapsed = ref(false); // 实际折叠状态
@@ -99,6 +102,7 @@ const handleCollapseBtnClick = () => {
 
     .html-wrapper {
         flex-grow: 1;
+        max-width: 100%;
     }
 
     .menu-placeholder {
