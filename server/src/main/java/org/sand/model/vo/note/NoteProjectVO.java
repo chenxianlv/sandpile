@@ -20,7 +20,7 @@ public class NoteProjectVO extends BasicVO {
 
     private List<UserSummaryVO> readers;
 
-    private String createUserName;
+    private String createUsername;
 
     private Timestamp createTime;
 
