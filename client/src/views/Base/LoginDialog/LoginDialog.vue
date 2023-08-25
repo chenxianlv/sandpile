@@ -38,7 +38,7 @@ const requestFn = async () => {
         const res = await loginAPI(submitForm);
         const data = res.data?.data ?? {};
         userStore.login({
-            username: data.userName,
+            username: data.username,
             id: data.id,
             token: data.token,
             authList: data.authList,
