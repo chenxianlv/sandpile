@@ -11,7 +11,7 @@ let menusSave: string[];
 
 const diff = (menus: string[]) => {
     let isDiff = true;
-    if (menusSave) {
+    if (menusSave && menus.length > 0) {
         isDiff = menus.some((menu, i) => menu !== menusSave[i]);
     }
     menusSave = menus;
