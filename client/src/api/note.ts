@@ -10,7 +10,7 @@ export interface NoteProject {
     owners: Array<UserSummary>;
     readers: Array<UserSummary>;
     openness: number;
-    createUserName: string;
+    createUsername: string;
     createTime: string;
 }
 
