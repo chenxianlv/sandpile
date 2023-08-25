@@ -17,7 +17,7 @@ public class UserDTO implements UserDetails {
 
     private String userAccount;
 
-    private String userName;
+    private String username;
 
     private String userPassword;
 

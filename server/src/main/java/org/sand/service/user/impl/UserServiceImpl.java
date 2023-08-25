@@ -21,7 +21,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserPO> implements 
     }
 
     @Override
-    public List<UserPO> listUsersByIdOrUserName(String pattern) {
+    public List<UserPO> listUsersByIdOrUsername(String pattern) {
         QueryWrapper<UserPO> qw = new QueryWrapper<>();
         qw.like("id", pattern).or()
                 .like("user_name", pattern);

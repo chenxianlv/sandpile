@@ -1,5 +1,6 @@
 package org.sand.model.po.user;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import org.sand.model.po.common.BasicTablePO;
@@ -10,7 +11,8 @@ public class UserPO extends BasicTablePO {
 
     private String userAccount;
 
-    private String userName;
+    @TableField("user_name")
+    private String username;
 
     private String userPassword;
 

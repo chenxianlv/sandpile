@@ -30,13 +30,13 @@ public class UserController {
     @ApiOperation("根据id或用户名查询用户概况")
     @PostMapping("/listUserSummaries")
     public ResponseVO<?> listUserSummaries(@Validated  @RequestBody ListUsersDTO dto) {
-        List<UserPO> userPOs = userService.listUsersByIdOrUserName(dto.getPattern());
+        List<UserPO> userPOs = userService.listUsersByIdOrUsername(dto.getPattern());
 
         ListUserSummariesVO listUserSummariesVO = new ListUserSummariesVO();
         listUserSummariesVO.setUsers(userPOs.stream().map(userPO -> {
             UserSummaryVO userVO = new UserSummaryVO();
             BeanUtils.copyProperties(userPO, userVO);
-            userVO.setUsername(userPO.getUserName());
+            userVO.setUsername(userPO.getUsername());
             return userVO;
         }).collect(Collectors.toList()));
 
