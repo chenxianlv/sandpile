@@ -55,7 +55,7 @@ const requestFn = async () => {
 <template>
     <FormDialog
         v-model="loginStore.loginDialogVisible"
-        title="用户登录"
+        :title="$t('base.login')"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"

@@ -5,6 +5,7 @@ import baseConfig from '@/config/base';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/utils';
+import { i18n } from '@/lang';
 
 const printEnabled = import.meta.env.DEV && baseConfig.api.PRINT_IN_DEV;
 
@@ -72,7 +73,7 @@ baseRequest.interceptors.response.use(
         if (res?.data?.errorInfo) {
             ElMessage.warning(res?.data.errorInfo);
         } else {
-            ElMessage.warning('网络异常');
+            ElMessage.warning(i18n.global.t('base.networkError'));
         }
 
         if (res?.status === 401) {
