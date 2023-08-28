@@ -6,6 +6,7 @@ import '@/styles/cleanUp.less';
 import '@/styles/common.less';
 import baseConfig from '@/config/base';
 import { i18n } from '@/lang';
+import 'virtual:svg-icons-register';
 
 import App from './App.vue';
 import router from './router';

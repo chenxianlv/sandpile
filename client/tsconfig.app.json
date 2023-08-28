@@ -9,6 +9,9 @@
       "@/*": ["./src/*"]
     },
     "target": "es5",
-    "lib": ["dom","esnext"]
+    "lib": ["dom","esnext"],
+    "compilerOptions": {
+      "types": ["vite-plugin-svg-icons/client"]
+    }
   }
 }
