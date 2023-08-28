@@ -41,7 +41,7 @@ const logout = () => {
             >登录
         </el-button>
         <template v-else>
-            <el-popover placement="bottom-end" trigger="click" ref="popoverRef">
+            <el-popover placement="bottom-end" trigger="hover" ref="popoverRef">
                 <template #reference>
                     <span class="profile">
                         <span>{{ userStore.username }}</span>
@@ -65,13 +65,13 @@ const logout = () => {
     .profile {
         cursor: pointer;
         font-size: 16px;
+        line-height: 1;
         color: @font-color-primary;
 
         display: flex;
         align-items: center;
 
         > i {
-            margin-top: 2px;
             margin-left: 7px;
         }
     }

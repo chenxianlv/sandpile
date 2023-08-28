@@ -5,6 +5,7 @@ import { useHeaderStore } from '@/views/Base/store';
 import { storeToRefs } from 'pinia';
 import imgUrl from '@/assets/img/logo/logo_141x80.png';
 import UserAvatar from '@/components/UserAvatar/UserAvatar.vue';
+import LangSelect from '@/views/Base/LangSelect/LangSelect.vue';
 
 const headerStore = useHeaderStore();
 const route = useRoute();
@@ -25,6 +26,7 @@ const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
             <el-menu-item index="/note">学习笔记</el-menu-item>
             <el-menu-item index="/3d">3d</el-menu-item>
         </el-menu>
+        <LangSelect />
         <UserAvatar />
         <div class="collapse-icon" @click="switchCollapse" v-if="collapseBtnShow">
             <el-icon>
