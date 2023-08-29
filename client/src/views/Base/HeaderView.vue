@@ -23,8 +23,8 @@ const { collapsed, collapseBtnShow } = storeToRefs(headerStore);
             <img :src="imgUrl" alt="sandpile" />
         </div>
         <el-menu class="menu" :default-active="getRoutePath()" mode="horizontal" router>
-            <el-menu-item index="/note">学习笔记</el-menu-item>
-            <el-menu-item index="/3d">3d</el-menu-item>
+            <el-menu-item index="/note">{{ $t('menu.note') }}</el-menu-item>
+            <el-menu-item index="/3d">{{ $t('menu.3d') }}</el-menu-item>
         </el-menu>
         <LangSelect />
         <UserAvatar />

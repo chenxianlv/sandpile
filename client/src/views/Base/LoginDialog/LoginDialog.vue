@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
+import { i18n } from '@/lang';
 import { loginAPI } from '@/api/base';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { encryptPwd } from '@/utils/crypto';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 
+const $t = i18n.global.t;
 const loginStore = useLoginStore();
 const userStore = useUserStore();
 
@@ -23,10 +25,20 @@ const formData = reactive<{
 });
 const rules = reactive<FormRules>({
     account: [
-        { required: true, message: '请输入账号', trigger: 'blur' },
-        { max: 50, message: '请输入50个以内的字符', trigger: 'change' },
+        {
+            required: true,
+            message: $t('form.requireInput', { prop: $t('user.account') }),
+            trigger: 'blur',
+        },
+        { max: 50, message: $t('form.requireInput', { max: 50 }), trigger: 'change' },
     ],
-    password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+    password: [
+        {
+            required: true,
+            message: $t('form.requireInput', { prop: $t('user.password') }),
+            trigger: 'blur',
+        },
+    ],
 });
 
 const requestFn = async () => {
@@ -46,7 +58,9 @@ const requestFn = async () => {
         loginStore.close();
         history.go(0);
     } catch (reason: any) {
-        errorInfo.value = reason?.response?.data?.errorInfo ?? '登录失败';
+        const errorCode = reason?.response?.data?.errorCode;
+        errorInfo.value =
+            errorCode !== undefined ? $t('errorCode.' + errorCode) : $t('user.loginFailed');
         throw reason;
     }
 };
@@ -55,7 +69,7 @@ const requestFn = async () => {
 <template>
     <FormDialog
         v-model="loginStore.loginDialogVisible"
-        :title="$t('base.login')"
+        :title="$t('user.login')"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"
@@ -69,10 +83,10 @@ const requestFn = async () => {
                 @close="errorInfo = ''"
             />
             <el-form ref="formRef" :rules="rules" :model="formData">
-                <el-form-item prop="account" label="账号">
+                <el-form-item prop="account" :label="$t('user.account')">
                     <el-input ref="autoFocusRef" v-model="formData.account"></el-input>
                 </el-form-item>
-                <el-form-item prop="password" label="密码">
+                <el-form-item prop="password" :label="$t('user.password')">
                     <el-input
                         show-password
                         v-model="formData.password"

@@ -12,7 +12,6 @@ import { useLoading } from '@/utils/hooks';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import noteConfig from '@/config/note';
-import { timeToNowFormatter } from '@/utils/formatter';
 
 interface NoteNode extends TreeNode {
     id: number;
@@ -276,20 +275,20 @@ export function useNoteEdit() {
         { immediate: true }
     );
 
-    // 格式化时间字符串，如 xx秒前
-    const formattedTimeStr = ref('');
-    const updateTimeStr = () => {
+    // 距离上次保存的时间
+    const saveGapDuration = ref(-1);
+    const updateDuration = () => {
         if (lastSaveTime.value === -1) {
-            formattedTimeStr.value = '';
+            saveGapDuration.value = -1;
             return;
         }
-        formattedTimeStr.value = timeToNowFormatter(lastSaveTime.value);
+        saveGapDuration.value = Date.now() - lastSaveTime.value;
     };
-    watch(lastSaveTime, updateTimeStr);
-    const timeUpdateIntervalId = setInterval(updateTimeStr, 1000);
+    watch(lastSaveTime, updateDuration);
+    const timeUpdateIntervalId = setInterval(updateDuration, 1000);
     onBeforeUnmount(() => {
         clearInterval(timeUpdateIntervalId);
     });
 
-    return { loading, saveDisabled, onTextEdit, onSave, saveState, formattedTimeStr };
+    return { loading, saveDisabled, onTextEdit, onSave, saveState, saveGapDuration };
 }

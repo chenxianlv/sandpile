@@ -65,7 +65,7 @@ const requestFn = (pattern: string) => {
         :model-value="props.modelValue"
         @update:model-value="(val) => emit('update:modelValue', val)"
         class="user_select"
-        placeholder="请输入用户ID或用户名"
+        :placeholder="$t('user.inputUserIdOrUserName')"
         filterable
         remote
         multiple

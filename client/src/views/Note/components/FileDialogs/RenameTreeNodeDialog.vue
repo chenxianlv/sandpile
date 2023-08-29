@@ -3,9 +3,11 @@
 import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
+import { i18n } from '@/lang';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 
+const $t = i18n.global.t;
 const props = defineProps<{
     targetNode?: TreeNode;
 }>();
@@ -27,7 +29,9 @@ const rules = reactive<FormRules>({
     name: [
         {
             required: true,
-            message: props.targetNode?.isFile ? '请输入文件名' : '请输入文件夹名',
+            message: $t('form.requireInput', {
+                prop: $t(props.targetNode?.isFile ? 'note.fileName' : 'note.folderName'),
+            }),
             trigger: 'blur',
         },
     ],
@@ -45,7 +49,7 @@ const requestFn = () => {
 
 <template>
     <FormDialog
-        title="重命名"
+        :title="$t('form.rename')"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"
@@ -53,7 +57,10 @@ const requestFn = () => {
     >
         <template #default="{ submit }">
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">
-                <el-form-item prop="name" :label="props.targetNode?.isFile ? '文件名' : '文件夹名'">
+                <el-form-item
+                    prop="name"
+                    :label="$t(props.targetNode?.isFile ? 'note.fileName' : 'note.folderName')"
+                >
                     <el-input
                         ref="autoFocusRef"
                         v-model="formData.name"

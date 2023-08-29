@@ -72,9 +72,9 @@ const submit = () => {
         append-to-body
     >
         <template #footer v-if="$slots.footer === undefined">
-            <el-button @click="emit('update:modelValue', false)">取消</el-button>
+            <el-button @click="emit('update:modelValue', false)">{{ $t('form.cancel') }}</el-button>
             <el-button type="primary" @click="submit" :loading="submitBtnLoading">
-                <slot name="submitBtnContent">确定</slot>
+                <slot name="submitBtnContent">{{ $t('form.submit') }}</slot>
             </el-button>
         </template>
         <template #default>

@@ -13,6 +13,9 @@ import {
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { shuffle } from 'lodash-es';
 import { ThreeController } from '@/views/3D/controllers/ThreeController';
+import { i18n } from '@/lang';
+
+const $t = i18n.global.t;
 
 class PhysicalParticle {
     position: Vector3;
@@ -548,7 +551,7 @@ export class ParticleImageController extends ThreeController {
         const particlesConfig = this.particlesConfig;
         const numberFieldsConfigs: Array<NumberFieldsConfig> = [
             {
-                name: '粒子尺寸',
+                name: $t('3d.particleImage.particlesSize'),
                 obj: particlesConfig,
                 property: 'particlesSize',
                 min: 0.1,
@@ -556,7 +559,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.1,
             },
             {
-                name: '粒子最小灰度',
+                name: $t('3d.particleImage.particlesMinGrayScale'),
                 obj: particlesConfig.particlesGrayScale,
                 property: '0',
                 min: 0,
@@ -564,7 +567,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.01,
             },
             {
-                name: '粒子最大灰度',
+                name: $t('3d.particleImage.particlesMaxGrayScale'),
                 obj: particlesConfig.particlesGrayScale,
                 property: '1',
                 min: 0,
@@ -572,7 +575,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.01,
             },
             {
-                name: '粒子图案宽度',
+                name: $t('3d.particleImage.particlesWidth'),
                 obj: particlesConfig,
                 property: 'particlesWidth',
                 min: 1,
@@ -580,7 +583,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.1,
             },
             {
-                name: '粒子图案高度',
+                name: $t('3d.particleImage.particlesHeight'),
                 obj: particlesConfig,
                 property: 'particlesHeight',
                 min: 1,
@@ -588,7 +591,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.1,
             },
             {
-                name: 'x方向粒子栅格数',
+                name: $t('3d.particleImage.particlesNumInWidth'),
                 obj: particlesConfig,
                 property: 'particlesNumInWidth',
                 min: 1,
@@ -596,7 +599,7 @@ export class ParticleImageController extends ThreeController {
                 step: 1,
             },
             {
-                name: 'y方向粒子栅格数',
+                name: $t('3d.particleImage.particlesNumInHeight'),
                 obj: particlesConfig,
                 property: 'particlesNumInHeight',
                 min: 1,
@@ -604,7 +607,7 @@ export class ParticleImageController extends ThreeController {
                 step: 1,
             },
             {
-                name: '生成半径',
+                name: $t('3d.particleImage.particlesGenerateWidth'),
                 obj: particlesConfig,
                 property: 'particlesGenerateWidth',
                 min: 1,
@@ -612,7 +615,7 @@ export class ParticleImageController extends ThreeController {
                 step: 1,
             },
             {
-                name: '最小生成距离',
+                name: $t('3d.particleImage.particlesGenerateMinDistance'),
                 obj: particlesConfig.particlesGenerateDistanceRange,
                 property: '0',
                 min: 0.1,
@@ -620,7 +623,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.1,
             },
             {
-                name: '最大生成距离',
+                name: $t('3d.particleImage.particlesGenerateMaxDistance'),
                 obj: particlesConfig.particlesGenerateDistanceRange,
                 property: '1',
                 min: 0.1,
@@ -628,7 +631,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.1,
             },
             {
-                name: '最大重试次数',
+                name: $t('3d.particleImage.particlesGenerateRetryLimit'),
                 obj: particlesConfig,
                 property: 'particlesGenerateRetryLimit',
                 min: 0,
@@ -636,7 +639,7 @@ export class ParticleImageController extends ThreeController {
                 step: 1,
             },
             {
-                name: '生成颜色阈值',
+                name: $t('3d.particleImage.particlesGenerateColorThreshold'),
                 obj: particlesConfig,
                 property: 'particlesGenerateColorThreshold',
                 min: 0,
@@ -644,7 +647,7 @@ export class ParticleImageController extends ThreeController {
                 step: 1,
             },
             {
-                name: '生成不透明度阈值',
+                name: $t('3d.particleImage.particlesGenerateAlphaThreshold'),
                 obj: particlesConfig,
                 property: 'particlesGenerateAlphaThreshold',
                 min: 0,
@@ -652,7 +655,7 @@ export class ParticleImageController extends ThreeController {
                 step: 1,
             },
             {
-                name: '粒子初速度',
+                name: $t('3d.particleImage.particlesGenerateSpeed'),
                 obj: particlesConfig,
                 property: 'particlesGenerateSpeed',
                 min: 0,
@@ -660,7 +663,7 @@ export class ParticleImageController extends ThreeController {
                 step: 0.1,
             },
             {
-                name: '粒子最大速度',
+                name: $t('3d.particleImage.particlesMaxSpeed'),
                 obj: particlesConfig,
                 property: 'particlesMaxSpeed',
                 min: 0,
@@ -669,7 +672,7 @@ export class ParticleImageController extends ThreeController {
             },
         ];
 
-        const upload = gui.add(btnFnObj, 'upload').name('指定模板');
+        const upload = gui.add(btnFnObj, 'upload').name($t('3d.particleImage.selectTemplate'));
         const containerDom = upload.domElement.getElementsByClassName('widget')[0];
 
         const uploadBtnDom = document.createElement('input');
@@ -694,8 +697,8 @@ export class ParticleImageController extends ThreeController {
         });
         containerDom.append(uploadBtnDom);
 
-        gui.add(btnFnObj, 'reGenerate').name('重新生成');
-        gui.add(btnFnObj, 'reload').name('重置DEMO');
+        gui.add(btnFnObj, 'reGenerate').name($t('3d.particleImage.reGenerate'));
+        gui.add(btnFnObj, 'reload').name($t('3d.particleImage.reload'));
         numberFieldsConfigs.forEach(({ obj, property, min, max, step, name }) => {
             gui.add(obj, property, min, max, step)
                 .name(name)

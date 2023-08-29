@@ -9,7 +9,9 @@ import noteConfig from '@/config/note';
 import { useUserStore } from '@/stores/userStore';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
+import { i18n } from '@/lang';
 
+const $t = i18n.global.t;
 const props = defineProps<{
     mode: 'add' | 'edit';
     data?: NoteProject;
@@ -32,20 +34,30 @@ const formData = reactive<{
 });
 const rules = reactive<FormRules>({
     projectName: [
-        { required: true, message: '请输入项目名称', trigger: 'blur' },
-        { max: 255, message: '请输入小于255字符的项目名称', trigger: 'change' },
+        {
+            required: true,
+            message: $t('form.requireInput', { prop: $t('note.projectName') }),
+            trigger: 'blur',
+        },
+        { max: 255, message: $t('form.charLengthOverflow', { max: 255 }), trigger: 'change' },
     ],
     owners: [
         {
             required: true,
             type: 'array',
             min: 1,
-            message: '请选择至少一个所有者',
+            message: $t('note.selectAtLeastOneOwner'),
             trigger: 'change',
         },
     ],
     readers: [],
-    openness: [{ required: true, message: '请选择开放程度', trigger: 'blur' }],
+    openness: [
+        {
+            required: true,
+            message: $t('form.requireSelect', { prop: $t('note.openness') }),
+            trigger: 'blur',
+        },
+    ],
 });
 
 const userStore = useUserStore();
@@ -76,15 +88,12 @@ const onOpen = () => {
         }
     }
 };
-const helpText = `完全开放：所有用户包括匿名用户均可查看
-部分开放：仅读者及所有者可以查看
-私有：仅所有者可以查看`;
 </script>
 
 <template>
     <FormDialog
         width="520px"
-        :title="mode === 'add' ? '新建笔记项目' : '编辑笔记项目'"
+        :title="$t(mode === 'add' ? 'note.addProject' : 'note.editProject')"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"
@@ -99,21 +108,21 @@ const helpText = `完全开放：所有用户包括匿名用户均可查看
                 :rules="rules"
                 :model="formData"
             >
-                <el-form-item prop="projectName" label="项目名称">
+                <el-form-item prop="projectName" :label="$t('note.projectName')">
                     <el-input
                         ref="autoFocusRef"
                         v-model="formData.projectName"
                         @keydown.enter="submit"
                     ></el-input>
                 </el-form-item>
-                <el-form-item prop="owners" label="所有者">
+                <el-form-item prop="owners" :label="$t('note.owners')">
                     <UserSelect
                         v-model="formData.owners"
                         :default-options="defaultOwnerOptions"
                         ref="ownerSelectRef"
                     ></UserSelect>
                 </el-form-item>
-                <el-form-item prop="openness" label="开放程度">
+                <el-form-item prop="openness" :label="$t('note.openness')">
                     <el-radio-group v-model="formData.openness">
                         <el-radio-button
                             v-for="(num, type) in noteConfig.NOTE_PROJECT_OPENNESS_ENUM"
@@ -131,14 +140,14 @@ const helpText = `完全开放：所有用户包括匿名用户均可查看
                         </template>
                         <template #default>
                             <span style="white-space: pre-wrap">
-                                {{ helpText }}
+                                {{ $t('note.opennessHelpText') }}
                             </span>
                         </template>
                     </el-popover>
                 </el-form-item>
                 <el-form-item
                     prop="readers"
-                    label="读者"
+                    :label="$t('note.readers')"
                     v-if="formData.openness === noteConfig.NOTE_PROJECT_OPENNESS_ENUM.HALF_PUBLIC"
                 >
                     <UserSelect

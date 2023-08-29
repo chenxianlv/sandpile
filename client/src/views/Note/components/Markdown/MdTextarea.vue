@@ -36,7 +36,7 @@ const supportTab = (event: KeyboardEvent) => {
         autocomplete="off"
         autocapitalize="off"
         spellcheck="false"
-        placeholder="输入原文"
+        :placeholder="$t('note.inputMdText')"
     ></textarea>
 </template>
 

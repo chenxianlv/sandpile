@@ -1,28 +1,36 @@
 /**
- * 从先前某个时间点到当前时间的语义化表达，返回值会是"3秒前"、"3小时前"、"5分钟前"等
- * @param time 时间戳
+ * 解析传入时间，根据其最大时间单位概括时间，解析结果的含义为"3秒"、"3小时"、"5分钟"等
+ * @param timeDuration 时间戳，持续时间
  */
-export function timeToNowFormatter(time: number) {
-    const offset = Date.now() - time;
-    if (offset < 0) return '';
+export function timeDurationFormatter(timeDuration: number) {
+    const result: {
+        unit?: 'day' | 'hour' | 'minute' | 'second';
+        value?: number;
+    } = {};
+    if (timeDuration < 0) return result;
 
     const second = 1000;
     const minute = second * 60;
     const hour = minute * 60;
     const day = hour * 24;
 
-    const dayNum = offset / day;
-    const hourNum = offset / hour;
-    const minuteNum = offset / minute;
-    const secondNum = offset / second;
+    const dayNum = timeDuration / day;
+    const hourNum = timeDuration / hour;
+    const minuteNum = timeDuration / minute;
+    const secondNum = timeDuration / second;
 
     if (dayNum >= 1) {
-        return Math.floor(dayNum) + '天前';
+        result.unit = 'day';
+        result.value = Math.floor(dayNum);
     } else if (hourNum >= 1) {
-        return Math.floor(hourNum) + '小时前';
+        result.unit = 'hour';
+        result.value = Math.floor(hourNum);
     } else if (minuteNum >= 1) {
-        return Math.floor(minuteNum) + '分钟前';
+        result.unit = 'minute';
+        result.value = Math.floor(minuteNum);
     } else {
-        return Math.floor(secondNum) + '秒前';
+        result.unit = 'second';
+        result.value = Math.floor(secondNum);
     }
+    return result;
 }

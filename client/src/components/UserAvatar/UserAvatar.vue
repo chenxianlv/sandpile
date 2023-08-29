@@ -6,6 +6,9 @@ import { logoutAPI } from '@/api/base';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 import { ElMessageBox } from 'element-plus';
+import { i18n } from '@/lang';
+
+const $t = i18n.global.t;
 
 const userStore = useUserStore();
 const loginStore = useLoginStore();
@@ -14,12 +17,12 @@ const popoverRef = ref<PopoverInstance>();
 const logout = () => {
     popoverRef.value?.hide();
     ElMessageBox({
-        message: '确认要退出登录吗？当前未提交的变更可能会丢失',
-        title: '退出登录',
+        message: $t('user.logoutConfirm'),
+        title: $t('user.logout'),
         type: 'warning',
-        confirmButtonText: '退出登录',
+        confirmButtonText: $t('user.logout'),
         showCancelButton: true,
-        cancelButtonText: '取消',
+        cancelButtonText: $t('form.cancel'),
         beforeClose: (action, instance, done) => {
             if (action === 'confirm') {
                 logoutAPI().then(() => {
@@ -38,7 +41,7 @@ const logout = () => {
 <template>
     <div class="user-avatar">
         <el-button @click="loginStore.open()" v-if="userStore.username === undefined"
-            >登录
+            >{{ $t('user.login') }}
         </el-button>
         <template v-else>
             <el-popover placement="bottom-end" trigger="hover" ref="popoverRef">
@@ -50,7 +53,7 @@ const logout = () => {
                 </template>
                 <template #default>
                     <ul class="option-menu">
-                        <li @click="logout">退出登录</li>
+                        <li @click="logout">{{ $t('user.logout') }}</li>
                     </ul>
                 </template>
             </el-popover>
