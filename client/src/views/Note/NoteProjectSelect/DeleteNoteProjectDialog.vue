@@ -4,7 +4,9 @@ import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
 import type { NoteProject } from '@/api/note';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
+import { i18n } from '@/lang';
 
+const $t = i18n.global.t;
 const props = defineProps<{
     rowData?: NoteProject;
 }>();
@@ -15,7 +17,7 @@ const autoFocusRef = ref<InputInstance>();
 const formData = reactive<{ text: string }>({ text: '' });
 const validateConfirmText = (rule: any, value: any, callback: any) => {
     if ((value ?? '') !== props.rowData?.projectName) {
-        callback(new Error('请输入正确的项目名'));
+        callback(new Error($t('note.projectNameError')));
     } else {
         callback();
     }
@@ -33,13 +35,15 @@ const requestFn = async () => {
 
 <template>
     <FormDialog
-        title="确定删除吗？"
+        :title="$t('note.confirmToDelete')"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"
         :requestFn="requestFn"
     >
         <template #default="{ submit }">
-            <span>{{ `若确定删除，请输入项目名称“${props.rowData?.projectName ?? ''}”。` }}</span>
+            <span>{{
+                $t('note.deleteProjectConfirm', { projectName: props.rowData?.projectName ?? '' })
+            }}</span>
             <br />
             <br />
             <el-form @submit.prevent ref="formRef" :rules="rules" :model="formData">

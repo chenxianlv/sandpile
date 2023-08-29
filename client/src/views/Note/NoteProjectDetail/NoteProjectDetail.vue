@@ -22,7 +22,9 @@ import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
 import $bus from '@/common/eventBus';
+import { i18n } from '@/lang';
 
+const $t = i18n.global.t;
 window.location.hash = '';
 let projectId = Number(useRoute().params.id);
 
@@ -69,7 +71,7 @@ const handleContextMenuSelectChange = (node: TreeNode) => {
     contextMenuSelectNode.value = node;
 };
 
-const activePanelTab = ref<string>('file');
+const activePanelTab = ref<string>('files');
 const handlePanelTabSelect = (tab: string) => {
     activePanelTab.value = tab;
 };
@@ -95,14 +97,14 @@ const deleteNode = (hideContextMenu: () => void) => {
     if (node) {
         hideContextMenu();
         ElMessageBox({
-            message: node.isFile
-                ? `确认删除文件 ${node?.name} 吗？`
-                : `确认删除文件夹 ${node?.name} ，以及该文件夹内的所有内容吗？`,
-            title: node.isFile ? '删除文件' : '删除文件夹',
+            message: $t(node.isFile ? 'note.deleteFileConfirm' : 'note.deleteFolderConfirm', {
+                name: node?.name ?? '',
+            }),
+            title: $t(node.isFile ? 'note.deleteFile' : 'note.deleteFolder'),
             type: 'warning',
-            confirmButtonText: '删除',
+            confirmButtonText: $t('form.delete'),
             showCancelButton: true,
-            cancelButtonText: '取消',
+            cancelButtonText: $t('form.cancel'),
             beforeClose: (action, instance, done) => {
                 if (action === 'confirm') {
                     const promise = node.isFile
@@ -128,7 +130,7 @@ const deleteNode = (hideContextMenu: () => void) => {
 };
 
 const acceptFileTypes = ['.txt', '.md'];
-const uploadSingleFile = async (file?: File, folderId: number) => {
+const uploadSingleFile = async (folderId: number, file?: File) => {
     if (!file) throw new Error();
 
     const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
@@ -139,8 +141,9 @@ const uploadSingleFile = async (file?: File, folderId: number) => {
         }
         return result;
     }, -1);
-    if (file.size >= 10 * 1024 * 1024) throw new Error('文件不得超过10MB');
-    if (suffixIndex === -1) throw new Error('不支持该文件格式');
+    if (file.size >= 10 * 1024 * 1024)
+        throw new Error($t('msg.uploadFileSizeOverflow', { size: '10MB' }));
+    if (suffixIndex === -1) throw new Error($t('msg.uploadFileFormatNotSupported'));
 
     const fileName = file.name.slice(0, suffixIndex);
     await uploadNoteFileAPI({
@@ -160,12 +163,12 @@ const selectFileAndUpload = (hideContextMenu: () => void) => {
     input.onchange = async () => {
         try {
             const fileName = await uploadSingleFile(
-                input.files?.[0],
-                contextMenuSelectNode.value?.id ?? -1
+                contextMenuSelectNode.value?.id ?? -1,
+                input.files?.[0]
             );
-            ElMessage.success(`上传文件 ${fileName} 成功`);
+            ElMessage.success($t('msg.uploadFileSuccessWithName', { name: fileName }));
         } catch (e: any) {
-            ElMessage.warning(e?.message ?? '未知错误');
+            ElMessage.warning(e?.message ?? $t('msg.unknownError'));
         } finally {
             await getData(projectId);
         }
@@ -214,7 +217,7 @@ const selectFolderAndUpload = (hideContextMenu: () => void) => {
                         }
                     } else {
                         // 是文件
-                        uploadFilePromiseArr.push(uploadSingleFile(file, parentFolderId));
+                        uploadFilePromiseArr.push(uploadSingleFile(parentFolderId, file));
                     }
                 }
             }
@@ -222,9 +225,11 @@ const selectFolderAndUpload = (hideContextMenu: () => void) => {
             for (const res of resArr) {
                 if (res.status === 'rejected') throw res.reason;
             }
-            ElMessage.success(`上传文件夹 ${Object.keys(folderIdMap)[0] ?? ''} 成功`);
+            ElMessage.success(
+                $t('msg.uploadFolderSuccessWithName', { name: Object.keys(folderIdMap)[0] ?? '' })
+            );
         } catch (e: any) {
-            ElMessage.warning(e?.message ?? '未知错误');
+            ElMessage.warning(e?.message ?? $t('msg.unknownError'));
         } finally {
             await getData(projectId);
         }
@@ -246,7 +251,7 @@ const {
     onTextEdit,
     onSave,
     saveState,
-    formattedTimeStr,
+    saveGapDuration,
 } = useNoteEdit();
 
 const onTextareaInput = () => {
@@ -281,27 +286,27 @@ const projectRequiredEditAuthList = computed(() => {
             </div>
             <div class="right">
                 <span
-                    v-show="isEditing && formattedTimeStr !== ''"
+                    v-show="isEditing && saveGapDuration !== -1"
                     :class="['save-status', saveState ? 'success' : 'failed']"
                 >
                     <el-icon>
                         <CircleCheckFilled v-if="saveState" />
                         <CircleCloseFilled v-else />
                     </el-icon>
-                    {{ '于 ' + formattedTimeStr + ' 保存' + (saveState ? '成功' : '失败') }}
+                    {{ $t('note.saveState', { time: saveGapDuration, state: saveState }) }}
                 </span>
                 <el-button
                     v-if="isEditing"
                     :disabled="saveDisabled"
                     :loading="mdSaveLoading"
                     @click="onSave"
-                    >保存
+                    >{{ $t('form.save') }}
                 </el-button>
                 <el-switch
                     :disabled="!userStore.authenticate(projectRequiredEditAuthList)"
                     v-model="isEditing"
-                    active-text="编辑模式"
-                    inactive-text="阅读模式"
+                    :active-text="$t('note.editMode')"
+                    :inactive-text="$t('note.readMode')"
                 />
             </div>
         </el-header>
@@ -315,7 +320,7 @@ const projectRequiredEditAuthList = computed(() => {
                         :default-active="activePanelTab"
                         @select="handlePanelTabSelect"
                     >
-                        <el-menu-item index="file">文件</el-menu-item>
+                        <el-menu-item index="files">{{ $t('note.files') }}</el-menu-item>
                     </el-menu>
                     <FileTree
                         class="tree"
@@ -331,39 +336,41 @@ const projectRequiredEditAuthList = computed(() => {
                                     v-if="!data?.isFile"
                                     @click="openDialog('addFile', hideContextMenu)"
                                 >
-                                    新建文件
+                                    {{ $t('note.addFile') }}
                                 </li>
                                 <li
                                     v-if="!data?.isFile"
                                     @click="openDialog('addFolder', hideContextMenu)"
                                 >
-                                    新建文件夹
+                                    {{ $t('note.addFolder') }}
                                 </li>
                                 <li class="divider" v-if="!data?.isFile" />
                                 <li
                                     v-if="!data?.isFile"
                                     @click="selectFileAndUpload(hideContextMenu)"
                                 >
-                                    上传文件
+                                    {{ $t('note.uploadFile') }}
                                 </li>
                                 <li
                                     v-if="!data?.isFile"
                                     @click="selectFolderAndUpload(hideContextMenu)"
                                 >
-                                    上传文件夹
+                                    {{ $t('note.uploadFolder') }}
                                 </li>
                                 <li class="divider" v-if="!data?.isFile" />
                                 <li v-if="data" @click="openDialog('rename', hideContextMenu)">
-                                    重命名
+                                    {{ $t('form.rename') }}
                                 </li>
-                                <li v-if="data" @click="deleteNode(hideContextMenu)">删除</li>
+                                <li v-if="data" @click="deleteNode(hideContextMenu)">
+                                    {{ $t('form.delete') }}
+                                </li>
                             </ul>
                         </template>
                     </FileTree>
                 </el-aside>
                 <VerticalSizeSash v-if="asideRef?.$el" :targetDOM="asideRef?.$el" />
                 <el-main class="main" v-loading="parserLoading">
-                    <el-empty v-if="showingNoteId === null" description="请选择笔记" />
+                    <el-empty v-if="showingNoteId === null" :description="$t('note.selectNote')" />
                     <div class="detail-container" v-else>
                         <MarkdownTextarea
                             v-if="isEditing"

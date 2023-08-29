@@ -72,12 +72,12 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
         <header>
             <el-input
                 class="search-input"
-                placeholder="搜索项目"
+                :placeholder="$t('note.searchProject')"
                 :prefix-icon="Search"
                 v-model="filterString"
             />
             <el-button v-auth="[20005]" type="primary" @click="addDialogVisible = true"
-                >新建项目
+                >{{ $t('note.addProject') }}
             </el-button>
         </header>
         <div class="table-container">
@@ -90,11 +90,14 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
             >
                 <el-table-column
                     prop="projectName"
-                    label="笔记项目名"
+                    :label="$t('note.projectName')"
                     :width="350"
                 ></el-table-column>
-                <el-table-column prop="createUsername" label="创建者"></el-table-column>
-                <el-table-column prop="createTime" label="创建时间"></el-table-column>
+                <el-table-column
+                    prop="createUsername"
+                    :label="$t('note.createUsername')"
+                ></el-table-column>
+                <el-table-column prop="createTime" :label="$t('note.createTime')"></el-table-column>
                 <el-table-column width="45px" column-key="no-jump">
                     <template #default="{ row }">
                         <div v-auth="getProjectRequiredEditAuthList(row)">
@@ -106,8 +109,10 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
                                 </template>
                                 <template #default>
                                     <ul class="option-menu">
-                                        <li @click="showEditDialog(row)">编辑</li>
-                                        <li @click="showDeleteDialog(row)">删除</li>
+                                        <li @click="showEditDialog(row)">{{ $t('form.edit') }}</li>
+                                        <li @click="showDeleteDialog(row)">
+                                            {{ $t('form.delete') }}
+                                        </li>
                                     </ul>
                                 </template>
                             </el-popover>

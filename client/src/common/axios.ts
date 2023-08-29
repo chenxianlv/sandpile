@@ -73,7 +73,7 @@ baseRequest.interceptors.response.use(
         if (res?.data?.errorInfo) {
             ElMessage.warning(res?.data.errorInfo);
         } else {
-            ElMessage.warning(i18n.global.t('base.networkError'));
+            ElMessage.warning(i18n.global.t('msg.networkError'));
         }
 
         if (res?.status === 401) {
