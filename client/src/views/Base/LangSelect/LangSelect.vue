@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue';
 import { i18n } from '@/lang';
+import { setLocalStorage } from '@/utils/utils';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 
 const popoverRef = ref<PopoverInstance | null>(null);
 const onChangeLocale = (newLocale: (typeof i18n.global.availableLocales)[number]) => {
-    i18n.global.locale.value = newLocale;
-    popoverRef.value?.hide();
+    setLocalStorage('lang', newLocale);
+    history.go(0);
 };
 </script>
 
@@ -36,9 +37,11 @@ const onChangeLocale = (newLocale: (typeof i18n.global.availableLocales)[number]
 
 <style scoped lang="less">
 @import url('@/styles/variable');
+
 .icon_button {
     margin: 0 8px;
 }
+
 .option-menu {
     max-height: 200px;
     overflow-y: auto;

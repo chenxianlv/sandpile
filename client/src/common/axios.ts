@@ -7,6 +7,7 @@ import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/utils';
 import { i18n } from '@/lang';
 
+const $t = i18n.global.t;
 const printEnabled = import.meta.env.DEV && baseConfig.api.PRINT_IN_DEV;
 
 const baseRequest = axios.create({
@@ -69,11 +70,12 @@ baseRequest.interceptors.response.use(
         } else {
             res = (error as AxiosError).response as AxiosResponse;
         }
-
-        if (res?.data?.errorInfo) {
-            ElMessage.warning(res?.data.errorInfo);
+        if (res?.data?.errorCode) {
+            ElMessage.warning($t('errorCode.' + res.data.errorCode));
+        } else if (res?.data?.errorInfo) {
+            ElMessage.warning(res.data.errorInfo);
         } else {
-            ElMessage.warning(i18n.global.t('msg.networkError'));
+            ElMessage.warning($t('msg.networkError'));
         }
 
         if (res?.status === 401) {

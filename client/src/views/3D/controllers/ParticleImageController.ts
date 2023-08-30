@@ -517,9 +517,9 @@ export class ParticleImageController extends ThreeController {
 
     generateGui() {
         if (this.gui) this.gui.destroy();
-        const gui = new GUI({ container: this.guiContainerDom });
+        const gui = new GUI({ container: this.guiContainerDom, width: 300 });
         const btnFnObj = {
-            reGenerate: () => {
+            regenerate: () => {
                 const { particles } = this;
                 // @ts-ignore
                 if (particles?.material?.size !== undefined) {
@@ -697,13 +697,13 @@ export class ParticleImageController extends ThreeController {
         });
         containerDom.append(uploadBtnDom);
 
-        gui.add(btnFnObj, 'reGenerate').name($t('3d.particleImage.reGenerate'));
+        gui.add(btnFnObj, 'regenerate').name($t('3d.particleImage.regenerate'));
         gui.add(btnFnObj, 'reload').name($t('3d.particleImage.reload'));
         numberFieldsConfigs.forEach(({ obj, property, min, max, step, name }) => {
             gui.add(obj, property, min, max, step)
                 .name(name)
                 .onFinishChange(() => {
-                    btnFnObj.reGenerate();
+                    btnFnObj.regenerate();
                 });
         });
         gui.open();

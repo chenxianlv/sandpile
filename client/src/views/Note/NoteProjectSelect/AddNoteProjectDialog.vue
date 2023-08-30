@@ -103,7 +103,7 @@ const onOpen = () => {
             <el-form
                 @submit.prevent
                 ref="formRef"
-                label-width="100px"
+                label-width="120px"
                 label-position="left"
                 :rules="rules"
                 :model="formData"
@@ -129,7 +129,7 @@ const onOpen = () => {
                             :label="num"
                             :key="num"
                         >
-                            {{ type }}
+                            {{ $t(`note.${type}`) }}
                         </el-radio-button>
                     </el-radio-group>
                     <el-popover placement="top-end" width="300px">
