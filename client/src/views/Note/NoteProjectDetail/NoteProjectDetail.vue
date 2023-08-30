@@ -160,6 +160,7 @@ const selectFileAndUpload = (hideContextMenu: () => void) => {
 
     const input = document.createElement('input');
     input.type = 'file';
+    input.accept = acceptFileTypes.join(',');
     input.onchange = async () => {
         try {
             const fileName = await uploadSingleFile(
