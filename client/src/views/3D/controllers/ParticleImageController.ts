@@ -47,7 +47,7 @@ class PhysicalParticle {
             const tempPosition = new Vector3(rand(), rand(), 0);
             const distance = tempPosition.clone().sub(targetPosition).length();
             if (
-                count++ <= retryLimit ||
+                count++ >= retryLimit ||
                 (distance >= distanceRange[0] && distance <= distanceRange[1])
             ) {
                 if (import.meta.env.DEV && count > retryLimit) console.error('超过重试次数');
@@ -114,6 +114,8 @@ class GravityParticles extends Points {
 
     imageData?: ImageData;
 
+    curImgSrc?: string;
+
     count: number = 1;
 
     constructor(config: ParticlesConfig) {
@@ -170,6 +172,7 @@ class GravityParticles extends Points {
     }
 
     async loadImage(src: string) {
+        this.curImgSrc = src;
         const img = await new Promise<HTMLImageElement>((resolve) => {
             const img = document.createElement('img');
             img.onload = () => resolve(img);
@@ -178,6 +181,7 @@ class GravityParticles extends Points {
 
         const canvas = document.createElement('canvas');
         const { particlesNumInWidth: width, particlesNumInHeight: height } = this.config;
+        console.log(width);
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
@@ -527,7 +531,11 @@ export class ParticleImageController extends ThreeController {
                     particles.material.size = particles?.config.particlesSize;
                 }
                 particles?.updateParticles([], false);
-                particles?.imageData && particles?.loadPattern(particles.imageData);
+                particles?.imageData &&
+                    particles?.curImgSrc &&
+                    particles?.loadImage(particles.curImgSrc).then((imgData) => {
+                        particles?.loadPattern(imgData);
+                    });
                 this.generateGui();
             },
             reload: () => {
