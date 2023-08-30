@@ -57,7 +57,7 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .el-container {
-    width: 855px;
+    width: 600px + 10px + 300px;
     margin: 0 auto;
 }
 

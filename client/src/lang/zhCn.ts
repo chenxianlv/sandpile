@@ -1,8 +1,8 @@
-import lang from './lang';
+import { getLang } from './index';
 import { timeDurationFormatter } from '@/utils/formatter';
 
 const messages = {
-    lang,
+    lang: getLang(),
     form: {
         cancel: '取消',
         submit: '提交',
@@ -32,7 +32,22 @@ const messages = {
         hour: '小时',
         day: '天',
     },
-    errorCode: {},
+    errorCode: {
+        11001: '认证信息无效',
+        11002: '认证信息过期',
+        11003: '账号为空',
+        11004: '请先登录',
+        11005: '用户名或密码错误',
+        11006: '权限不足',
+        12001: '连接FTP服务器失败',
+        12002: 'FTP服务器创建文件失败',
+        13001: '参数校验未通过',
+        21001: '添加实体失败',
+        22001: '删除实体失败',
+        23001: '更新实体失败',
+        24001: '查找实体失败',
+        24002: '实体不存在',
+    },
     menu: {
         note: '学习笔记',
         '3d': '3D',
@@ -57,6 +72,9 @@ const messages = {
         opennessHelpText: `完全开放：所有用户包括匿名用户均可查看
 部分开放：仅读者及所有者可以查看
 私有：仅所有者可以查看`,
+        FULL_PUBLIC: '完全开放',
+        HALF_PUBLIC: '部分开放',
+        PRIVATE: '私有',
         readers: '读者',
         createUsername: '创建者',
         createTime: '创建时间',
@@ -105,7 +123,7 @@ const messages = {
             particlesGenerateSpeed: '粒子初速度',
             particlesMaxSpeed: '粒子最大速度',
             selectTemplate: '指定模板',
-            reGenerate: '重新生成',
+            regenerate: '重新生成',
             reload: '重置DEMO',
         },
     },
