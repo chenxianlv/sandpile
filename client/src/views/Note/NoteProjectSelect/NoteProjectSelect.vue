@@ -8,6 +8,7 @@ import type { NoteProject } from '@/api/note';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
 import { useUserStore } from '@/stores/userStore';
+import { AccessEnum } from '@/config/enum/access';
 
 const noteProjects = ref<NoteProject[]>([]);
 const userStore = useUserStore();
@@ -62,7 +63,7 @@ const showEditDialog = (row: NoteProject) => {
 
 const getProjectRequiredEditAuthList = (data: NoteProject) => {
     const isOwner = userStore.id !== undefined && data.owners.some(({ id }) => id === userStore.id);
-    return isOwner ? [20001] : [20002];
+    return isOwner ? [AccessEnum.EDIT_OWNED_PROJECT] : [AccessEnum.EDIT_ALL_PROJECT];
 };
 </script>
 
