@@ -237,7 +237,6 @@ export function useNoteEdit() {
         });
         return Promise.allSettled(promiseArr)
             .then((resArr) => {
-                console.log(resArr);
                 saveState.value = resArr.every(({ status }) => status === 'fulfilled');
                 lastSaveTime.value = Date.now();
             })

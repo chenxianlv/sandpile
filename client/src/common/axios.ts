@@ -55,6 +55,7 @@ baseRequest.interceptors.response.use(
     },
     (error: AxiosError | AxiosResponse) => {
         const url = error.config?.url;
+        // @ts-ignore
         if (url && baseConfig.api.CUSTOM_ERROR_HANDLE_URL.includes(url)) {
             return Promise.reject(error);
         }

@@ -112,7 +112,6 @@ const deleteNode = (hideContextMenu: () => void) => {
                         ? deleteNoteFileAPI({ id: node.id })
                         : deleteNoteFolderAPI({ id: node.id });
                     promise.then(() => {
-                        console.log(node.isChildren(showingNoteId.value));
                         if (
                             (node.isFile && node.id === showingNoteId.value) ||
                             node.isChildren(showingNoteId.value)

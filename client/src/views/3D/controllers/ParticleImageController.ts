@@ -181,7 +181,6 @@ class GravityParticles extends Points {
 
         const canvas = document.createElement('canvas');
         const { particlesNumInWidth: width, particlesNumInHeight: height } = this.config;
-        console.log(width);
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
