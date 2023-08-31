@@ -6,7 +6,7 @@ import { i18n } from '@/lang';
 import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import en from 'element-plus/es/locale/lang/en';
 
-const elLangMap = { zhCn, en };
+const elLangMap: SimpleObj<any> = { zhCn, en };
 const locale = computed(() => {
     return elLangMap[i18n.global.locale.value];
 });

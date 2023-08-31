@@ -36,13 +36,14 @@ class BeforeCloseAPI {
         }
 
         this.dataGetterMap.forEach(({ url, callback }) => {
-            callback((data) => {
-                return fetch(url, {
+            callback(async (data) => {
+                const res = await fetch(url, {
                     headers,
                     method: 'POST',
                     body: JSON.stringify(data),
                     keepalive: true,
-                }).then((res) => res.json());
+                });
+                return await res.json();
             });
         });
         this.dataGetterMap = new Map();
@@ -55,7 +56,6 @@ class BeforeCloseAPI {
     }
 
     off(id: number) {
-        console.log(this.dataGetterMap);
         this.dataGetterMap.delete(id);
     }
 }
