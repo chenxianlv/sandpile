@@ -5,7 +5,7 @@ import { QuestionFilled } from '@element-plus/icons-vue';
 import { addProjectAPI, updateProjectAPI } from '@/api/note';
 import type { UserSummary } from '@/api/user';
 import type { NoteProject } from '@/api/note';
-import noteConfig from '@/config/note';
+import { NoteProjectOpennessEnum } from '@/config/enum/note';
 import { useUserStore } from '@/stores/userStore';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
@@ -125,7 +125,7 @@ const onOpen = () => {
                 <el-form-item prop="openness" :label="$t('note.openness')">
                     <el-radio-group v-model="formData.openness">
                         <el-radio-button
-                            v-for="(num, type) in noteConfig.NOTE_PROJECT_OPENNESS_ENUM"
+                            v-for="(num, type) in NoteProjectOpennessEnum"
                             :label="num"
                             :key="num"
                         >
@@ -148,7 +148,7 @@ const onOpen = () => {
                 <el-form-item
                     prop="readers"
                     :label="$t('note.readers')"
-                    v-if="formData.openness === noteConfig.NOTE_PROJECT_OPENNESS_ENUM.HALF_PUBLIC"
+                    v-if="formData.openness === NoteProjectOpennessEnum.HALF_PUBLIC"
                 >
                     <UserSelect
                         v-model="formData.readers"

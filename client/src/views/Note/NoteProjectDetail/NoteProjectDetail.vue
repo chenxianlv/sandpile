@@ -23,6 +23,7 @@ import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
 import $bus from '@/common/eventBus';
 import { i18n } from '@/lang';
+import { AccessEnum } from '@/config/enum/access';
 
 const $t = i18n.global.t;
 window.location.hash = '';
@@ -267,7 +268,7 @@ const projectRequiredEditAuthList = computed(() => {
     const isOwner =
         userStore.id !== undefined &&
         (responseData.value?.owners?.some((owner) => owner.id === userStore.id) ?? false);
-    return isOwner ? [20001] : [20002];
+    return isOwner ? [AccessEnum.EDIT_OWNED_PROJECT] : [AccessEnum.EDIT_ALL_PROJECT];
 });
 </script>
 
