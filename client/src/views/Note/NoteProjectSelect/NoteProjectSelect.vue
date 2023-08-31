@@ -5,7 +5,6 @@ import { Search, MoreFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { listProjectsAPI } from '@/api/note';
 import type { NoteProject } from '@/api/note';
-import vAuth from '@/directives/vAuth';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
 import { useUserStore } from '@/stores/userStore';

@@ -1,15 +1,12 @@
-import type { ObjectDirective } from 'vue';
+import type { FunctionDirective } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 
-const vAuth: ObjectDirective<any, number[]> = {
-    mounted(el, binding) {
-        const requiredAuthIdArr = binding.value;
-        const isAllowed = useUserStore().authenticate(requiredAuthIdArr);
-
-        if (!isAllowed) {
-            el.parentNode?.removeChild(el);
-        }
-    },
+const vAuth: FunctionDirective<any, number[]> = (el, binding) => {
+    const requiredAuthIdArr = binding.value;
+    const isAllowed = useUserStore().authenticate(requiredAuthIdArr);
+    if (!isAllowed) {
+        el.parentNode?.removeChild(el);
+    }
 };
 
 export default vAuth;
