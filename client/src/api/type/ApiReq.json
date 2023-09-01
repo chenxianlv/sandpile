@@ -1,0 +1,268 @@
+{
+    "$id": "req",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "ApiReq.Note.AddNoteFileAPI": {
+            "properties": {
+                "folderId": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "projectId": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "folderId",
+                "name",
+                "projectId"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.AddNoteFolderAPI": {
+            "properties": {
+                "folderId": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "projectId": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "folderId",
+                "name",
+                "projectId"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.AddProjectAPI": {
+            "properties": {
+                "openness": {
+                    "type": "number"
+                },
+                "owners": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                },
+                "projectName": {
+                    "type": "string"
+                },
+                "readers": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "openness",
+                "owners",
+                "projectName",
+                "readers"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.DeleteNoteFileAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.DeleteNoteFolderAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.DeleteProjectAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.GetNoteTextAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.GetProjectDetailAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.UpdateNoteFileAPI": {
+            "properties": {
+                "folderId": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.UpdateNoteFolderAPI": {
+            "properties": {
+                "folderId": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.UpdateProjectAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "openness": {
+                    "type": "number"
+                },
+                "owners": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                },
+                "projectName": {
+                    "type": "string"
+                },
+                "readers": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiReq.Note.UploadNoteFileAPI": {
+            "properties": {
+                "file": {
+                    "$ref": "req#/definitions/File"
+                },
+                "folderId": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "projectId": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "file",
+                "folderId",
+                "name",
+                "projectId"
+            ],
+            "type": "object"
+        },
+        "Blob": {
+            "properties": {
+                "prototype": {
+                    "$ref": "req#/definitions/Blob"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "prototype",
+                "size",
+                "type"
+            ],
+            "type": "object"
+        },
+        "File": {
+            "properties": {
+                "lastModified": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prototype": {
+                    "$ref": "req#/definitions/Blob"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "webkitRelativePath": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "lastModified",
+                "name",
+                "prototype",
+                "size",
+                "type",
+                "webkitRelativePath"
+            ],
+            "type": "object"
+        }
+    }
+}
+

@@ -3,6 +3,7 @@ import type { NormalResponse } from '@/common/axios';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import type { CallbackFn } from '@/common/beforeCloseAPI';
 import type { UserSummary } from '@/api/user';
+import { reqValid, resValid } from '@/api/type/typeValid';
 
 export interface NoteProject {
     id: number;
@@ -35,146 +36,157 @@ export interface NoteFolder {
     folderId: number;
 }
 
-export function listProjectsAPI(): NormalResponse<{
-    noteProjects: Array<NoteProject>;
-}> {
-    return baseRequest({
-        url: '/note/listProjects',
-    });
+export function listProjectsAPI(): NormalResponse<ApiRes.Note.ListProjectsAPI> {
+    return resValid(
+        baseRequest({
+            url: '/note/listProjects',
+        }),
+        'ApiRes.Note.ListProjectsAPI'
+    );
 }
 
-export function addProjectAPI(data: {
-    projectName: string;
-    owners: number[];
-    readers: number[];
-    openness: number;
-}): NormalResponse<{
-    id: number;
-}> {
-    return baseRequest({
-        url: '/note/addProject',
-        data,
-    });
+export function addProjectAPI(
+    data: ApiReq.Note.AddProjectAPI
+): NormalResponse<ApiRes.Note.AddProjectAPI> {
+    reqValid(data, 'ApiReq.Note.AddProjectAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/addProject',
+            data,
+        }),
+        'ApiRes.Note.AddProjectAPI'
+    );
 }
 
-export function updateProjectAPI(data: {
-    id: number;
-    projectName?: string;
-    owners?: number[];
-    readers?: number[];
-    openness?: number;
-}): NormalResponse {
-    return baseRequest({
-        url: '/note/updateProject',
-        data,
-    });
+export function updateProjectAPI(data: ApiReq.Note.UpdateProjectAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.UpdateProjectAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/updateProject',
+            data,
+        })
+    );
 }
 
-export function deleteProjectAPI(data: { id: number }): NormalResponse {
-    return baseRequest({
-        url: '/note/deleteProject',
-        data,
-    });
+export function deleteProjectAPI(data: ApiReq.Note.DeleteProjectAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.DeleteProjectAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/deleteProject',
+            data,
+        })
+    );
 }
 
-export function getProjectDetailAPI(data: { id: number }): NormalResponse<NoteProjectDetail> {
-    return baseRequest({
-        url: '/note/getProjectDetail',
-        data,
-    });
+export function getProjectDetailAPI(
+    data: ApiReq.Note.GetProjectDetailAPI
+): NormalResponse<ApiRes.Note.GetProjectDetailAPI> {
+    reqValid(data, 'ApiReq.Note.GetProjectDetailAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/getProjectDetail',
+            data,
+        }),
+        'ApiRes.Note.GetProjectDetailAPI'
+    );
 }
 
-export function getNoteTextAPI(data: { id: number }): NormalResponse<{
-    text: string;
-}> {
-    return baseRequest({
-        url: '/note/getNoteText',
-        data,
-    });
+export function getNoteTextAPI(
+    data: ApiReq.Note.GetNoteTextAPI
+): NormalResponse<ApiRes.Note.GetNoteTextAPI> {
+    reqValid(data, 'ApiReq.Note.GetNoteTextAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/getNoteText',
+            data,
+        }),
+        'ApiRes.Note.GetNoteTextAPI'
+    );
 }
 
-export function addNoteFileAPI(data: {
-    projectId: number;
-    name: string;
-    folderId: number;
-}): NormalResponse<{
-    id: number;
-}> {
-    return baseRequest({
-        url: '/note/addNoteFile',
-        data,
-    });
+export function addNoteFileAPI(
+    data: ApiReq.Note.AddNoteFileAPI
+): NormalResponse<ApiRes.Note.AddNoteFileAPI> {
+    reqValid(data, 'ApiReq.Note.AddNoteFileAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/addNoteFile',
+            data,
+        }),
+        'ApiRes.Note.AddNoteFileAPI'
+    );
 }
 
-export function deleteNoteFileAPI(data: { id: number }): NormalResponse {
-    return baseRequest({
-        url: '/note/deleteNoteFile',
-        data,
-    });
+export function deleteNoteFileAPI(data: ApiReq.Note.DeleteNoteFileAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.DeleteNoteFileAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/deleteNoteFile',
+            data,
+        })
+    );
 }
 
-export function updateNoteFileAPI(data: {
-    id: number;
-    name?: string;
-    folderId?: number;
-    text?: string;
-}): NormalResponse {
-    return baseRequest({
-        url: '/note/updateNoteFile',
-        data,
-    });
+export function updateNoteFileAPI(data: ApiReq.Note.UpdateNoteFileAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.UpdateNoteFileAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/updateNoteFile',
+            data,
+        })
+    );
 }
 
 export function updateNoteFileBeforeCloseAPI(callback: CallbackFn) {
     return beforeCloseAPI.on('/note/updateNoteFile', callback);
 }
 
-export function addNoteFolderAPI(data: {
-    projectId: number;
-    name: string;
-    folderId: number;
-}): NormalResponse<{
-    id: number;
-}> {
-    return baseRequest({
-        url: '/note/addNoteFolder',
-        data,
-    });
+export function addNoteFolderAPI(
+    data: ApiReq.Note.AddNoteFolderAPI
+): NormalResponse<ApiRes.Note.AddNoteFolderAPI> {
+    reqValid(data, 'ApiReq.Note.AddNoteFolderAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/addNoteFolder',
+            data,
+        }),
+        'ApiRes.Note.AddNoteFolderAPI'
+    );
 }
 
-export function deleteNoteFolderAPI(data: { id: number }): NormalResponse {
-    return baseRequest({
-        url: '/note/deleteNoteFolder',
-        data,
-    });
+export function deleteNoteFolderAPI(data: ApiReq.Note.DeleteNoteFolderAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.DeleteNoteFolderAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/deleteNoteFolder',
+            data,
+        })
+    );
 }
 
-export function updateNoteFolderAPI(data: {
-    id: number;
-    name?: string;
-    folderId?: number;
-}): NormalResponse {
-    return baseRequest({
-        url: '/note/updateNoteFolder',
-        data,
-    });
+export function updateNoteFolderAPI(data: ApiReq.Note.UpdateNoteFolderAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.UpdateNoteFolderAPI');
+    return resValid(
+        baseRequest({
+            url: '/note/updateNoteFolder',
+            data,
+        })
+    );
 }
 
-export function uploadNoteFileAPI(data: {
-    projectId: number;
-    name: string;
-    folderId: number;
-    file: File;
-}): NormalResponse {
+export function uploadNoteFileAPI(data: ApiReq.Note.UploadNoteFileAPI): NormalResponse {
+    reqValid(data, 'ApiReq.Note.UploadNoteFileAPI');
     const formData = new FormData();
     formData.append('projectId', String(data.projectId));
     formData.append('folderId', String(data.folderId));
     formData.append('name', data.name);
     formData.append('file', data.file);
 
-    return baseRequest({
-        url: '/note/uploadNoteFile',
-        data: formData,
-        timeout: 0,
-    });
+    return resValid(
+        baseRequest({
+            url: '/note/uploadNoteFile',
+            data: formData,
+            timeout: 0,
+        })
+    );
 }

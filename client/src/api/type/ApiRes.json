@@ -1,0 +1,245 @@
+{
+    "$id": "res",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "ApiRes.Note.AddNoteFileAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.AddNoteFolderAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.AddProjectAPI": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.GetNoteTextAPI": {
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "text"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.GetProjectDetailAPI": {
+            "properties": {
+                "noteFolders": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.Note.NoteFolder"
+                    },
+                    "type": "array"
+                },
+                "notes": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.Note.NoteFile"
+                    },
+                    "type": "array"
+                },
+                "openness": {
+                    "type": "number"
+                },
+                "owners": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                },
+                "projectName": {
+                    "type": "string"
+                },
+                "readers": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "noteFolders",
+                "notes",
+                "openness",
+                "owners",
+                "projectName",
+                "readers"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.ListProjectsAPI": {
+            "properties": {
+                "noteProjects": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.Note.NoteProject"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "noteProjects"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.NoteFile": {
+            "properties": {
+                "folderId": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "folderId",
+                "id",
+                "name"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.NoteFolder": {
+            "properties": {
+                "folderId": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "folderId",
+                "id",
+                "name"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.NoteProject": {
+            "properties": {
+                "createTime": {
+                    "type": "number"
+                },
+                "createUsername": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "openness": {
+                    "type": "number"
+                },
+                "owners": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                },
+                "projectName": {
+                    "type": "string"
+                },
+                "readers": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "createTime",
+                "createUsername",
+                "id",
+                "openness",
+                "owners",
+                "projectName",
+                "readers"
+            ],
+            "type": "object"
+        },
+        "ApiRes.Note.NoteProjectDetail": {
+            "properties": {
+                "noteFolders": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.Note.NoteFolder"
+                    },
+                    "type": "array"
+                },
+                "notes": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.Note.NoteFile"
+                    },
+                    "type": "array"
+                },
+                "openness": {
+                    "type": "number"
+                },
+                "owners": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                },
+                "projectName": {
+                    "type": "string"
+                },
+                "readers": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "noteFolders",
+                "notes",
+                "openness",
+                "owners",
+                "projectName",
+                "readers"
+            ],
+            "type": "object"
+        },
+        "ApiRes.User.UserSummary": {
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "username"
+            ],
+            "type": "object"
+        }
+    }
+}
+
