@@ -1,5 +1,9 @@
 declare namespace ApiReq {
-    export namespace User {}
+    export namespace User {
+        export interface ListUserSummariesAPI {
+            pattern: string;
+        }
+    }
     export namespace Note {
         export interface AddProjectAPI {
             projectName: string;

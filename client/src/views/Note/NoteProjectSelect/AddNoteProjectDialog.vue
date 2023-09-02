@@ -3,13 +3,12 @@ import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { QuestionFilled } from '@element-plus/icons-vue';
 import { addProjectAPI, updateProjectAPI } from '@/api/note';
-import type { UserSummary } from '@/api/user';
-import type { NoteProject } from '@/api/note';
 import { NoteProjectOpennessEnum } from '@/config/enum/note';
 import { useUserStore } from '@/stores/userStore';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
 import { i18n } from '@/lang';
+import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 
 const $t = i18n.global.t;
 const props = defineProps<{
@@ -61,6 +60,7 @@ const rules = reactive<FormRules>({
 });
 
 const userStore = useUserStore();
+type UserSummary = ApiRes.User.UserSummary;
 const defaultOwnerOptions = ref<Array<UserSummary>>([]);
 const defaultReaderOptions = ref<Array<UserSummary>>([]);
 

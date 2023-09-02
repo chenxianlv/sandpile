@@ -213,6 +213,17 @@
             ],
             "type": "object"
         },
+        "ApiReq.User.ListUserSummariesAPI": {
+            "properties": {
+                "pattern": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "pattern"
+            ],
+            "type": "object"
+        },
         "Blob": {
             "properties": {
                 "prototype": {

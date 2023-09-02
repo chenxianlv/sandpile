@@ -4,27 +4,26 @@ import { useRouter } from 'vue-router';
 import { Search, MoreFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { listProjectsAPI } from '@/api/note';
-import type { NoteProject } from '@/api/note';
 import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
 import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
 import { useUserStore } from '@/stores/userStore';
 import { AccessEnum } from '@/config/enum/access';
+import { clone } from 'lodash-es';
+import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 
 const noteProjects = ref<NoteProject[]>([]);
 const userStore = useUserStore();
 
 const listProjects = () => {
-    listProjectsAPI()
-        .then((res) => {
-            const timeFormatter = (item: any) => {
-                if (item?.createTime) {
-                    item.createTime = dayjs(item.createTime).format('YYYY/MM/DD HH:mm:ss');
-                }
-                return item;
-            };
-            noteProjects.value = res.data.data.noteProjects.map(timeFormatter);
-        })
-        .catch(() => {});
+    listProjectsAPI().then((res) => {
+        noteProjects.value = res.data.data.noteProjects.map((item) => {
+            const cloneItem = clone(item);
+            (cloneItem as NoteProject).createTimeStr = dayjs(item.createTime).format(
+                'YYYY/MM/DD HH:mm:ss'
+            );
+            return cloneItem as NoteProject;
+        });
+    });
 };
 listProjects();
 
@@ -44,7 +43,7 @@ const noteProjectsAfterFilter = computed(() => {
     return noteProjects.value.filter((project) => {
         if (project.projectName?.includes(filterString.value)) return true;
         if (project.createUsername?.includes(filterString.value)) return true;
-        if (project.createTime?.includes(filterString.value)) return true;
+        if (project.createTimeStr?.includes(filterString.value)) return true;
     });
 });
 

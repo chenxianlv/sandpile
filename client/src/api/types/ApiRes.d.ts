@@ -4,13 +4,16 @@ declare namespace ApiRes {
             username: string;
             id: number;
         }
+        export interface ListUserSummariesAPI {
+            users?: Array<UserSummary>;
+        }
     }
     export namespace Note {
         export interface NoteProject {
             id: number;
             projectName: string;
-            owners: Array<User.UserSummary>;
-            readers: Array<User.UserSummary>;
+            owners: Array<ApiRes.User.UserSummary>;
+            readers: Array<ApiRes.User.UserSummary>;
             openness: number;
             createUsername: string;
             createTime: number;

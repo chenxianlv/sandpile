@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { listUserSummaries } from '@/api/user';
-import type { UserSummary } from '@/api/user';
+import { listUserSummariesAPI } from '@/api/user';
 
+type UserSummary = ApiRes.User.UserSummary;
 const props = withDefaults(
     defineProps<{
         modelValue?: number[];
@@ -45,7 +45,7 @@ const requestFn = (pattern: string) => {
         return;
     }
     requesting.value = true;
-    listUserSummaries({ pattern }, abortController.signal)
+    listUserSummariesAPI({ pattern }, abortController.signal)
         .then((res) => {
             userList.value = res?.data?.data?.users ?? [];
         })

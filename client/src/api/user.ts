@@ -1,21 +1,15 @@
-import baseRequest from '@/common/axios';
 import type { NormalResponse } from '@/common/axios';
 import type { GenericAbortSignal } from 'axios';
+import { validRequest } from '@/api/types/typeValid';
 
-export interface UserSummary {
-    username: string;
-    id: number;
-}
-
-export function listUserSummaries(
-    data: {
-        pattern: string;
-    },
+export function listUserSummariesAPI(
+    data: ApiReq.User.ListUserSummariesAPI,
     signal: GenericAbortSignal | undefined
-): NormalResponse<{
-    users?: Array<UserSummary>;
-}> {
-    return baseRequest({
+): NormalResponse<ApiRes.User.ListUserSummariesAPI> {
+    return validRequest(
+        'User.ListUserSummariesAPI',
+        data
+    )({
         url: '/user/listUserSummaries',
         data,
         signal,
