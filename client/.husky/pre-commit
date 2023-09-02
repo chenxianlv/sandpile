@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+cd ./client || exit
+npm run api-type-to-schema
+cd ../ || exit
+git add ./client/src/api/types/ApiReq.json
+git add ./client/src/api/types/ApiRes.json
