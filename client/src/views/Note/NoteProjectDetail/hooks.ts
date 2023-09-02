@@ -6,12 +6,15 @@ import {
     updateNoteFileAPI,
     updateNoteFileBeforeCloseAPI,
 } from '@/api/note';
-import type { NoteProjectDetail } from '@/api/note';
 import { useLoading } from '@/utils/hooks';
 // @ts-ignore
 import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import noteConfig from '@/config/note';
+
+export interface NoteProject extends ApiRes.Note.NoteProject {
+    createTimeStr: string;
+}
 
 interface NoteNode extends TreeNode {
     id: number;
@@ -53,7 +56,7 @@ interface FolderNode extends TreeNode {
 export type TempTreeNode = NoteNode | FolderNode;
 
 export function useNoteDetail(projectId: number) {
-    const responseData = ref<NoteProjectDetail>();
+    const responseData = ref<ApiRes.Note.NoteProjectDetail>();
     const noteTreeData = ref<TempTreeNode[]>([]);
     const noteTextStorage = ref<SimpleObj<string>>({});
     const { loading: pageLoading, startLoading, stopLoading } = useLoading();

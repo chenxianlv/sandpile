@@ -15,6 +15,16 @@ export default {
          * url值即为调用axios方法时传入的url属性，不包含baseUrl
          */
         CUSTOM_ERROR_HANDLE_URL: [],
+
+        /**
+         * 在开发模式下，校验每个请求的请求体data的类型
+         */
+        VALIDATE_REQUEST_DATA_IN_DEV: true,
+
+        /**
+         * 在开发模式下，校验每个请求的响应体data的类型
+         */
+        VALIDATE_RESPONSE_DATA_IN_DEV: true,
     },
     mock: {
         /**

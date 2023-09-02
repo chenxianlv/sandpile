@@ -225,6 +225,17 @@
             ],
             "type": "object"
         },
+        "ApiRes.User.ListUserSummariesAPI": {
+            "properties": {
+                "users": {
+                    "items": {
+                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                    },
+                    "type": "array"
+                }
+            },
+            "type": "object"
+        },
         "ApiRes.User.UserSummary": {
             "properties": {
                 "id": {

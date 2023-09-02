@@ -2,9 +2,9 @@
 import { reactive, ref } from 'vue';
 import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
-import type { NoteProject } from '@/api/note';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import { i18n } from '@/lang';
+import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 
 const $t = i18n.global.t;
 const props = defineProps<{
