@@ -3,8 +3,9 @@ import type { NormalResponse } from '@/common/axios';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import type { CallbackFn } from '@/common/beforeCloseAPI';
 import type { UserSummary } from '@/api/user';
-import { reqValid, resValid } from '@/api/type/typeValid';
+import { reqValid, resValid } from '@/api/types/typeValid';
 
+// todo 移除类型
 export interface NoteProject {
     id: number;
     projectName: string;
