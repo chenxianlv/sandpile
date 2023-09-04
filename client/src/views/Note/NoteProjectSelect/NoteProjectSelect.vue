@@ -2,32 +2,19 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, MoreFilled } from '@element-plus/icons-vue';
-import dayjs from 'dayjs';
-import { listProjectsAPI } from '@/api/note';
-import DeleteDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
-import AddDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
+import DeleteNoteProjectDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
+import AddNoteProjectDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
 import { useUserStore } from '@/stores/userStore';
+import { useNoteProjectSelectStore } from './store';
+import type { NoteProjectRow } from './store';
 import { AccessEnum } from '@/config/enum/access';
-import { clone } from 'lodash-es';
-import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 
-const noteProjects = ref<NoteProject[]>([]);
 const userStore = useUserStore();
-
-const listProjects = () => {
-    listProjectsAPI().then((res) => {
-        noteProjects.value = res.data.data.noteProjects.map((item) => {
-            const cloneItem = clone(item);
-            (cloneItem as NoteProject).createTimeStr = dayjs(item.createTime).format(
-                'YYYY/MM/DD HH:mm:ss'
-            );
-            return cloneItem as NoteProject;
-        });
-    });
-};
-listProjects();
-
+const store = useNoteProjectSelectStore();
 const router = useRouter();
+
+store.listProjects();
+
 const handleCellClick = (row: { id: number }, column: any, cell: any) => {
     // 若单元格为空，则跳转
     if ((cell.children?.[0]?.children?.length ?? 0) === 0) {
@@ -40,7 +27,7 @@ const handleCellClick = (row: { id: number }, column: any, cell: any) => {
 
 const filterString = ref<string>('');
 const noteProjectsAfterFilter = computed(() => {
-    return noteProjects.value.filter((project) => {
+    return store.noteProjects.filter((project) => {
         if (project.projectName?.includes(filterString.value)) return true;
         if (project.createUsername?.includes(filterString.value)) return true;
         if (project.createTimeStr?.includes(filterString.value)) return true;
@@ -50,17 +37,17 @@ const noteProjectsAfterFilter = computed(() => {
 const addDialogVisible = ref<boolean>(false);
 const deleteDialogVisible = ref<boolean>(false);
 const editDialogVisible = ref<boolean>(false);
-const selectedRowData = ref<NoteProject | undefined>();
-const showDeleteDialog = (row: NoteProject) => {
+const selectedRowData = ref<NoteProjectRow | undefined>();
+const showDeleteDialog = (row: NoteProjectRow) => {
     selectedRowData.value = row;
     deleteDialogVisible.value = true;
 };
-const showEditDialog = (row: NoteProject) => {
+const showEditDialog = (row: NoteProjectRow) => {
     selectedRowData.value = row;
     editDialogVisible.value = true;
 };
 
-const getProjectRequiredEditAuthList = (data: NoteProject) => {
+const getProjectRequiredEditAuthList = (data: NoteProjectRow) => {
     const isOwner = userStore.id !== undefined && data.owners.some(({ id }) => id === userStore.id);
     return isOwner ? [AccessEnum.EDIT_OWNED_PROJECT] : [AccessEnum.EDIT_ALL_PROJECT];
 };
@@ -75,7 +62,10 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
                 :prefix-icon="Search"
                 v-model="filterString"
             />
-            <el-button v-auth="[20005]" type="primary" @click="addDialogVisible = true"
+            <el-button
+                v-auth="[AccessEnum.ADD_PROJECT]"
+                type="primary"
+                @click="addDialogVisible = true"
                 >{{ $t('note.addProject') }}
             </el-button>
         </header>
@@ -120,16 +110,20 @@ const getProjectRequiredEditAuthList = (data: NoteProject) => {
                 </el-table-column>
             </el-table>
         </div>
-        <DeleteDialog
+        <DeleteNoteProjectDialog
             v-model="deleteDialogVisible"
             :row-data="selectedRowData"
             @submit-success="listProjects"
         />
-        <AddDialog mode="add" v-model="addDialogVisible" @submit-success="listProjects" />
-        <AddDialog
+        <AddNoteProjectDialog
+            mode="add"
+            v-model="addDialogVisible"
+            @submit-success="listProjects"
+        />
+        <AddNoteProjectDialog
             mode="edit"
             v-model="editDialogVisible"
-            :data="selectedRowData"
+            :row-data="selectedRowData"
             @submit-success="listProjects"
         />
     </div>

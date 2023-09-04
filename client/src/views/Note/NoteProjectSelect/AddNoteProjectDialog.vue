@@ -13,7 +13,7 @@ import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
 const $t = i18n.global.t;
 const props = defineProps<{
     mode: 'add' | 'edit';
-    data?: NoteProject;
+    rowData?: NoteProject;
 }>();
 
 const formRef = ref<FormInstance>();
@@ -67,7 +67,7 @@ const defaultReaderOptions = ref<Array<UserSummary>>([]);
 const requestFn = () =>
     props.mode === 'add'
         ? addProjectAPI(formData)
-        : updateProjectAPI({ id: props.data!.id, ...formData });
+        : updateProjectAPI({ id: props.rowData!.id, ...formData });
 const onOpen = () => {
     if (props.mode === 'add') {
         // 新增项目时，自动选择所有者为当前用户
@@ -76,15 +76,16 @@ const onOpen = () => {
             formData.owners = [userStore.id];
         }
     } else {
-        props.data?.projectName !== undefined && (formData.projectName = props.data.projectName);
-        props.data?.openness !== undefined && (formData.openness = props.data.openness);
-        if (props.data?.owners !== undefined) {
-            defaultOwnerOptions.value = props.data.owners;
-            formData.owners = props.data.owners.map((item) => item.id);
+        props.rowData?.projectName !== undefined &&
+            (formData.projectName = props.rowData.projectName);
+        props.rowData?.openness !== undefined && (formData.openness = props.rowData.openness);
+        if (props.rowData?.owners !== undefined) {
+            defaultOwnerOptions.value = props.rowData.owners;
+            formData.owners = props.rowData.owners.map((item) => item.id);
         }
-        if (props.data?.readers !== undefined) {
-            defaultReaderOptions.value = props.data.readers;
-            formData.readers = props.data.readers.map((item) => item.id);
+        if (props.rowData?.readers !== undefined) {
+            defaultReaderOptions.value = props.rowData.readers;
+            formData.readers = props.rowData.readers.map((item) => item.id);
         }
     }
 };
