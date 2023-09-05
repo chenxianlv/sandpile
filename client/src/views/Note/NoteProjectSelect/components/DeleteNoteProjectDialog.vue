@@ -4,11 +4,11 @@ import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { deleteProjectAPI } from '@/api/note';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import { i18n } from '@/lang';
-import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
+import type { NoteProjectRow } from '@/views/Note/NoteProjectSelect/store';
 
 const $t = i18n.global.t;
 const props = defineProps<{
-    rowData?: NoteProject;
+    rowData?: NoteProjectRow;
 }>();
 
 const formRef = ref<FormInstance>();

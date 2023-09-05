@@ -8,12 +8,12 @@ import { useUserStore } from '@/stores/userStore';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
 import { i18n } from '@/lang';
-import type { NoteProject } from '@/views/Note/NoteProjectDetail/hooks';
+import type { NoteProjectRow } from '@/views/Note/NoteProjectSelect/store';
 
 const $t = i18n.global.t;
 const props = defineProps<{
     mode: 'add' | 'edit';
-    rowData?: NoteProject;
+    rowData?: NoteProjectRow;
 }>();
 
 const formRef = ref<FormInstance>();

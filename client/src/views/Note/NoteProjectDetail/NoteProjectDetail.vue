@@ -1,29 +1,22 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
-import { useNoteDetail, useNoteEdit } from '@/views/Note/NoteProjectDetail/hooks';
-import FileTree from '@/views/Note/components/FileTree/FileTree.vue';
-import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
+import FileTree from '@/views/Note/NoteProjectDetail/FileTree/FileTree.vue';
+import type { TreeNode } from '@/views/Note/NoteProjectDetail/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
-import AddFileDialog from '@/views/Note/components/FileDialogs/AddFileDialog.vue';
-import AddFolderDialog from '@/views/Note/components/FileDialogs/AddFolderDialog.vue';
-import RenameTreeNodeDialog from '@/views/Note/components/FileDialogs/RenameTreeNodeDialog.vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import {
-    addNoteFolderAPI,
-    deleteNoteFileAPI,
-    deleteNoteFolderAPI,
-    uploadNoteFileAPI,
-} from '@/api/note';
-import MarkdownTextarea from '@/views/Note/components/Markdown/MdTextarea.vue';
-import MdHtmlDisplay from '@/views/Note/components/Markdown/MdHtmlDisplay.vue';
+import AddFileDialog from '@/views/Note/NoteProjectDetail/Dialogs/AddFileDialog.vue';
+import AddFolderDialog from '@/views/Note/NoteProjectDetail/Dialogs/AddFolderDialog.vue';
+import RenameTreeNodeDialog from '@/views/Note/NoteProjectDetail/Dialogs/RenameTreeNodeDialog.vue';
+import MarkdownTextarea from '@/views/Note/NoteProjectDetail/Markdown/MdTextarea.vue';
+import MdHtmlDisplay from '@/views/Note/NoteProjectDetail/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
 import $bus from '@/common/eventBus';
 import { i18n } from '@/lang';
 import { AccessEnum } from '@/config/enum/access';
+import { useNoteProjectDetailStore } from '@/views/Note/NoteProjectDetail/store';
 
 const $t = i18n.global.t;
 window.location.hash = '';
@@ -34,231 +27,69 @@ const {
     startLoading: startParserLoading,
     stopLoading: stopParserLoading,
 } = useLoading();
-const { noteTreeData, getData, nodeChange, getNoteText, setNoteText, responseData, pageLoading } =
-    useNoteDetail(projectId);
-const markdownText = ref<string>('');
 
 const asideRef = ref<InstanceType<typeof ElAside> | null>(null);
+const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
 
-const showingNoteId = ref<number | null>(null);
-watch(showingNoteId, (newId) => {
-    if (newId === null) {
-        markdownText.value = '';
-        return;
+const store = useNoteProjectDetailStore();
+const {
+    requestProjectDetail,
+    getNoteText,
+    setNoteText,
+    saveChange,
+    confirmAndDeleteNode,
+    selectFileAndUpload,
+    selectFolderAndUpload,
+} = store;
+store.projectId = projectId;
+requestProjectDetail();
+
+watch(
+    () => store.showingNote,
+    (note) => {
+        if (note?.id === undefined) {
+            store.showingText = '';
+            return;
+        }
+        startParserLoading();
+        getNoteText(note.id)
+            .then((text: string) => {
+                store.showingText = text;
+            })
+            .finally(() => {
+                stopParserLoading();
+            });
     }
-    startParserLoading();
-    getNoteText(newId)
-        .then((text: string) => {
-            markdownText.value = text;
-        })
-        .finally(() => {
-            stopParserLoading();
-        });
-});
-const handleFileChange = (id: number) => {
-    if (showingNoteId.value === id) return;
-    showingNoteId.value = id;
+);
+const onSelectChange = (data: TreeNode) => {
+    if (store.showingNote?.id === data.id) return;
+    store.showingNote = data;
 };
 
-const contextMenuSelectNode = ref<TreeNode>();
-const contextMenuSelectNodeFolderId = computed(() => {
-    const node = contextMenuSelectNode.value;
+const rightClickNodeFolderId = computed(() => {
+    const node = store.rightClickNode;
     if (node && !node.isFile) {
         return node.id;
     }
     return -1;
 });
-const handleContextMenuSelectChange = (node: TreeNode) => {
-    contextMenuSelectNode.value = node;
+
+const onPanelTabSelect = (tab: 'files') => {
+    store.activePanelTab = tab;
 };
 
-const activePanelTab = ref<string>('files');
-const handlePanelTabSelect = (tab: string) => {
-    activePanelTab.value = tab;
-};
-
-type DialogVisibleState = {
-    addFile: boolean;
-    addFolder: boolean;
-    rename: boolean;
-};
-const dialogVisibleState: DialogVisibleState = reactive({
-    addFile: false,
-    addFolder: false,
-    rename: false,
-});
-
-const openDialog = (key: keyof DialogVisibleState, hideContextMenu: () => void) => {
-    dialogVisibleState[key] = true;
-    hideContextMenu();
-};
-
-const deleteNode = (hideContextMenu: () => void) => {
-    const node: TreeNode = contextMenuSelectNode.value;
-    if (node) {
-        hideContextMenu();
-        ElMessageBox({
-            message: $t(node.isFile ? 'note.deleteFileConfirm' : 'note.deleteFolderConfirm', {
-                name: node?.name ?? '',
-            }),
-            title: $t(node.isFile ? 'note.deleteFile' : 'note.deleteFolder'),
-            type: 'warning',
-            confirmButtonText: $t('form.delete'),
-            showCancelButton: true,
-            cancelButtonText: $t('form.cancel'),
-            beforeClose: (action, instance, done) => {
-                if (action === 'confirm') {
-                    const promise = node.isFile
-                        ? deleteNoteFileAPI({ id: node.id })
-                        : deleteNoteFolderAPI({ id: node.id });
-                    promise.then(() => {
-                        if (
-                            (node.isFile && node.id === showingNoteId.value) ||
-                            node.isChildren(showingNoteId.value)
-                        ) {
-                            showingNoteId.value = null;
-                        }
-                        done();
-                        getData(projectId);
-                    });
-                } else {
-                    done();
-                }
-            },
+watch(
+    () => store.isEditing,
+    () => {
+        nextTick(() => {
+            $bus.emit('manualResize');
         });
     }
-};
+);
 
-const acceptFileTypes = ['.txt', '.md'];
-const uploadSingleFile = async (folderId: number, file?: File) => {
-    if (!file) throw new Error();
-
-    const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
-        if (result !== -1) return result;
-        const index = file.name.lastIndexOf(suffix);
-        if (index !== -1 && index + suffix.length === file.name.length) {
-            return index;
-        }
-        return result;
-    }, -1);
-    if (file.size >= 10 * 1024 * 1024)
-        throw new Error($t('msg.uploadFileSizeOverflow', { size: '10MB' }));
-    if (suffixIndex === -1) throw new Error($t('msg.uploadFileFormatNotSupported'));
-
-    const fileName = file.name.slice(0, suffixIndex);
-    await uploadNoteFileAPI({
-        file,
-        projectId: projectId,
-        folderId,
-        name: fileName,
-    });
-    return fileName;
-};
-
-const selectFileAndUpload = (hideContextMenu: () => void) => {
-    hideContextMenu();
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = acceptFileTypes.join(',');
-    input.onchange = async () => {
-        try {
-            const fileName = await uploadSingleFile(
-                contextMenuSelectNode.value?.id ?? -1,
-                input.files?.[0]
-            );
-            ElMessage.success($t('msg.uploadFileSuccessWithName', { name: fileName }));
-        } catch (e: any) {
-            ElMessage.warning(e?.message ?? $t('msg.unknownError'));
-        } finally {
-            await getData(projectId);
-        }
-    };
-    input.click();
-};
-
-const selectFolderAndUpload = (hideContextMenu: () => void) => {
-    hideContextMenu();
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.directory = true;
-    input.webkitdirectory = true;
-    input.onchange = async () => {
-        try {
-            const files = input.files;
-            if (!files) throw new Error();
-            const folderIdMap: SimpleObj<number> = {};
-            const uploadFilePromiseArr = [];
-
-            for (const file of Object.values(files)) {
-                const path = file.webkitRelativePath.split('/');
-                let parentFolderId = contextMenuSelectNode.value?.id ?? -1;
-
-                for (let i = 0; i < path.length; i++) {
-                    const itemName = path[i];
-
-                    if (i < path.length - 1) {
-                        // 是文件夹
-
-                        let folderId = folderIdMap[itemName];
-                        if (folderId !== undefined) {
-                            // 文件夹已被创建
-                            parentFolderId = folderId;
-                        } else {
-                            // 文件夹未创建
-                            const res = await addNoteFolderAPI({
-                                name: itemName,
-                                projectId,
-                                folderId: parentFolderId,
-                            });
-                            folderId = res.data.data.id;
-                            folderIdMap[itemName] = folderId;
-                            parentFolderId = folderId;
-                        }
-                    } else {
-                        // 是文件
-                        uploadFilePromiseArr.push(uploadSingleFile(parentFolderId, file));
-                    }
-                }
-            }
-            const resArr = await Promise.allSettled(uploadFilePromiseArr);
-            for (const res of resArr) {
-                if (res.status === 'rejected') throw res.reason;
-            }
-            ElMessage.success(
-                $t('msg.uploadFolderSuccessWithName', { name: Object.keys(folderIdMap)[0] ?? '' })
-            );
-        } catch (e: any) {
-            ElMessage.warning(e?.message ?? $t('msg.unknownError'));
-        } finally {
-            await getData(projectId);
-        }
-    };
-    input.click();
-};
-
-const isEditing = ref(false);
-watch(isEditing, () => {
-    nextTick(() => {
-        $bus.emit('manualResize');
-    });
-});
-const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
-
-const {
-    loading: mdSaveLoading,
-    saveDisabled,
-    onTextEdit,
-    onSave,
-    saveState,
-    saveGapDuration,
-} = useNoteEdit();
-
-const onTextareaInput = () => {
-    if (showingNoteId.value !== null) {
-        setNoteText(showingNoteId.value, markdownText.value);
-        onTextEdit(showingNoteId.value, markdownText.value);
+const onMdTextareaInput = () => {
+    if (store.showingNote !== undefined) {
+        setNoteText(store.showingNote.id, store.showingText);
     }
 };
 
@@ -266,13 +97,13 @@ const userStore = useUserStore();
 const projectRequiredEditAuthList = computed(() => {
     const isOwner =
         userStore.id !== undefined &&
-        (responseData.value?.owners?.some((owner) => owner.id === userStore.id) ?? false);
+        (store.projectDetail?.owners?.some((owner) => owner.id === userStore.id) ?? false);
     return isOwner ? [AccessEnum.EDIT_OWNED_PROJECT] : [AccessEnum.EDIT_ALL_PROJECT];
 });
 </script>
 
 <template>
-    <el-container v-loading="pageLoading">
+    <el-container v-loading="store.pageLoading">
         <el-header class="operation-bar">
             <div class="left">
                 <el-button
@@ -281,31 +112,36 @@ const projectRequiredEditAuthList = computed(() => {
                     circle
                     @click="$router.push({ name: 'select' })"
                 />
-                <span class="project-name" v-if="responseData?.projectName !== undefined">
-                    {{ responseData?.projectName }}</span
+                <span class="project-name" v-if="store.projectDetail?.projectName !== undefined">
+                    {{ store.projectDetail?.projectName }}</span
                 >
             </div>
             <div class="right">
                 <span
-                    v-show="isEditing && saveGapDuration !== -1"
-                    :class="['save-status', saveState ? 'success' : 'failed']"
+                    v-show="store.isEditing && store.saveGapDuration !== -1"
+                    :class="['save-status', store.saveState ? 'success' : 'failed']"
                 >
                     <el-icon>
-                        <CircleCheckFilled v-if="saveState" />
+                        <CircleCheckFilled v-if="store.saveState" />
                         <CircleCloseFilled v-else />
                     </el-icon>
-                    {{ $t('note.saveState', { time: saveGapDuration, state: saveState }) }}
+                    {{
+                        $t('note.saveState', {
+                            time: store.saveGapDuration,
+                            state: store.saveState,
+                        })
+                    }}
                 </span>
                 <el-button
-                    v-if="isEditing"
-                    :disabled="saveDisabled"
-                    :loading="mdSaveLoading"
-                    @click="onSave"
+                    v-if="store.isEditing"
+                    :disabled="store.saveDisabled"
+                    :loading="store.saveLoading"
+                    @click="saveChange"
                     >{{ $t('form.save') }}
                 </el-button>
                 <el-switch
                     :disabled="!userStore.authenticate(projectRequiredEditAuthList)"
-                    v-model="isEditing"
+                    v-model="store.isEditing"
                     :active-text="$t('note.editMode')"
                     :inactive-text="$t('note.readMode')"
                 />
@@ -318,51 +154,86 @@ const projectRequiredEditAuthList = computed(() => {
                         class="panel-tab"
                         mode="horizontal"
                         :ellipsis="false"
-                        :default-active="activePanelTab"
-                        @select="handlePanelTabSelect"
+                        :default-active="store.activePanelTab"
+                        @select="onPanelTabSelect"
                     >
                         <el-menu-item index="files">{{ $t('note.files') }}</el-menu-item>
                     </el-menu>
                     <FileTree
                         class="tree"
-                        :data="noteTreeData"
-                        :draggable="isEditing"
-                        @select-change="handleFileChange"
-                        @context-menu-select-change="handleContextMenuSelectChange"
-                        @node-change="nodeChange"
+                        :data="store.projectTreeData"
+                        :draggable="store.isEditing"
+                        @select-change="onSelectChange"
+                        @context-menu-select-change="(node) => (store.rightClickNode = node)"
                     >
-                        <template #context-menu="{ data, hideContextMenu }" v-if="isEditing">
+                        <template #context-menu="{ data, hideContextMenu }" v-if="store.isEditing">
                             <ul class="option-menu">
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="openDialog('addFile', hideContextMenu)"
+                                    @click="
+                                        () => {
+                                            hideContextMenu();
+                                            store.addFileDialogVisible = true;
+                                        }
+                                    "
                                 >
                                     {{ $t('note.addFile') }}
                                 </li>
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="openDialog('addFolder', hideContextMenu)"
+                                    @click="
+                                        () => {
+                                            hideContextMenu();
+                                            store.addFolderDialogVisible = true;
+                                        }
+                                    "
                                 >
                                     {{ $t('note.addFolder') }}
                                 </li>
                                 <li class="divider" v-if="!data?.isFile" />
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="selectFileAndUpload(hideContextMenu)"
+                                    @click="
+                                        () => {
+                                            hideContextMenu();
+                                            selectFileAndUpload(hideContextMenu);
+                                        }
+                                    "
                                 >
                                     {{ $t('note.uploadFile') }}
                                 </li>
                                 <li
                                     v-if="!data?.isFile"
-                                    @click="selectFolderAndUpload(hideContextMenu)"
+                                    @click="
+                                        () => {
+                                            hideContextMenu();
+                                            selectFolderAndUpload(hideContextMenu);
+                                        }
+                                    "
                                 >
                                     {{ $t('note.uploadFolder') }}
                                 </li>
                                 <li class="divider" v-if="!data?.isFile" />
-                                <li v-if="data" @click="openDialog('rename', hideContextMenu)">
+                                <li
+                                    v-if="data"
+                                    @click="
+                                        () => {
+                                            hideContextMenu();
+                                            store.renameDialogVisible = true;
+                                        }
+                                    "
+                                >
                                     {{ $t('form.rename') }}
                                 </li>
-                                <li v-if="data" @click="deleteNode(hideContextMenu)">
+                                <li
+                                    v-if="data"
+                                    @click="
+                                        () => {
+                                            hideContextMenu();
+                                            confirmAndDeleteNode();
+                                        }
+                                    "
+                                >
                                     {{ $t('form.delete') }}
                                 </li>
                             </ul>
@@ -371,43 +242,46 @@ const projectRequiredEditAuthList = computed(() => {
                 </el-aside>
                 <VerticalSizeSash v-if="asideRef?.$el" :targetDOM="asideRef?.$el" />
                 <el-main class="main" v-loading="parserLoading">
-                    <el-empty v-if="showingNoteId === null" :description="$t('note.selectNote')" />
+                    <el-empty
+                        v-if="store.showingNote === undefined"
+                        :description="$t('note.selectNote')"
+                    />
                     <div class="detail-container" v-else>
                         <MarkdownTextarea
-                            v-if="isEditing"
+                            v-if="store.isEditing"
                             class="detail-item"
                             ref="mdTextAreaRef"
                             :input-debounce="200"
-                            v-model="markdownText"
-                            @input="onTextareaInput"
+                            v-model="store.showingText"
+                            @input="onMdTextareaInput"
                         />
                         <VerticalSizeSash
                             v-if="mdTextAreaRef?.$el"
                             :targetDOM="mdTextAreaRef?.$el"
                             percentage-mode
                         />
-                        <MdHtmlDisplay class="detail-item" :markdown-text="markdownText" />
+                        <MdHtmlDisplay class="detail-item" :markdown-text="store.showingText" />
                     </div>
                 </el-main>
             </el-container>
         </el-main>
     </el-container>
     <AddFileDialog
-        v-model="dialogVisibleState.addFile"
-        :folderId="contextMenuSelectNodeFolderId"
+        v-model="store.addFileDialogVisible"
+        :folderId="rightClickNodeFolderId"
         :projectId="projectId"
-        @submit-success="getData(projectId)"
+        @submit-success="requestProjectDetail(projectId)"
     />
     <AddFolderDialog
-        v-model="dialogVisibleState.addFolder"
-        :folderId="contextMenuSelectNodeFolderId"
+        v-model="store.addFolderDialogVisible"
+        :folderId="rightClickNodeFolderId"
         :projectId="projectId"
-        @submit-success="getData(projectId)"
+        @submit-success="requestProjectDetail(projectId)"
     />
     <RenameTreeNodeDialog
-        v-model="dialogVisibleState.rename"
-        :targetNode="contextMenuSelectNode"
-        @submit-success="getData(projectId)"
+        v-model="store.renameDialogVisible"
+        :targetNode="store.rightClickNode"
+        @submit-success="requestProjectDetail(projectId)"
     />
 </template>
 

@@ -2,7 +2,7 @@
 //  * 将包含数据的对象转换为查询字符串格式
 //  * 如：{account: 'chen', pwd: '123'} => 'account=chen&pwd=123'
 //  */
-// export function transObjToParamsString(obj: anyObj) {
+// export function transObjToParamsString(obj: SimpleObj<any>) {
 //     return Object.entries(obj)
 //         .map((entry) => {
 //             return entry.join('=');

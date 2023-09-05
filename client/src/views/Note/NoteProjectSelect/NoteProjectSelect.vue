@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, MoreFilled } from '@element-plus/icons-vue';
-import DeleteNoteProjectDialog from '@/views/Note/NoteProjectSelect/DeleteNoteProjectDialog.vue';
-import AddNoteProjectDialog from '@/views/Note/NoteProjectSelect/AddNoteProjectDialog.vue';
+import DeleteNoteProjectDialog from '@/views/Note/NoteProjectSelect/components/DeleteNoteProjectDialog.vue';
+import AddOrEditNoteProjectDialog from '@/views/Note/NoteProjectSelect/components/AddOrEditNoteProjectDialog.vue';
 import { useUserStore } from '@/stores/userStore';
 import { useNoteProjectSelectStore } from './store';
 import type { NoteProjectRow } from './store';
@@ -115,12 +115,12 @@ const getProjectRequiredEditAuthList = (data: NoteProjectRow) => {
             :row-data="selectedRowData"
             @submit-success="listProjects"
         />
-        <AddNoteProjectDialog
+        <AddOrEditNoteProjectDialog
             mode="add"
             v-model="addDialogVisible"
             @submit-success="listProjects"
         />
-        <AddNoteProjectDialog
+        <AddOrEditNoteProjectDialog
             mode="edit"
             v-model="editDialogVisible"
             :row-data="selectedRowData"

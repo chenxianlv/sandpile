@@ -1,7 +1,7 @@
 import baseConfig from '@/config/base';
-import { getLocalStorage } from '@/utils/utils';
+import { getLocalStorage } from '@/utils/storage';
 
-type SendFn = (data: AnyObj) => Promise<any>;
+type SendFn = (data: SimpleObj<any>) => Promise<any>;
 export type CallbackFn = (send: SendFn) => any;
 type MapItem = {
     url: string;
@@ -27,7 +27,7 @@ class BeforeCloseAPI {
     }
 
     requestAll() {
-        const headers: AnyObj = {
+        const headers: SimpleObj<any> = {
             'Content-Type': 'application/json; charset=utf-8',
         };
         const token = getLocalStorage(baseConfig.storage.USER_PROP_NAME, true)?.token;

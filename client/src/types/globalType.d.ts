@@ -1,12 +1,8 @@
-interface AnyObj {
-    [prop: string]: any;
-}
-
 interface SimpleObj<T> {
     [prop: string]: T | undefined;
 }
 
-interface ResponseData<T = undefined> extends AnyObj {
+interface ResponseData<T = undefined> {
     data: T;
     status: number;
 }

@@ -5,7 +5,7 @@ import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
 import { i18n } from '@/lang';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
-import type { TreeNode } from '@/views/Note/components/FileTree/FileTree.vue';
+import type { TreeNode } from '@/views/Note/NoteProjectDetail/FileTree/FileTree.vue';
 
 const $t = i18n.global.t;
 const props = defineProps<{
