@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Menu } from '@element-plus/icons-vue';
-import MarkdownMenuTree from '@/views/Note/components/Markdown/MdMenuTree.vue';
-import MarkdownParser from '@/views/Note/components/Markdown/MdParser.vue';
+import MarkdownMenuTree from '@/views/Note/NoteProjectDetail/Markdown/MdMenuTree.vue';
+import MarkdownParser from '@/views/Note/NoteProjectDetail/Markdown/MdParser.vue';
 import $bus from '@/common/eventBus';
 
 const props = defineProps<{ markdownText?: string }>();

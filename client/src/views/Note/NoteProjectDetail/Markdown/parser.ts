@@ -27,7 +27,7 @@ interface ParseTreeNodeConstructorObj {
     text: string | null;
     parent: ParseTreeNode | null;
     type?: string;
-    props?: AnyObj;
+    props?: SimpleObj<any>;
     children?: Array<ParseTreeNode | string>;
 }
 
@@ -57,13 +57,7 @@ class ParseTreeNode {
      */
     children;
 
-    constructor({
-        text,
-        parent,
-        type,
-        props = {},
-        children = [],
-    }: ParseTreeNodeConstructorObj) {
+    constructor({ text, parent, type, props = {}, children = [] }: ParseTreeNodeConstructorObj) {
         this.text = text;
         this.parent = parent;
         this.type = type;
@@ -184,8 +178,7 @@ const STRUCTURE_BEGIN_MATCH_CONFIG: BeginMatchConfig = {
         parseFunction: parseTitle,
     },
     horizonRule: {
-        beginReg:
-            '(?<=\n|^)(?<horizonRule>(?:(?<!\\\\)[*-])(?: *(?:(?<!\\\\)[*-])){2,}(?:\n|$))',
+        beginReg: '(?<=\n|^)(?<horizonRule>(?:(?<!\\\\)[*-])(?: *(?:(?<!\\\\)[*-])){2,}(?:\n|$))',
         parseFunction: parseHorizonRule,
     },
     quoteBlock: {
@@ -220,11 +213,7 @@ const STRUCTURE_BEGIN_MATCH_CONFIG: BeginMatchConfig = {
  * 结构解析，解析所有可能跨行的markdown语法
  */
 function parseStructure(node: UnParsedParseTreeNode) {
-    const match = baseMatch(
-        STRUCTURE_BEGIN_MATCH_CONFIG,
-        matchStructureEnd,
-        node.text
-    );
+    const match = baseMatch(STRUCTURE_BEGIN_MATCH_CONFIG, matchStructureEnd, node.text);
     if (!match) return;
     const { groupName, frontText, nodeText, backText } = match;
 
@@ -305,22 +294,13 @@ function baseMatch(
     const indexStart = matchStartResult.index; // 开始符索引
     const lenStart = matchStartResult[0].length; // 开始符长度
 
-    const { indexEnd, restartOffset } = endMatchFn(
-        text,
-        matchStartResult,
-        groupName
-    ); // 结束位置、重试偏移量
+    const { indexEnd, restartOffset } = endMatchFn(text, matchStartResult, groupName); // 结束位置、重试偏移量
 
     // 若匹配结束符失败，将开始符及其前面的文本视为普通文本，重新匹配
     if (indexEnd === undefined) {
         const indexOffset = indexStart + lenStart + (restartOffset ?? 0);
         const cache = text.slice(0, indexOffset);
-        return baseMatch(
-            beginMatchConfig,
-            endMatchFn,
-            text.slice(indexOffset),
-            cacheText + cache
-        );
+        return baseMatch(beginMatchConfig, endMatchFn, text.slice(indexOffset), cacheText + cache);
     }
 
     const frontText = cacheText + text.slice(0, indexStart);
@@ -339,11 +319,7 @@ function baseMatch(
  * 根据跨行特征开始符的匹配结果，尝试匹配结束符
  * @return indexEnd 结束符后一个字符的索引值，若为undefined，表示匹配结束符失败
  */
-function matchStructureEnd(
-    text: string,
-    matchStartResult: RegExpExecArray,
-    groupName: string
-) {
+function matchStructureEnd(text: string, matchStartResult: RegExpExecArray, groupName: string) {
     const indexStart = matchStartResult.index; // 开始符索引
     const lenStart = matchStartResult[0].length; // 开始符长度
     const indexOffset = indexStart + lenStart;
@@ -357,9 +333,7 @@ function matchStructureEnd(
     if (groupName === 'codeBlock1') {
         const match = /\n(?:(?<!\\\\)`){3}(?:\n|$)/.exec(slicedText);
         // 若没有结束符，则匹配到结尾
-        indexEnd = match
-            ? indexOffset + match.index + match[0].length
-            : text.length;
+        indexEnd = match ? indexOffset + match.index + match[0].length : text.length;
     } else if (groupName === 'codeBlock2') {
         const match = /^.*?\n(?:(?: {4}|\t).*(?:\n|$))*/.exec(slicedText);
         if (match) indexEnd = indexOffset + match.index + match[0].length;
@@ -376,27 +350,18 @@ function matchStructureEnd(
     } else if (groupName === 'ul') {
         // 若一行以两个以上空格开始，或以任意个列表符开始，都属于列表内容
         // 若空行后的一行不是列表内容，则列表在这里结束
-        const match =
-            /\n(?= {0,1}\n(?!(?: {2,})|(?:\t+))(?! {0,3}(?<!\\)[*+-] ))/.exec(
-                slicedText
-            );
+        const match = /\n(?= {0,1}\n(?!(?: {2,})|(?:\t+))(?! {0,3}(?<!\\)[*+-] ))/.exec(slicedText);
         // 若没有结束符，则匹配到结尾
-        indexEnd = match
-            ? indexOffset + match.index + match[0].length
-            : text.length;
+        indexEnd = match ? indexOffset + match.index + match[0].length : text.length;
     } else if (groupName === 'ol') {
         // 同ul
-        const match =
-            /\n(?= {0,1}\n(?!(?: {2,})|(?:\t+))(?! {0,3}(?:(?<!\\)\d)+\. ))/.exec(
-                slicedText
-            );
-        indexEnd = match
-            ? indexOffset + match.index + match[0].length
-            : text.length;
+        const match = /\n(?= {0,1}\n(?!(?: {2,})|(?:\t+))(?! {0,3}(?:(?<!\\)\d)+\. ))/.exec(
+            slicedText
+        );
+        indexEnd = match ? indexOffset + match.index + match[0].length : text.length;
     } else if (groupName === 'table') {
         const columnsNumber =
-            Array.from(matchStartResult[0].matchAll(/(?<!\\)\|/g))?.length -
-                1 ?? 0;
+            Array.from(matchStartResult[0].matchAll(/(?<!\\)\|/g))?.length - 1 ?? 0;
         const formatRow = slicedText.split('\n', 1)[0];
         const formatCheckReg = new RegExp(
             `(?<!\\\\)\\|(?: *:?-+:? *(?<!\\\\)\\|){${columnsNumber}}`
@@ -420,8 +385,7 @@ function matchStructureEnd(
                 const match = new RegExp(
                     `(?<=\n|^) {0,3}(?<!\\\\)</ *${type}(?<!\\\\)>(?:\n|$)`
                 ).exec(slicedText);
-                if (match)
-                    indexEnd = indexOffset + match.index + match[0].length;
+                if (match) indexEnd = indexOffset + match.index + match[0].length;
             }
         }
     }
@@ -501,11 +465,7 @@ function parseText(node: UnParsedParseTreeNode) {
  * 根据行内特征开始符的匹配结果，尝试匹配结束符
  * @return indexEnd 结束符后一个字符的索引值，若为undefined，表示匹配结束符失败
  */
-function matchInlineEnd(
-    text: string,
-    matchStartResult: RegExpExecArray,
-    groupName: string
-) {
+function matchInlineEnd(text: string, matchStartResult: RegExpExecArray, groupName: string) {
     const indexStart = matchStartResult.index; // 开始符索引
     const lenStart = matchStartResult[0].length; // 开始符长度
     const indexOffset = indexStart + lenStart;
@@ -525,9 +485,9 @@ function matchInlineEnd(
     } else if (groupName === 'code') {
         // 若不加左右断言，可能会在 ``` 中匹配 ``
         // 行内代码有特殊性：结束符前紧跟的\不被视为转义符
-        const match = new RegExp(
-            `(?<!\`)\`(?:(?<!\\\\)\`){${lenStart - 1}}(?!\`)`
-        ).exec(slicedText);
+        const match = new RegExp(`(?<!\`)\`(?:(?<!\\\\)\`){${lenStart - 1}}(?!\`)`).exec(
+            slicedText
+        );
         // 若匹配失败，仅去除第一个 ` 再去重新匹配
         if (match) {
             indexEnd = indexOffset + match.index + match[0].length;
@@ -626,9 +586,7 @@ function parseCodeBlock(node: UnParsedParseTreeNode) {
  */
 function parseLatexBlock(node: UnParsedParseTreeNode) {
     let content = '';
-    const match = /(?<=(?:(?<!\\)\$){2}.*\n)(?:.|\n)*(?=(?:(?<!\\)\$){2})/.exec(
-        node.text
-    );
+    const match = /(?<=(?:(?<!\\)\$){2}.*\n)(?:.|\n)*(?=(?:(?<!\\)\$){2})/.exec(node.text);
     if (match) content = match[0];
     if (content.endsWith('\n')) content = content.slice(0, -1);
 
@@ -695,32 +653,25 @@ function parseQuoteBlock(node: UnParsedParseTreeNode) {
  * @param identifier 列表标识符，传入正则表达式
  */
 function parseList(node: UnParsedParseTreeNode, identifier: string) {
-    const indentCount =
-        new RegExp(`^ {0,3}(?=${identifier} )`).exec(node.text)?.[0].length ??
-        -1;
+    const indentCount = new RegExp(`^ {0,3}(?=${identifier} )`).exec(node.text)?.[0].length ?? -1;
     if (indentCount < 0) throw new Error('format error');
 
     const listItems = node.text.split(
         new RegExp(
-            `(?<=\n|^)(?= {${Math.max(indentCount - 1, 0)},${
-                indentCount + 1
-            }}${identifier} )`
+            `(?<=\n|^)(?= {${Math.max(indentCount - 1, 0)},${indentCount + 1}}${identifier} )`
         )
     );
 
     listItems.forEach((listItem) => {
         const lines = listItem.split('\n');
-        const indent =
-            new RegExp(`^ {0,3}${identifier} `).exec(lines[0])?.[0].length ?? 0;
+        const indent = new RegExp(`^ {0,3}${identifier} `).exec(lines[0])?.[0].length ?? 0;
 
         const content =
             lines
                 .map((line, i) => {
                     return i === 0
                         ? line.slice(indent)
-                        : line
-                              .replace(new RegExp(`^ {0,${indent}}`), '')
-                              .replace(/^\t+/, '');
+                        : line.replace(new RegExp(`^ {0,${indent}}`), '').replace(/^\t+/, '');
                 })
                 .join('\n') + '\n'; // 列表因为匹配的原因，结尾可能会少截取一个换行，在此补充
 
@@ -729,9 +680,7 @@ function parseList(node: UnParsedParseTreeNode, identifier: string) {
             type: 'li',
             props: {},
         });
-        parseStructure(
-            insertNodeAsChild(li, { text: content }) as UnParsedParseTreeNode
-        );
+        parseStructure(insertNodeAsChild(li, { text: content }) as UnParsedParseTreeNode);
     });
 }
 
@@ -840,9 +789,7 @@ function parseHtmlBlock(node: UnParsedParseTreeNode) {
 }
 
 function parseInlineLatex(node: UnParsedParseTreeNode) {
-    const match = node.text.match(
-        /(?<=^(?:(?<!\\)\$){2}).*(?=(?:(?<!\\)\$){2}$)/
-    );
+    const match = node.text.match(/(?<=^(?:(?<!\\)\$){2}).*(?=(?:(?<!\\)\$){2}$)/);
     if (!match) throw new Error('format error');
 
     node.type = 'span';
@@ -854,9 +801,7 @@ function parseInlineLatex(node: UnParsedParseTreeNode) {
 }
 
 function parseBold(node: UnParsedParseTreeNode) {
-    const match = node.text.match(
-        /(?<=^(?:(?<!\\)[*_]){2}).*(?=(?:(?<!\\)[*_]){2}$)/
-    );
+    const match = node.text.match(/(?<=^(?:(?<!\\)[*_]){2}).*(?=(?:(?<!\\)[*_]){2}$)/);
     if (!match) throw new Error('format error');
 
     node.type = 'strong';
@@ -882,9 +827,7 @@ function parseItalic(node: UnParsedParseTreeNode) {
 }
 
 function parseLineThrough(node: UnParsedParseTreeNode) {
-    const match = node.text.match(
-        /(?<=^(?:(?<!\\)~){2}).*(?=(?:(?<!\\)~){2}$)/
-    );
+    const match = node.text.match(/(?<=^(?:(?<!\\)~){2}).*(?=(?:(?<!\\)~){2}$)/);
     if (!match) throw new Error('format error');
 
     node.type = 'del';
@@ -898,9 +841,7 @@ function parseLineThrough(node: UnParsedParseTreeNode) {
 
 function parseInlineCode(node: UnParsedParseTreeNode) {
     const startLen = node.text.match(/^`+/)?.[0].length ?? 1;
-    const match = node.text.match(
-        new RegExp(`(?<=^(\`{${startLen}})).*(?=\`{${startLen}}$)`)
-    );
+    const match = node.text.match(new RegExp(`(?<=^(\`{${startLen}})).*(?=\`{${startLen}}$)`));
     if (!match) throw new Error('format error');
     let text = match[0];
     // 针对`` `xx` ``的特殊处理，需要显示<code>`xx`</code>
@@ -918,9 +859,7 @@ function parseInlineCode(node: UnParsedParseTreeNode) {
  * 解析链接，暂不支持<>形式的链接
  */
 function parseLink(node: UnParsedParseTreeNode) {
-    const match = node.text.match(
-        /^(?<!\\)\[(?<content>.*?)(?<!\\)\]\((?<href>.+?)\)$/
-    );
+    const match = node.text.match(/^(?<!\\)\[(?<content>.*?)(?<!\\)\]\((?<href>.+?)\)$/);
     if (!match || !match.groups) throw new Error('format error');
 
     let { content, href } = match.groups;

@@ -3,22 +3,7 @@ import { reactive, ref } from 'vue';
 import { Document, Folder } from '@element-plus/icons-vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
-
-export interface TreeNode extends AnyObj {
-    id: number;
-
-    /**
-     * true表示是笔记文件，false表示是文件夹
-     */
-    isFile: boolean;
-
-    children?: Array<TreeNode>;
-
-    /**
-     * 判断该节点是否有一个子孙节点，其id等于传入的id
-     */
-    isChildren: (targetId: number) => boolean;
-}
+import type { TreeNode } from './types';
 
 const props = withDefaults(
     defineProps<{
@@ -30,15 +15,15 @@ const props = withDefaults(
     }
 );
 const emit = defineEmits<{
-    (e: 'selectChange', id: number): void;
+    (e: 'selectChange', data: TreeNode): void;
     (e: 'contextMenuSelectChange', node?: TreeNode): void;
-    (e: 'nodeChange', id: number, isFile: boolean, mergeObj: AnyObj): void;
+    (e: 'nodeChange', id: number, isFile: boolean, mergeObj: SimpleObj<any>): void;
 }>();
 
 const handleCurrentChange = (data: TreeNode) => {
     if (!data.isFile) return;
     contextMenuState.visible = false;
-    emit('selectChange', data.id);
+    emit('selectChange', data);
 };
 
 const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
@@ -67,7 +52,7 @@ const openContextMenuInBlank = (e: MouseEvent) => {
 const hideContextMenu = () => {
     contextMenuRef.value?.hide();
 };
-const allowDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) => {
+const allowDrop = (draggingNode: SimpleObj<any>, dropNode: SimpleObj<any>, type: string) => {
     if (type !== 'inner' && (dropNode.data.folderId !== -1 || draggingNode.data.folderId === -1)) {
         return false;
     } else if (type === 'inner' && dropNode.data.isFile) {
@@ -75,9 +60,9 @@ const allowDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) => {
     }
     return true;
 };
-const handleNodeDrop = (draggingNode: AnyObj, dropNode: AnyObj, type: string) => {
+const handleNodeDrop = (draggingNode: SimpleObj<any>, dropNode: SimpleObj<any>, type: string) => {
     const newFolderId = type === 'inner' ? dropNode.data.id : dropNode.data.folderId;
-    emit('nodeChange', draggingNode.data.id, draggingNode.data.isFile, { folderId: newFolderId });
+    // emit('nodeChange', draggingNode.data.id, draggingNode.data.isFile, { folderId: newFolderId });
 
     const requestApi = draggingNode.data.isFile ? updateNoteFileAPI : updateNoteFolderAPI;
     requestApi({ id: draggingNode.data.id, folderId: newFolderId }).then(() => {});

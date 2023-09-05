@@ -1,0 +1,461 @@
+import { defineStore } from 'pinia';
+import type { TreeNode } from '@/views/Note/NoteProjectDetail/FileTree/types';
+import {
+    addNoteFolderAPI,
+    deleteNoteFileAPI,
+    deleteNoteFolderAPI,
+    getNoteTextAPI,
+    getProjectDetailAPI,
+    updateNoteFileAPI,
+    updateNoteFileBeforeCloseAPI,
+    uploadNoteFileAPI,
+} from '@/api/note';
+import { computed, onBeforeUnmount, reactive, ref, toRefs, watch } from 'vue';
+import { useLoading } from '@/utils/hooks';
+import { cloneDeep } from 'lodash-es';
+import noteConfig from '@/config/note';
+import beforeCloseAPI from '@/common/beforeCloseAPI';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { i18n } from '@/lang';
+
+export interface NoteNode extends TreeNode {
+    id: number;
+    name: string;
+
+    /**
+     * 所属文件夹id，若在笔记项目根目录，则为-1
+     */
+    folderId: number;
+    children: undefined;
+
+    isFile: true;
+
+    /**
+     * 判断该节点是否有一个子孙节点，其id等于传入的id
+     */
+    isChildren: (targetId: number) => boolean;
+}
+
+interface FolderNode extends TreeNode {
+    name: string;
+
+    id: number;
+
+    /**
+     * 所属文件夹id，若在笔记项目根目录，则为-1
+     */
+    folderId: number;
+    children: Array<ProjectTreeNode>;
+
+    isFile: false;
+
+    /**
+     * 判断该节点是否有一个子孙节点，其id等于传入的id
+     */
+    isChildren: (targetId: number) => boolean;
+}
+
+export type ProjectTreeNode = NoteNode | FolderNode;
+
+export const useNoteProjectDetailStore = defineStore('noteProjectDetail', function () {
+    const state: {
+        projectId?: number;
+        projectDetail?: ApiRes.Note.NoteProjectDetail;
+        projectTreeData: ProjectTreeNode[];
+        rightClickNode?: ProjectTreeNode;
+        showingNote?: NoteNode;
+        showingText: string;
+        noteTextCache: SimpleObj<string>;
+        noteChangeCache: SimpleObj<string>;
+        saveState: boolean;
+        // 距离上次保存的时间，若为-1表示时间未知
+        saveGapDuration: number;
+        addFileDialogVisible: boolean;
+        addFolderDialogVisible: boolean;
+        renameDialogVisible: boolean;
+        isEditing: boolean;
+        activePanelTab: 'files';
+    } = reactive({
+        projectId: undefined,
+        projectDetail: undefined,
+        projectTreeData: [],
+        rightClickNode: undefined,
+        showingNote: undefined,
+        showingText: '',
+        noteTextCache: {},
+        noteChangeCache: {},
+        saveState: false,
+        saveGapDuration: -1,
+        addFileDialogVisible: false,
+        addFolderDialogVisible: false,
+        renameDialogVisible: false,
+        isEditing: false,
+        activePanelTab: 'files',
+    });
+
+    const {
+        loading: pageLoading,
+        startLoading: startPageLoading,
+        stopLoading: stopPageLoading,
+    } = useLoading();
+
+    const {
+        loading: saveLoading,
+        startLoading: startSaveLoading,
+        stopLoading: stopSaveLoading,
+    } = useLoading();
+
+    const saveDisabled = computed(() => {
+        return Object.keys(state.noteChangeCache).length === 0;
+    });
+
+    // 启动自动保存
+    const intervalId = setInterval(saveChange, noteConfig.AUTO_SAVE_INTERVAL);
+    onBeforeUnmount(() => {
+        saveChange();
+        clearInterval(intervalId);
+    });
+
+    // 当页面关闭时，发送未保存的请求
+    let beforeCloseIdArr: number[] = [];
+    watch(
+        () => Object.keys(state.noteChangeCache).length,
+        () => {
+            beforeCloseIdArr.forEach((id) => beforeCloseAPI.off(id));
+            beforeCloseIdArr = [];
+
+            Object.keys(state.noteChangeCache).forEach((id) => {
+                const beforeCloseId = updateNoteFileBeforeCloseAPI((send) => {
+                    // 先删除文本 若保存失败再将文本还原，防止重复发出请求
+                    const text = state.noteChangeCache[id];
+                    delete state.noteChangeCache[id];
+                    send({ id, text }).catch(() => {
+                        state.noteChangeCache[id] = text;
+                    });
+                });
+                beforeCloseIdArr.push(beforeCloseId);
+            });
+        },
+        { immediate: true }
+    );
+
+    // 保存时间间隔处理
+    const lastSaveTime = ref(-1);
+    const updateDuration = () => {
+        if (lastSaveTime.value === -1) {
+            state.saveGapDuration = -1;
+            return;
+        }
+        state.saveGapDuration = Date.now() - lastSaveTime.value;
+    };
+    watch(lastSaveTime, updateDuration);
+    const timeUpdateIntervalId = setInterval(updateDuration, 1000);
+    onBeforeUnmount(() => {
+        clearInterval(timeUpdateIntervalId);
+    });
+
+    /**
+     * 发出请求获取信息，可以重复调用刷新数据
+     * @param cleanCache 若传入true，请求后清除已缓存的笔记文本信息
+     */
+    async function requestProjectDetail(cleanCache = false) {
+        if (state.projectId === undefined) throw new Error();
+        try {
+            startPageLoading();
+            const res = await getProjectDetailAPI({ id: state.projectId });
+            if (cleanCache) {
+                state.noteTextCache = {};
+            }
+            state.projectDetail = res.data.data;
+            generateProjectTreeData();
+        } finally {
+            stopPageLoading();
+        }
+    }
+
+    // 加工响应数据，生成树信息
+    function generateProjectTreeData() {
+        const detail = state.projectDetail;
+        if (detail === undefined) return;
+
+        const treeData: ProjectTreeNode[] = [];
+        const folderNodes: FolderNode[] = [];
+
+        // 创建所有文件夹节点
+        detail.noteFolders?.forEach((item) => {
+            const folderNode: FolderNode = {
+                name: item.name,
+                id: item.id,
+                folderId: item.folderId,
+                children: [],
+                isFile: false,
+                isChildren(this: TreeNode, targetId: number): boolean {
+                    return isChildren.call(this, targetId);
+                },
+            };
+            folderNodes.push(folderNode);
+        });
+
+        // 将文件或文件夹添加至目标文件夹，目标文件夹id若为-1，表示添加至根目录
+        const appendToFolder = (node: ProjectTreeNode, targetFolderId: number) => {
+            if (targetFolderId !== -1) {
+                folderNodes?.find?.((i) => i.id === targetFolderId)?.children.push(node);
+            } else {
+                treeData.push(node);
+            }
+        };
+
+        folderNodes?.forEach((item) => {
+            appendToFolder(item, item.folderId);
+        });
+
+        // 创建所有文件
+        detail.notes?.forEach((item) => {
+            const noteNode: NoteNode = {
+                name: item.name,
+                id: item.id,
+                folderId: item.folderId,
+                children: undefined,
+                isFile: true,
+                isChildren(this: TreeNode, targetId: number): boolean {
+                    return isChildren.call(this, targetId);
+                },
+            };
+            appendToFolder(noteNode, noteNode.folderId);
+        });
+
+        // 判断该节点是否有一个子孙节点，其id等于传入的id
+        function isChildren(this: TreeNode, targetId: number): boolean {
+            if (this.children === undefined) return false;
+            return this.children.some(
+                (node: TreeNode) => node.id === targetId || node.isChildren(targetId)
+            );
+        }
+
+        state.projectTreeData = sortProjectTreeData(treeData);
+    }
+
+    // 对文件树根据文件名进行排序，返回副本
+    function sortProjectTreeData(treeData: ProjectTreeNode[]) {
+        const duplicate = cloneDeep(treeData);
+
+        function sub(nodes: ProjectTreeNode[]) {
+            nodes.forEach((node) => {
+                if (node.children !== undefined) {
+                    node.children = sub(node.children);
+                }
+            });
+            return nodes.sort(
+                (a, b) =>
+                    Number((a.isFile && !b.isFile) || a.name.toUpperCase() > b.name.toUpperCase()) -
+                    1
+            );
+        }
+
+        return sub(duplicate);
+    }
+
+    async function getNoteText(noteId: number) {
+        const cacheText = state.noteTextCache[noteId];
+        if (cacheText !== undefined) return Promise.resolve(cacheText);
+
+        const res = await getNoteTextAPI({ id: noteId });
+        const text = res.data.data.text;
+        state.noteTextCache[noteId] = text;
+        return text;
+    }
+
+    /**
+     * 更新指定节点的文本
+     */
+    function setNoteText(id: number, text: string) {
+        state.noteTextCache[id] = text;
+        state.noteChangeCache[id] = text;
+    }
+
+    function saveChange() {
+        if (Object.keys(state.noteChangeCache).length === 0) return;
+        const promiseArr: Promise<any>[] = [];
+        startSaveLoading();
+        Object.keys(state.noteChangeCache).forEach((id) => {
+            // 先删除文本 若保存失败再将文本还原，防止重复发出请求
+            const text = state.noteChangeCache[id];
+            delete state.noteChangeCache[id];
+            promiseArr.push(
+                updateNoteFileAPI({ id: Number(id), text }).catch((e) => {
+                    state.noteChangeCache[id] = text;
+                    return Promise.reject(e);
+                })
+            );
+        });
+        return Promise.allSettled(promiseArr)
+            .then((resArr) => {
+                state.saveState = resArr.every(({ status }) => status === 'fulfilled');
+                lastSaveTime.value = Date.now();
+            })
+            .finally(() => {
+                stopSaveLoading();
+            });
+    }
+
+    const $t = i18n.global.t;
+
+    const confirmAndDeleteNode = () => {
+        const node = state.rightClickNode;
+        if (node) {
+            ElMessageBox({
+                message: $t(node.isFile ? 'note.deleteFileConfirm' : 'note.deleteFolderConfirm', {
+                    name: node?.name ?? '',
+                }),
+                title: $t(node.isFile ? 'note.deleteFile' : 'note.deleteFolder'),
+                type: 'warning',
+                confirmButtonText: $t('form.delete'),
+                showCancelButton: true,
+                cancelButtonText: $t('form.cancel'),
+                beforeClose: (action, instance, done) => {
+                    if (action === 'confirm') {
+                        const promise = node.isFile
+                            ? deleteNoteFileAPI({ id: node.id })
+                            : deleteNoteFolderAPI({ id: node.id });
+                        promise.then(() => {
+                            // 判断是否需要关闭当前打开的笔记
+                            if (
+                                state.showingNote &&
+                                ((node.isFile && node.id === state.showingNote?.id) ||
+                                    node.isChildren(state.showingNote?.id))
+                            ) {
+                                state.showingNote = undefined;
+                            }
+                            done();
+                            requestProjectDetail().then(() => {});
+                        });
+                    } else {
+                        done();
+                    }
+                },
+            });
+        }
+    };
+
+    const acceptFileTypes = ['.txt', '.md'];
+    const uploadSingleFile = async (folderId: number, file?: File) => {
+        if (!file || state.projectId === undefined) throw new Error();
+
+        const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
+            if (result !== -1) return result;
+            const index = file.name.lastIndexOf(suffix);
+            if (index !== -1 && index + suffix.length === file.name.length) {
+                return index;
+            }
+            return result;
+        }, -1);
+        if (file.size >= 10 * 1024 * 1024)
+            throw new Error($t('msg.uploadFileSizeOverflow', { size: '10MB' }));
+        if (suffixIndex === -1) throw new Error($t('msg.uploadFileFormatNotSupported'));
+
+        const fileName = file.name.slice(0, suffixIndex);
+        await uploadNoteFileAPI({
+            file,
+            projectId: state.projectId,
+            folderId,
+            name: fileName,
+        });
+        return fileName;
+    };
+
+    const selectFileAndUpload = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = acceptFileTypes.join(',');
+        input.onchange = async () => {
+            try {
+                const fileName = await uploadSingleFile(
+                    state.rightClickNode?.id ?? -1,
+                    input.files?.[0]
+                );
+                ElMessage.success($t('msg.uploadFileSuccessWithName', { name: fileName }));
+            } catch (e: any) {
+                ElMessage.warning(e?.message ?? $t('msg.unknownError'));
+            } finally {
+                await requestProjectDetail();
+            }
+        };
+        input.click();
+    };
+
+    const selectFolderAndUpload = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.directory = true;
+        input.webkitdirectory = true;
+        input.onchange = async () => {
+            try {
+                const files = input.files;
+                if (!files || state.projectId === undefined) throw new Error();
+                const folderIdMap: SimpleObj<number> = {};
+                const uploadFilePromiseArr = [];
+
+                for (const file of Object.values(files)) {
+                    const path = file.webkitRelativePath.split('/');
+                    let parentFolderId = state.rightClickNode?.id ?? -1;
+
+                    for (let i = 0; i < path.length; i++) {
+                        const itemName = path[i];
+
+                        if (i < path.length - 1) {
+                            // 是文件夹
+
+                            let folderId = folderIdMap[itemName];
+                            if (folderId !== undefined) {
+                                // 文件夹已被创建
+                                parentFolderId = folderId;
+                            } else {
+                                // 文件夹未创建
+                                const res = await addNoteFolderAPI({
+                                    name: itemName,
+                                    projectId: state.projectId,
+                                    folderId: parentFolderId,
+                                });
+                                folderId = res.data.data.id;
+                                folderIdMap[itemName] = folderId;
+                                parentFolderId = folderId;
+                            }
+                        } else {
+                            // 是文件
+                            uploadFilePromiseArr.push(uploadSingleFile(parentFolderId, file));
+                        }
+                    }
+                }
+                const resArr = await Promise.allSettled(uploadFilePromiseArr);
+                for (const res of resArr) {
+                    if (res.status === 'rejected') throw res.reason;
+                }
+                ElMessage.success(
+                    $t('msg.uploadFolderSuccessWithName', {
+                        name: Object.keys(folderIdMap)[0] ?? '',
+                    })
+                );
+            } catch (e: any) {
+                ElMessage.warning(e?.message ?? $t('msg.unknownError'));
+            } finally {
+                await requestProjectDetail();
+            }
+        };
+        input.click();
+    };
+
+    return {
+        ...toRefs(state),
+        pageLoading,
+        saveLoading,
+        saveDisabled,
+
+        requestProjectDetail,
+        getNoteText,
+        setNoteText,
+        saveChange,
+        confirmAndDeleteNode,
+        selectFileAndUpload,
+        selectFolderAndUpload,
+    };
+});

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import baseConfig from '@/config/base';
-import { getLocalStorage, setLocalStorage } from '@/utils/utils';
+import { getLocalStorage, setLocalStorage } from '@/utils/storage';
 
 interface UserInfo {
     username?: string;

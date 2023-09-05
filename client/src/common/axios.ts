@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus';
 import baseConfig from '@/config/base';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
-import { getLocalStorage } from '@/utils/utils';
+import { getLocalStorage } from '@/utils/storage';
 import { i18n } from '@/lang';
 
 const $t = i18n.global.t;
