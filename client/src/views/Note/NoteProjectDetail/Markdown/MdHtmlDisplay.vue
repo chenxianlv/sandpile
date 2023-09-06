@@ -5,7 +5,7 @@ import MarkdownMenuTree from '@/views/Note/NoteProjectDetail/Markdown/MdMenuTree
 import MarkdownParser from '@/views/Note/NoteProjectDetail/Markdown/MdParser.vue';
 import $bus from '@/common/eventBus';
 
-const props = defineProps<{ markdownText?: string }>();
+const props = defineProps<{ markdownText: string }>();
 
 const markdownMenus = ref<string[]>([]);
 const updateMarkdownMenus = (newVal: string[]) => {
@@ -63,11 +63,7 @@ const handleCollapseBtnClick = () => {
 <template>
     <div class="md-html-display-container" ref="containerRef">
         <div class="html-wrapper">
-            <MarkdownParser
-                ref="parserRef"
-                :markdownText="props.markdownText"
-                :updateMenus="updateMarkdownMenus"
-            />
+            <MarkdownParser :markdownText="props.markdownText" :updateMenus="updateMarkdownMenus" />
         </div>
         <div :class="['menu-placeholder', { collapsed: menuCollapsed }]"></div>
         <div :class="['menu-container', { collapsed: menuCollapsed }]">
