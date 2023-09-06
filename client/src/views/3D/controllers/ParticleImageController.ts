@@ -16,6 +16,7 @@ import { ThreeController } from '@/views/3D/controllers/ThreeController';
 import { i18n } from '@/lang';
 
 const $t = i18n.global.t;
+const dropdownObj = { img: $t('3d.particleImage.sandpile') };
 
 class PhysicalParticle {
     position: Vector3;
@@ -167,7 +168,7 @@ class GravityParticles extends Points {
     }
 
     async loadInitImage() {
-        const src = await import('@/assets/img/logo/logo_756x756.png');
+        const src = await import('@/assets/img/logo/logo_200x200.png');
         return await this.loadImage(src.default);
     }
 
@@ -538,6 +539,7 @@ export class ParticleImageController extends ThreeController {
                 this.generateGui();
             },
             reload: () => {
+                dropdownObj.img = $t('3d.particleImage.sandpile');
                 this.scene!.remove(this.particles!);
                 this.particlesConfig = this.initConfig;
                 this.particles = new GravityParticles(this.particlesConfig);
@@ -679,6 +681,51 @@ export class ParticleImageController extends ThreeController {
             },
         ];
 
+        gui.add(btnFnObj, 'regenerate').name($t('3d.particleImage.regenerate'));
+        gui.add(btnFnObj, 'reload').name($t('3d.particleImage.reload'));
+
+        const imgTemplatesMap = {
+            [$t('3d.particleImage.sandpile')]: 'sandpile',
+            [$t('3d.particleImage.anemo')]: 'anemo',
+            [$t('3d.particleImage.cryo')]: 'cryo',
+            [$t('3d.particleImage.dendro')]: 'dendro',
+            [$t('3d.particleImage.electro')]: 'electro',
+            [$t('3d.particleImage.geo')]: 'geo',
+            [$t('3d.particleImage.hydro')]: 'hydro',
+            [$t('3d.particleImage.pyro')]: 'pyro',
+        };
+        const templateDropdown = gui
+            .add(dropdownObj, 'img')
+            .name($t('3d.particleImage.builtInTemplates'))
+            .options(Object.keys(imgTemplatesMap));
+
+        templateDropdown.onChange(async (name: string) => {
+            const key = imgTemplatesMap[name];
+            let src: string | undefined;
+            if (key === 'sandpile') {
+                src = (await import('@/assets/img/logo/logo_200x200.png')).default;
+            } else if (key === 'anemo') {
+                src = (await import('@/assets/img/particlesTemplate/anemo.png')).default;
+            } else if (key === 'cryo') {
+                src = (await import('@/assets/img/particlesTemplate/cryo.png')).default;
+            } else if (key === 'dendro') {
+                src = (await import('@/assets/img/particlesTemplate/dendro.png')).default;
+            } else if (key === 'electro') {
+                src = (await import('@/assets/img/particlesTemplate/electro.png')).default;
+            } else if (key === 'geo') {
+                src = (await import('@/assets/img/particlesTemplate/geo.png')).default;
+            } else if (key === 'hydro') {
+                src = (await import('@/assets/img/particlesTemplate/hydro.png')).default;
+            } else if (key === 'pyro') {
+                src = (await import('@/assets/img/particlesTemplate/pyro.png')).default;
+            } else {
+                return;
+            }
+            this.particles!.loadImage(src).then((imageData) => {
+                this.particles!.loadPattern(imageData);
+            });
+        });
+
         const upload = gui.add(btnFnObj, 'upload').name($t('3d.particleImage.selectTemplate'));
         const containerDom = upload.domElement.getElementsByClassName('widget')[0];
 
@@ -704,8 +751,6 @@ export class ParticleImageController extends ThreeController {
         });
         containerDom.append(uploadBtnDom);
 
-        gui.add(btnFnObj, 'regenerate').name($t('3d.particleImage.regenerate'));
-        gui.add(btnFnObj, 'reload').name($t('3d.particleImage.reload'));
         numberFieldsConfigs.forEach(({ obj, property, min, max, step, name }) => {
             gui.add(obj, property, min, max, step)
                 .name(name)
