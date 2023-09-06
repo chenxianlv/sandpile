@@ -4,12 +4,11 @@ import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import FileTree from '@/views/Note/NoteProjectDetail/FileTree/FileTree.vue';
-import type { TreeNode } from '@/views/Note/NoteProjectDetail/FileTree/FileTree.vue';
 import VerticalSizeSash from '@/components/VerticalSizeSash/VerticalSizeSash.vue';
 import { useLoading } from '@/utils/hooks';
 import AddFileDialog from '@/views/Note/NoteProjectDetail/Dialogs/AddFileDialog.vue';
 import AddFolderDialog from '@/views/Note/NoteProjectDetail/Dialogs/AddFolderDialog.vue';
-import RenameTreeNodeDialog from '@/views/Note/NoteProjectDetail/Dialogs/RenameTreeNodeDialog.vue';
+import RenameNodeDialog from '@/views/Note/NoteProjectDetail/Dialogs/RenameNodeDialog.vue';
 import MarkdownTextarea from '@/views/Note/NoteProjectDetail/Markdown/MdTextarea.vue';
 import MdHtmlDisplay from '@/views/Note/NoteProjectDetail/Markdown/MdHtmlDisplay.vue';
 import { useUserStore } from '@/stores/userStore';
@@ -17,10 +16,11 @@ import $bus from '@/common/eventBus';
 import { i18n } from '@/lang';
 import { AccessEnum } from '@/config/enum/access';
 import { useNoteProjectDetailStore } from '@/views/Note/NoteProjectDetail/store';
+import type { ProjectTreeNode } from '@/views/Note/NoteProjectDetail/store';
 
 const $t = i18n.global.t;
 window.location.hash = '';
-let projectId = Number(useRoute().params.id);
+const projectId = Number(useRoute().params.id);
 
 const {
     loading: parserLoading,
@@ -61,8 +61,8 @@ watch(
             });
     }
 );
-const onSelectChange = (data: TreeNode) => {
-    if (store.showingNote?.id === data.id) return;
+const onSelectChange = (data: ProjectTreeNode) => {
+    if (!data.isFile || store.showingNote?.id === data.id) return;
     store.showingNote = data;
 };
 
@@ -164,7 +164,7 @@ const projectRequiredEditAuthList = computed(() => {
                         :data="store.projectTreeData"
                         :draggable="store.isEditing"
                         @select-change="onSelectChange"
-                        @context-menu-select-change="(node) => (store.rightClickNode = node)"
+                        @context-menu-select-change="(node: ProjectTreeNode) => (store.rightClickNode = node)"
                     >
                         <template #context-menu="{ data, hideContextMenu }" v-if="store.isEditing">
                             <ul class="option-menu">
@@ -196,7 +196,7 @@ const projectRequiredEditAuthList = computed(() => {
                                     @click="
                                         () => {
                                             hideContextMenu();
-                                            selectFileAndUpload(hideContextMenu);
+                                            selectFileAndUpload();
                                         }
                                     "
                                 >
@@ -207,7 +207,7 @@ const projectRequiredEditAuthList = computed(() => {
                                     @click="
                                         () => {
                                             hideContextMenu();
-                                            selectFolderAndUpload(hideContextMenu);
+                                            selectFolderAndUpload();
                                         }
                                     "
                                 >
@@ -270,18 +270,18 @@ const projectRequiredEditAuthList = computed(() => {
         v-model="store.addFileDialogVisible"
         :folderId="rightClickNodeFolderId"
         :projectId="projectId"
-        @submit-success="requestProjectDetail(projectId)"
+        @submit-success="requestProjectDetail()"
     />
     <AddFolderDialog
         v-model="store.addFolderDialogVisible"
         :folderId="rightClickNodeFolderId"
         :projectId="projectId"
-        @submit-success="requestProjectDetail(projectId)"
+        @submit-success="requestProjectDetail()"
     />
-    <RenameTreeNodeDialog
+    <RenameNodeDialog
         v-model="store.renameDialogVisible"
         :targetNode="store.rightClickNode"
-        @submit-success="requestProjectDetail(projectId)"
+        @submit-success="requestProjectDetail()"
     />
 </template>
 

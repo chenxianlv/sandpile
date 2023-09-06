@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, MoreFilled } from '@element-plus/icons-vue';
-import DeleteNoteProjectDialog from '@/views/Note/NoteProjectSelect/components/DeleteNoteProjectDialog.vue';
-import AddOrEditNoteProjectDialog from '@/views/Note/NoteProjectSelect/components/AddOrEditNoteProjectDialog.vue';
+import DeleteNoteProjectDialog from '@/views/Note/NoteProjectSelect/Dialogs/DeleteNoteProjectDialog.vue';
+import AddOrEditNoteProjectDialog from '@/views/Note/NoteProjectSelect/Dialogs/AddOrEditNoteProjectDialog.vue';
 import { useUserStore } from '@/stores/userStore';
 import { useNoteProjectSelectStore } from './store';
 import type { NoteProjectRow } from './store';
@@ -86,7 +86,10 @@ const getProjectRequiredEditAuthList = (data: NoteProjectRow) => {
                     prop="createUsername"
                     :label="$t('note.createUsername')"
                 ></el-table-column>
-                <el-table-column prop="createTime" :label="$t('note.createTime')"></el-table-column>
+                <el-table-column
+                    prop="createTimeStr"
+                    :label="$t('note.createTime')"
+                ></el-table-column>
                 <el-table-column width="45px" column-key="no-jump">
                     <template #default="{ row }">
                         <div v-auth="getProjectRequiredEditAuthList(row)">
@@ -113,18 +116,18 @@ const getProjectRequiredEditAuthList = (data: NoteProjectRow) => {
         <DeleteNoteProjectDialog
             v-model="deleteDialogVisible"
             :row-data="selectedRowData"
-            @submit-success="listProjects"
+            @submit-success="store.listProjects"
         />
         <AddOrEditNoteProjectDialog
             mode="add"
             v-model="addDialogVisible"
-            @submit-success="listProjects"
+            @submit-success="store.listProjects"
         />
         <AddOrEditNoteProjectDialog
             mode="edit"
             v-model="editDialogVisible"
             :row-data="selectedRowData"
-            @submit-success="listProjects"
+            @submit-success="store.listProjects"
         />
     </div>
 </template>

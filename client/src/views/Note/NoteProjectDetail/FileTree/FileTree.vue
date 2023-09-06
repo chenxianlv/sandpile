@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends TreeNode">
 import { reactive, ref } from 'vue';
 import { Document, Folder } from '@element-plus/icons-vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
@@ -7,7 +7,7 @@ import type { TreeNode } from './types';
 
 const props = withDefaults(
     defineProps<{
-        data: TreeNode[];
+        data: T[];
         draggable?: boolean;
     }>(),
     {
@@ -15,13 +15,12 @@ const props = withDefaults(
     }
 );
 const emit = defineEmits<{
-    (e: 'selectChange', data: TreeNode): void;
-    (e: 'contextMenuSelectChange', node?: TreeNode): void;
+    (e: 'selectChange', data: T): void;
+    (e: 'contextMenuSelectChange', node?: T): void;
     (e: 'nodeChange', id: number, isFile: boolean, mergeObj: SimpleObj<any>): void;
 }>();
 
-const handleCurrentChange = (data: TreeNode) => {
-    if (!data.isFile) return;
+const handleCurrentChange = (data: T) => {
     contextMenuState.visible = false;
     emit('selectChange', data);
 };
@@ -29,14 +28,14 @@ const handleCurrentChange = (data: TreeNode) => {
 const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
 const contextMenuState: {
     event?: MouseEvent;
-    data?: TreeNode;
+    data?: T;
     visible: boolean;
 } = reactive({
     event: undefined,
     data: undefined,
     visible: false,
 });
-const openContextMenu = (e: MouseEvent, data: TreeNode) => {
+const openContextMenu = (e: MouseEvent, data: T) => {
     contextMenuState.visible = true;
     contextMenuState.event = e;
     contextMenuState.data = data;

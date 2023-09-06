@@ -5,11 +5,11 @@ import type { FormInstance, FormRules, InputInstance } from 'element-plus';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
 import { i18n } from '@/lang';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
-import type { TreeNode } from '@/views/Note/NoteProjectDetail/FileTree/FileTree.vue';
+import type { ProjectTreeNode } from '../store';
 
 const $t = i18n.global.t;
 const props = defineProps<{
-    targetNode?: TreeNode;
+    targetNode?: ProjectTreeNode;
 }>();
 
 const formRef = ref<FormInstance>();
@@ -38,10 +38,11 @@ const rules = reactive<FormRules>({
 });
 
 const requestFn = () => {
+    if (!props.targetNode) return Promise.reject();
     return props.targetNode?.isFile
-        ? updateNoteFileAPI({ id: props.targetNode?.id, name: formData.name })
+        ? updateNoteFileAPI({ id: props.targetNode.id, name: formData.name })
         : updateNoteFolderAPI({
-              id: props.targetNode?.id,
+              id: props.targetNode.id,
               name: formData.name,
           });
 };
