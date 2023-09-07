@@ -1,5 +1,5 @@
 import baseConfig from '@/config/base';
-import { getLocalStorage } from '@/utils/storage';
+import { getLocalStorage } from '@/utils/dom';
 
 type SendFn = (data: SimpleObj<any>) => Promise<any>;
 export type CallbackFn = (send: SendFn) => any;

@@ -2,7 +2,7 @@ import { createI18n } from 'vue-i18n';
 
 import zhCn from './zhCn';
 import en from './en';
-import { getLocalStorage } from '@/utils/storage';
+import { getLocalStorage } from '@/utils/dom';
 
 // 语言本身的翻译，使用getter函数形式以避免循环依赖报错
 export function getLang() {
