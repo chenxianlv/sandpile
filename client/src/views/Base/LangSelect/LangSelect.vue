@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue';
 import { i18n } from '@/lang';
-import { setLocalStorage } from '@/utils/storage';
+import { setLocalStorage } from '@/utils/dom';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 
