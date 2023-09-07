@@ -1,8 +1,8 @@
-interface SimpleObj<T> {
+declare interface SimpleObj<T> {
     [prop: string]: T | undefined;
 }
 
-interface ResponseData<T = undefined> {
+declare interface ResponseData<T = undefined> {
     data: T;
     status: number;
 }
