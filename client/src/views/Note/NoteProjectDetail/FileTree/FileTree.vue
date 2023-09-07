@@ -1,9 +1,9 @@
-<script setup lang="ts" generic="T extends TreeNode">
+<script setup lang="ts" generic="T extends FileTreeNode">
 import { reactive, ref } from 'vue';
 import { Document, Folder } from '@element-plus/icons-vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
-import type { TreeNode } from './types';
+import type { FileTreeNode } from './types';
 
 const props = withDefaults(
     defineProps<{

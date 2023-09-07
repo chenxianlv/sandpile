@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { TreeNode } from '@/views/Note/NoteProjectDetail/FileTree/types';
+import type { FileTreeNode } from '@/views/Note/NoteProjectDetail/FileTree/types';
 import {
     addNoteFolderAPI,
     deleteNoteFileAPI,
@@ -17,29 +17,22 @@ import noteConfig from '@/config/note';
 import beforeCloseAPI from '@/common/beforeCloseAPI';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { i18n } from '@/lang';
+import TreeUtil from '@/utils/tree';
 
-export interface NoteNode extends TreeNode {
-    id: number;
+export interface NoteNode extends FileTreeNode {
     name: string;
 
     /**
      * 所属文件夹id，若在笔记项目根目录，则为-1
      */
     folderId: number;
-    children: undefined;
+    children: [];
 
     isFile: true;
-
-    /**
-     * 判断该节点是否有一个子孙节点，其id等于传入的id
-     */
-    isChildren: (targetId: number) => boolean;
 }
 
-interface FolderNode extends TreeNode {
+interface FolderNode extends FileTreeNode {
     name: string;
-
-    id: number;
 
     /**
      * 所属文件夹id，若在笔记项目根目录，则为-1
@@ -48,11 +41,6 @@ interface FolderNode extends TreeNode {
     children: Array<ProjectTreeNode>;
 
     isFile: false;
-
-    /**
-     * 判断该节点是否有一个子孙节点，其id等于传入的id
-     */
-    isChildren: (targetId: number) => boolean;
 }
 
 export type ProjectTreeNode = NoteNode | FolderNode;
@@ -178,31 +166,39 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
         const detail = state.projectDetail;
         if (detail === undefined) return;
 
-        const treeData: ProjectTreeNode[] = [];
-        const folderNodes: FolderNode[] = [];
+        const rootNode: ProjectTreeNode = {
+            id: -1,
+            folderId: -1,
+            name: '',
+            isFile: false,
+            children: [],
+            parent: null,
+        };
+        const folderNodes: Array<FolderNode> = [];
 
         // 创建所有文件夹节点
         detail.noteFolders?.forEach((item) => {
-            const folderNode: FolderNode = {
+            folderNodes.push({
                 name: item.name,
                 id: item.id,
                 folderId: item.folderId,
                 children: [],
                 isFile: false,
-                isChildren(this: TreeNode, targetId: number): boolean {
-                    return isChildren.call(this, targetId);
-                },
-            };
-            folderNodes.push(folderNode);
+                parent: null,
+            });
         });
 
         // 将文件或文件夹添加至目标文件夹，目标文件夹id若为-1，表示添加至根目录
         const appendToFolder = (node: ProjectTreeNode, targetFolderId: number) => {
-            if (targetFolderId !== -1) {
-                folderNodes?.find?.((i) => i.id === targetFolderId)?.children.push(node);
-            } else {
-                treeData.push(node);
+            const parent =
+                targetFolderId !== -1
+                    ? folderNodes?.find?.((i) => i.id === targetFolderId)
+                    : rootNode;
+            if (!parent) {
+                console.error('no parent');
+                return;
             }
+            TreeUtil.appendChild(parent, node);
         };
 
         folderNodes?.forEach((item) => {
@@ -215,44 +211,32 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                 name: item.name,
                 id: item.id,
                 folderId: item.folderId,
-                children: undefined,
+                children: [],
+                parent: null,
                 isFile: true,
-                isChildren(this: TreeNode, targetId: number): boolean {
-                    return isChildren.call(this, targetId);
-                },
             };
             appendToFolder(noteNode, noteNode.folderId);
         });
 
-        // 判断该节点是否有一个子孙节点，其id等于传入的id
-        function isChildren(this: TreeNode, targetId: number): boolean {
-            if (this.children === undefined) return false;
-            return this.children.some(
-                (node: TreeNode) => node.id === targetId || node.isChildren(targetId)
-            );
-        }
-
-        state.projectTreeData = sortProjectTreeData(treeData);
+        state.projectTreeData = sortProjectTreeData(rootNode).children;
+        console.log(state.projectTreeData);
     }
 
     // 对文件树根据文件名进行排序，返回副本
-    function sortProjectTreeData(treeData: ProjectTreeNode[]) {
+    function sortProjectTreeData(treeData: ProjectTreeNode) {
         const duplicate = cloneDeep(treeData);
 
-        function sub(nodes: ProjectTreeNode[]) {
-            nodes.forEach((node) => {
-                if (node.children !== undefined) {
-                    node.children = sub(node.children);
-                }
-            });
-            return nodes.sort(
+        function sub(node: ProjectTreeNode) {
+            node.children.sort(
                 (a, b) =>
                     Number((a.isFile && !b.isFile) || a.name.toUpperCase() > b.name.toUpperCase()) -
                     1
             );
+            node.children.forEach(sub);
         }
 
-        return sub(duplicate);
+        sub(duplicate);
+        return duplicate;
     }
 
     async function getNoteText(noteId: number) {
@@ -321,8 +305,14 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                             // 判断是否需要关闭当前打开的笔记
                             if (
                                 state.showingNote &&
+                                // 删除的文件是正在打开的笔记
                                 ((node.isFile && node.id === state.showingNote?.id) ||
-                                    node.isChildren(state.showingNote?.id))
+                                    // 打开的笔记是被删除文件夹的后代
+                                    (!node.isFile &&
+                                        TreeUtil.findChild(
+                                            node,
+                                            (item) => item.id === state.showingNote?.id
+                                        )))
                             ) {
                                 state.showingNote = undefined;
                             }
@@ -333,7 +323,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                         done();
                     }
                 },
-            });
+            }).then(() => {});
         }
     };
 
