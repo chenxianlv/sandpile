@@ -307,7 +307,7 @@ public class NoteController {
     @PostMapping("/deleteNoteFolder")
     @NoteAuthorization
     public ResponseVO<?> deleteNoteFolder(@Validated @RequestBody DeleteNoteFolderDTO dto, Authentication authentication) throws ResultException {
-        if (!noteFolderService.removeById(dto.getId())) {
+        if (!noteFolderService.deleteFolder(dto.getId())) {
             throw ResultException.of(ErrorCodeEnum.MODEL_DELETE_FAILED);
         }
 
