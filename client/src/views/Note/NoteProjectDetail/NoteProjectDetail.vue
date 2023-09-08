@@ -98,7 +98,7 @@ const userStore = useUserStore();
 const projectRequiredEditAuthList = computed(() => {
     const isOwner =
         userStore.id !== undefined &&
-        (store.projectDetail?.owners?.some((owner) => owner.id === userStore.id) ?? false);
+        (store.projectDetail?.owners?.some((id) => id === userStore.id) ?? false);
     return isOwner ? [AccessEnum.EDIT_OWNED_PROJECT] : [AccessEnum.EDIT_ALL_PROJECT];
 });
 </script>
