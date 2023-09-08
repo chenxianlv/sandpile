@@ -10,6 +10,12 @@ public class GetProjectDetailVO extends BasicVO {
 
     private String projectName;
 
+    private Integer openness;
+
+    private Long[] owners;
+
+    private Long[] readers;
+
     private List<NoteVO> notes;
 
     private List<NoteFolderVO> noteFolders;

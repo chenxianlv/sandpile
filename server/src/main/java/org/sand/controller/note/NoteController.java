@@ -201,8 +201,11 @@ public class NoteController {
             return noteFolderVO;
         }).collect(Collectors.toList()));
 
+        vo.setOwners(noteProjectOwnerService.listOwnerIdsByProjectId(id));
+        vo.setReaders(noteProjectReaderService.listReaderIdsByProjectId(id));
+
         NoteProjectPO noteProjectPO = noteProjectService.getById(id);
-        vo.setProjectName(noteProjectPO.getProjectName());
+        BeanUtils.copyProperties(noteProjectPO, vo);
 
         return ResponseVO.success(vo);
 
