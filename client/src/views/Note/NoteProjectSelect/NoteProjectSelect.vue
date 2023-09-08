@@ -8,6 +8,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useNoteProjectSelectStore } from './store';
 import type { NoteProjectRow } from './store';
 import { AccessEnum } from '@/config/enum/access';
+import { ClickMenu, ClickMenuItem } from '@/components/ClickMenu';
 
 const userStore = useUserStore();
 const store = useNoteProjectSelectStore();
@@ -100,12 +101,14 @@ const getProjectRequiredEditAuthList = (data: NoteProjectRow) => {
                                     </el-icon>
                                 </template>
                                 <template #default>
-                                    <ul class="option-menu">
-                                        <li @click="showEditDialog(row)">{{ $t('form.edit') }}</li>
-                                        <li @click="showDeleteDialog(row)">
-                                            {{ $t('form.delete') }}
-                                        </li>
-                                    </ul>
+                                    <ClickMenu>
+                                        <ClickMenuItem @click="showEditDialog(row)"
+                                            >{{ $t('form.edit') }}
+                                        </ClickMenuItem>
+                                        <ClickMenuItem @click="showDeleteDialog(row)"
+                                            >{{ $t('form.delete') }}
+                                        </ClickMenuItem>
+                                    </ClickMenu>
                                 </template>
                             </el-popover>
                         </div>

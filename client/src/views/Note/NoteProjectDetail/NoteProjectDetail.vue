@@ -17,6 +17,7 @@ import { i18n } from '@/lang';
 import { AccessEnum } from '@/config/enum/access';
 import { useNoteProjectDetailStore } from '@/views/Note/NoteProjectDetail/store';
 import type { ProjectTreeNode } from '@/views/Note/NoteProjectDetail/store';
+import { ClickMenu, ClickMenuItem, ClickMenuGroup } from '@/components/ClickMenu';
 
 const $t = i18n.global.t;
 window.location.hash = '';
@@ -167,76 +168,32 @@ const projectRequiredEditAuthList = computed(() => {
                         @context-menu-select-change="(node: ProjectTreeNode) => (store.rightClickNode = node)"
                     >
                         <template #context-menu="{ data, hideContextMenu }" v-if="store.isEditing">
-                            <ul class="option-menu">
-                                <li
-                                    v-if="!data?.isFile"
-                                    @click="
-                                        () => {
-                                            hideContextMenu();
-                                            store.addFileDialogVisible = true;
-                                        }
-                                    "
-                                >
-                                    {{ $t('note.addFile') }}
-                                </li>
-                                <li
-                                    v-if="!data?.isFile"
-                                    @click="
-                                        () => {
-                                            hideContextMenu();
-                                            store.addFolderDialogVisible = true;
-                                        }
-                                    "
-                                >
-                                    {{ $t('note.addFolder') }}
-                                </li>
-                                <li class="divider" v-if="!data?.isFile" />
-                                <li
-                                    v-if="!data?.isFile"
-                                    @click="
-                                        () => {
-                                            hideContextMenu();
-                                            selectFileAndUpload();
-                                        }
-                                    "
-                                >
-                                    {{ $t('note.uploadFile') }}
-                                </li>
-                                <li
-                                    v-if="!data?.isFile"
-                                    @click="
-                                        () => {
-                                            hideContextMenu();
-                                            selectFolderAndUpload();
-                                        }
-                                    "
-                                >
-                                    {{ $t('note.uploadFolder') }}
-                                </li>
-                                <li class="divider" v-if="!data?.isFile" />
-                                <li
-                                    v-if="data"
-                                    @click="
-                                        () => {
-                                            hideContextMenu();
-                                            store.renameDialogVisible = true;
-                                        }
-                                    "
-                                >
-                                    {{ $t('form.rename') }}
-                                </li>
-                                <li
-                                    v-if="data"
-                                    @click="
-                                        () => {
-                                            hideContextMenu();
-                                            confirmAndDeleteNode();
-                                        }
-                                    "
-                                >
-                                    {{ $t('form.delete') }}
-                                </li>
-                            </ul>
+                            <ClickMenu @before-item-click="hideContextMenu">
+                                <ClickMenuGroup v-if="!data?.isFile">
+                                    <ClickMenuItem @click="store.addFileDialogVisible = true">
+                                        {{ $t('note.addFile') }}
+                                    </ClickMenuItem>
+                                    <ClickMenuItem @click="store.addFolderDialogVisible = true">
+                                        {{ $t('note.addFolder') }}
+                                    </ClickMenuItem>
+                                </ClickMenuGroup>
+                                <ClickMenuGroup v-if="!data?.isFile">
+                                    <ClickMenuItem @click="selectFileAndUpload">
+                                        {{ $t('note.uploadFile') }}
+                                    </ClickMenuItem>
+                                    <ClickMenuItem @click="selectFolderAndUpload">
+                                        {{ $t('note.uploadFolder') }}
+                                    </ClickMenuItem>
+                                </ClickMenuGroup>
+                                <ClickMenuGroup v-if="data">
+                                    <ClickMenuItem @click="store.renameDialogVisible = true">
+                                        {{ $t('form.rename') }}
+                                    </ClickMenuItem>
+                                    <ClickMenuItem @click="confirmAndDeleteNode">
+                                        {{ $t('form.delete') }}
+                                    </ClickMenuItem>
+                                </ClickMenuGroup>
+                            </ClickMenu>
                         </template>
                     </FileTree>
                 </el-aside>

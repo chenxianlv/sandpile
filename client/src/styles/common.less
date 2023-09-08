@@ -1,37 +1,6 @@
 @import url('./variable.less');
 @import url('./theme.less');
 
-ul.option-menu {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    li {
-        height: 30px;
-        line-height: 30px;
-        cursor: pointer;
-        padding: 0 0 0 @option-menu-item-indentation;
-        color: @font-color-primary;
-        border-radius: 6px;
-        user-select: none;
-
-        &:hover {
-            background-color: @bg-color-row-hover;
-        }
-    }
-
-    li.divider {
-        height: 0;
-        border-top: 1px solid @border-color-light;
-        margin: 4px 0;
-        cursor: auto;
-    }
-
-    li.custom {
-        padding-left: 0;
-    }
-}
-
 .icon_button {
     font-size: 20px;
     margin: 0 4px;

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue';
-import { i18n } from '@/lang';
+import type { i18n } from '@/lang';
 import { setLocalStorage } from '@/utils/dom';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
+import { ClickMenu, ClickMenuItem } from '@/components/ClickMenu';
 
 const popoverRef = ref<PopoverInstance | null>(null);
 const onChangeLocale = (newLocale: (typeof i18n.global.availableLocales)[number]) => {
@@ -20,17 +21,16 @@ const onChangeLocale = (newLocale: (typeof i18n.global.availableLocales)[number]
             </el-icon>
         </template>
         <template #default>
-            <ul class="option-menu">
-                <li
+            <ClickMenu class="lang-menu">
+                <ClickMenuItem
                     v-for="locale in $i18n.availableLocales"
                     :key="locale"
                     :value="locale"
                     :class="{ selected: locale === $i18n.locale }"
                     @click="onChangeLocale(locale)"
+                    >{{ $t('lang.' + locale) }}</ClickMenuItem
                 >
-                    {{ $t('lang.' + locale) }}
-                </li>
-            </ul>
+            </ClickMenu>
         </template>
     </el-popover>
 </template>
@@ -42,7 +42,7 @@ const onChangeLocale = (newLocale: (typeof i18n.global.availableLocales)[number]
     margin: 0 8px;
 }
 
-.option-menu {
+.lang-menu {
     max-height: 200px;
     overflow-y: auto;
 
