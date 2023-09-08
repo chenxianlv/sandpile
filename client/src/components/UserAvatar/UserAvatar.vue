@@ -7,6 +7,7 @@ import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 import { ElMessageBox } from 'element-plus';
 import { i18n } from '@/lang';
+import { ClickMenu, ClickMenuItem } from '@/components/ClickMenu';
 
 const $t = i18n.global.t;
 
@@ -52,9 +53,9 @@ const logout = () => {
                     </span>
                 </template>
                 <template #default>
-                    <ul class="option-menu">
-                        <li @click="logout">{{ $t('user.logout') }}</li>
-                    </ul>
+                    <ClickMenu>
+                        <ClickMenuItem @click="logout">{{ $t('user.logout') }}</ClickMenuItem>
+                    </ClickMenu>
                 </template>
             </el-popover>
         </template>
