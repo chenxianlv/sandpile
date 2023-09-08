@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends FileTreeNode">
-import { reactive, ref } from 'vue';
+import { reactive, ref, useSlots } from 'vue';
 import { Document, Folder } from '@element-plus/icons-vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import { updateNoteFileAPI, updateNoteFolderAPI } from '@/api/note';
@@ -19,6 +19,7 @@ const emit = defineEmits<{
     (e: 'contextMenuSelectChange', node?: T): void;
     (e: 'nodeChange', id: number, isFile: boolean, mergeObj: SimpleObj<any>): void;
 }>();
+const slots = useSlots();
 
 const handleCurrentChange = (data: T) => {
     contextMenuState.visible = false;
@@ -36,6 +37,7 @@ const contextMenuState: {
     visible: false,
 });
 const openContextMenu = (e: MouseEvent, data: T) => {
+    if (slots['context-menu'] === undefined) return;
     contextMenuState.visible = true;
     contextMenuState.event = e;
     contextMenuState.data = data;
@@ -43,6 +45,7 @@ const openContextMenu = (e: MouseEvent, data: T) => {
 };
 const openContextMenuInBlank = (e: MouseEvent) => {
     e.preventDefault();
+    if (slots['context-menu'] === undefined) return;
     contextMenuState.visible = true;
     contextMenuState.event = e;
     contextMenuState.data = undefined;
