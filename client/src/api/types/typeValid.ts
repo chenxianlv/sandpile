@@ -25,7 +25,12 @@ export const validRequest = (type: string, data?: any) => {
         if (import.meta.env.DEV && baseConfig.api.VALIDATE_RESPONSE_DATA_IN_DEV) {
             const resValidate = ajv.getSchema(`res#/definitions/ApiRes.${type}`);
             if (resValidate === undefined) {
-                console.error(`response valid failed (${type}): cant find type "ApiRes.${type}"`);
+                // 若响应体为空且未定义该类型，不作警告
+                if (res.data.data) {
+                    console.error(
+                        `response valid failed (${type}): cant find type "ApiRes.${type}"`
+                    );
+                }
             } else if (resValidate(res.data.data) === false) {
                 console.error(
                     `response valid failed (${type}): ${resValidate.errors?.[0].message}`

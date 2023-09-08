@@ -65,7 +65,7 @@
                 },
                 "owners": {
                     "items": {
-                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                        "type": "number"
                     },
                     "type": "array"
                 },
@@ -74,7 +74,7 @@
                 },
                 "readers": {
                     "items": {
-                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                        "type": "number"
                     },
                     "type": "array"
                 }
@@ -201,7 +201,7 @@
                 },
                 "owners": {
                     "items": {
-                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                        "type": "number"
                     },
                     "type": "array"
                 },
@@ -210,7 +210,7 @@
                 },
                 "readers": {
                     "items": {
-                        "$ref": "res#/definitions/ApiRes.User.UserSummary"
+                        "type": "number"
                     },
                     "type": "array"
                 }

@@ -21,8 +21,8 @@ declare namespace ApiRes {
 
         export interface NoteProjectDetail {
             projectName: string;
-            owners: Array<User.UserSummary>;
-            readers: Array<User.UserSummary>;
+            owners: number[];
+            readers: number[];
             openness: number;
             notes: Array<NoteFile>;
             noteFolders: Array<NoteFolder>;
