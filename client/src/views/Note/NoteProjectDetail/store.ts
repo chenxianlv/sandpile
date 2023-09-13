@@ -97,6 +97,17 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
         return Object.keys(state.noteChangeCache).length === 0;
     });
 
+    // 节点所处文件夹的id
+    const rightClickNodeParentId = computed(() => {
+        const node = state.rightClickNode;
+        if (!node) return -1;
+        if (node.isFile) {
+            return node.folderId;
+        } else {
+            return node.id;
+        }
+    });
+
     // 启动自动保存
     const intervalId = setInterval(saveChange, noteConfig.AUTO_SAVE_INTERVAL);
     onBeforeUnmount(() => {
@@ -360,7 +371,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
         input.onchange = async () => {
             try {
                 const fileName = await uploadSingleFile(
-                    state.rightClickNode?.id ?? -1,
+                    rightClickNodeParentId.value,
                     input.files?.[0]
                 );
                 ElMessage.success($t('msg.uploadFileSuccessWithName', { name: fileName }));
@@ -387,7 +398,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
 
                 for (const file of Object.values(files)) {
                     const path = file.webkitRelativePath.split('/');
-                    let parentFolderId = state.rightClickNode?.id ?? -1;
+                    let parentFolderId = rightClickNodeParentId.value;
 
                     for (let i = 0; i < path.length; i++) {
                         const itemName = path[i];
@@ -439,6 +450,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
         pageLoading,
         saveLoading,
         saveDisabled,
+        rightClickNodeParentId,
 
         requestProjectDetail,
         getNoteText,
