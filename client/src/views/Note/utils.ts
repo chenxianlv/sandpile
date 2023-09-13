@@ -1,5 +1,7 @@
 import { addNoteFolderAPI, uploadNoteFileAPI } from '@/api/note';
 import { i18n } from '@/lang';
+import { TreeUtil } from '@/utils/tree';
+import type { TreeNode } from '@/utils/tree';
 
 const $t = i18n.global.t;
 const acceptFileTypes = ['.txt', '.md'];
@@ -27,7 +29,78 @@ export async function uploadSingleFile(file: File, projectId: number, parentFold
     return fileName;
 }
 
-export async function uploadFolder(files: FileList, projectId: number, parentFolderId: number) {
+interface InputFileTreeNode extends TreeNode<InputFileTreeNode> {
+    name: string;
+
+    /**
+     * true表示是笔记文件，false表示是文件夹
+     */
+    isFile: boolean;
+
+    file?: File;
+}
+
+/**
+ * 解析input的directory模式选中的文件夹
+ */
+export function parseFolder(files: Array<File>) {
+    const rootNode: InputFileTreeNode = {
+        name: '',
+        isFile: false,
+        children: [],
+        parent: null,
+    };
+    for (const file of Object.values(files)) {
+        const path = file.webkitRelativePath.split('/');
+
+        for (let i = 0; i < path.length; i++) {
+            const itemName = path[i];
+            if (i === 0) {
+                rootNode.name = itemName;
+            }
+            let parentNode = rootNode;
+
+            if (i < path.length - 1) {
+                // 是文件夹
+                const node = TreeUtil.findChild(rootNode, (node) => node.name === itemName, {
+                    iterateChildrenOnly: false,
+                });
+                if (node !== undefined) {
+                    // 文件夹已创建
+                    parentNode = node;
+                } else {
+                    // 文件夹未创建
+                    const newNode = {
+                        name: itemName,
+                        isFile: false,
+                        children: [],
+                        parent: parentNode,
+                    };
+                    TreeUtil.appendChild(parentNode, newNode);
+                    parentNode = newNode;
+                }
+            } else {
+                // 是文件
+                const node = {
+                    name: itemName,
+                    isFile: true,
+                    children: [],
+                    parent: parentNode,
+                    file,
+                };
+                TreeUtil.appendChild(parentNode, node);
+            }
+        }
+    }
+    return rootNode;
+}
+
+export async function uploadFolder(
+    files: Array<File>,
+    projectId: number,
+    parentFolderId: number,
+    skipRootFolder = false
+) {
     const folderIdMap: SimpleObj<number> = {};
     const uploadFilePromiseArr = [];
 
@@ -37,6 +110,7 @@ export async function uploadFolder(files: FileList, projectId: number, parentFol
 
         for (let i = 0; i < path.length; i++) {
             const itemName = path[i];
+            if (i === 0 && skipRootFolder) continue;
 
             if (i < path.length - 1) {
                 // 是文件夹
@@ -83,13 +157,31 @@ export function selectFile() {
 }
 
 export function selectFolder() {
-    return new Promise<FileList | undefined>((resolve) => {
+    return new Promise<Array<File> | undefined>((resolve) => {
         const input = document.createElement('input');
         input.type = 'file';
         input.directory = true;
         input.webkitdirectory = true;
         input.onchange = () => {
-            return resolve(input.files ?? undefined);
+            const files = input.files;
+            if (!files) return resolve(undefined);
+
+            // 将不符合后缀格式的文件排除
+            const result: Array<File> = [];
+            for (const file of Object.values(files)) {
+                const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
+                    if (result !== -1) return result;
+                    const index = file.name.lastIndexOf(suffix);
+                    if (index !== -1 && index + suffix.length === file.name.length) {
+                        return index;
+                    }
+                    return result;
+                }, -1);
+                if (suffixIndex === -1) continue;
+                result.push(file);
+            }
+
+            return resolve(result);
         };
         input.click();
     });

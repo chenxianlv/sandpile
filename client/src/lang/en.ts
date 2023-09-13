@@ -79,6 +79,11 @@ Private: only owner can read.`,
         HALF_PUBLIC: 'Half public',
         PRIVATE: 'Private',
         readers: 'Readers',
+        selectFolder: 'Select folder',
+        initialFolder: 'Initial folder',
+        selectedFiles: ({ named }: { named: (prop: string) => any }) => {
+            return `${named('num')} files selected`;
+        },
         createUsername: 'Create user name',
         createTime: 'Create time',
         confirmToDelete: 'Confirm to delete?',
