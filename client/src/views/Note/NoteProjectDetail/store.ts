@@ -18,6 +18,7 @@ import beforeCloseAPI from '@/common/beforeCloseAPI';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { i18n } from '@/lang';
 import TreeUtil from '@/utils/tree';
+import { selectFile, selectFolder, uploadFolder, uploadSingleFile } from '@/views/Note/utils';
 
 export interface NoteNode extends FileTreeNode {
     name: string;
@@ -338,111 +339,43 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
         }
     };
 
-    const acceptFileTypes = ['.txt', '.md'];
-    const uploadSingleFile = async (folderId: number, file?: File) => {
-        if (!file || state.projectId === undefined) throw new Error();
-
-        const suffixIndex = acceptFileTypes.reduce((result, suffix) => {
-            if (result !== -1) return result;
-            const index = file.name.lastIndexOf(suffix);
-            if (index !== -1 && index + suffix.length === file.name.length) {
-                return index;
-            }
-            return result;
-        }, -1);
-        if (file.size >= 10 * 1024 * 1024)
-            throw new Error($t('msg.uploadFileSizeOverflow', { size: '10MB' }));
-        if (suffixIndex === -1) throw new Error($t('msg.uploadFileFormatNotSupported'));
-
-        const fileName = file.name.slice(0, suffixIndex);
-        await uploadNoteFileAPI({
-            file,
-            projectId: state.projectId,
-            folderId,
-            name: fileName,
-        });
-        return fileName;
+    const selectFileAndUpload = async () => {
+        try {
+            const file = await selectFile();
+            if (!file || state.projectId === undefined) throw new Error();
+            const fileName = await uploadSingleFile(
+                file,
+                state.projectId,
+                rightClickNodeParentId.value
+            );
+            ElMessage.success($t('msg.uploadFileSuccessWithName', { name: fileName }));
+        } catch (e: any) {
+            ElMessage.warning(e?.message ?? $t('msg.unknownError'));
+        } finally {
+            await requestProjectDetail();
+        }
     };
 
-    const selectFileAndUpload = () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = acceptFileTypes.join(',');
-        input.onchange = async () => {
-            try {
-                const fileName = await uploadSingleFile(
-                    rightClickNodeParentId.value,
-                    input.files?.[0]
-                );
-                ElMessage.success($t('msg.uploadFileSuccessWithName', { name: fileName }));
-            } catch (e: any) {
-                ElMessage.warning(e?.message ?? $t('msg.unknownError'));
-            } finally {
-                await requestProjectDetail();
-            }
-        };
-        input.click();
-    };
+    const selectFolderAndUpload = async () => {
+        try {
+            const files = await selectFolder();
+            if (!files || state.projectId === undefined) throw new Error();
+            const folderName = await uploadFolder(
+                files,
+                state.projectId,
+                rightClickNodeParentId.value
+            );
 
-    const selectFolderAndUpload = () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.directory = true;
-        input.webkitdirectory = true;
-        input.onchange = async () => {
-            try {
-                const files = input.files;
-                if (!files || state.projectId === undefined) throw new Error();
-                const folderIdMap: SimpleObj<number> = {};
-                const uploadFilePromiseArr = [];
-
-                for (const file of Object.values(files)) {
-                    const path = file.webkitRelativePath.split('/');
-                    let parentFolderId = rightClickNodeParentId.value;
-
-                    for (let i = 0; i < path.length; i++) {
-                        const itemName = path[i];
-
-                        if (i < path.length - 1) {
-                            // 是文件夹
-
-                            let folderId = folderIdMap[itemName];
-                            if (folderId !== undefined) {
-                                // 文件夹已被创建
-                                parentFolderId = folderId;
-                            } else {
-                                // 文件夹未创建
-                                const res = await addNoteFolderAPI({
-                                    name: itemName,
-                                    projectId: state.projectId,
-                                    folderId: parentFolderId,
-                                });
-                                folderId = res.data.data.id;
-                                folderIdMap[itemName] = folderId;
-                                parentFolderId = folderId;
-                            }
-                        } else {
-                            // 是文件
-                            uploadFilePromiseArr.push(uploadSingleFile(parentFolderId, file));
-                        }
-                    }
-                }
-                const resArr = await Promise.allSettled(uploadFilePromiseArr);
-                for (const res of resArr) {
-                    if (res.status === 'rejected') throw res.reason;
-                }
-                ElMessage.success(
-                    $t('msg.uploadFolderSuccessWithName', {
-                        name: Object.keys(folderIdMap)[0] ?? '',
-                    })
-                );
-            } catch (e: any) {
-                ElMessage.warning(e?.message ?? $t('msg.unknownError'));
-            } finally {
-                await requestProjectDetail();
-            }
-        };
-        input.click();
+            ElMessage.success(
+                $t('msg.uploadFolderSuccessWithName', {
+                    name: folderName,
+                })
+            );
+        } catch (e: any) {
+            ElMessage.warning(e?.message ?? $t('msg.unknownError'));
+        } finally {
+            await requestProjectDetail();
+        }
     };
 
     return {
