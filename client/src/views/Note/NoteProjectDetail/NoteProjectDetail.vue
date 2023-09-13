@@ -67,14 +67,6 @@ const onSelectChange = (data: ProjectTreeNode) => {
     store.showingNote = data;
 };
 
-const rightClickNodeFolderId = computed(() => {
-    const node = store.rightClickNode;
-    if (node && !node.isFile) {
-        return node.id;
-    }
-    return -1;
-});
-
 const onPanelTabSelect = (tab: 'files') => {
     store.activePanelTab = tab;
 };
@@ -169,7 +161,7 @@ const projectRequiredEditAuthList = computed(() => {
                     >
                         <template #context-menu="{ data, hideContextMenu }" v-if="store.isEditing">
                             <ClickMenu @before-item-click="hideContextMenu">
-                                <ClickMenuGroup v-if="!data?.isFile">
+                                <ClickMenuGroup>
                                     <ClickMenuItem @click="store.addFileDialogVisible = true">
                                         {{ $t('note.addFile') }}
                                     </ClickMenuItem>
@@ -177,7 +169,7 @@ const projectRequiredEditAuthList = computed(() => {
                                         {{ $t('note.addFolder') }}
                                     </ClickMenuItem>
                                 </ClickMenuGroup>
-                                <ClickMenuGroup v-if="!data?.isFile">
+                                <ClickMenuGroup>
                                     <ClickMenuItem @click="selectFileAndUpload">
                                         {{ $t('note.uploadFile') }}
                                     </ClickMenuItem>
@@ -225,13 +217,13 @@ const projectRequiredEditAuthList = computed(() => {
     </el-container>
     <AddFileDialog
         v-model="store.addFileDialogVisible"
-        :folderId="rightClickNodeFolderId"
+        :folderId="store.rightClickNodeParentId"
         :projectId="projectId"
         @submit-success="requestProjectDetail()"
     />
     <AddFolderDialog
         v-model="store.addFolderDialogVisible"
-        :folderId="rightClickNodeFolderId"
+        :folderId="store.rightClickNodeParentId"
         :projectId="projectId"
         @submit-success="requestProjectDetail()"
     />
