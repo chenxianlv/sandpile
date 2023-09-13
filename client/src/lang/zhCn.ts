@@ -76,6 +76,11 @@ const messages = {
         HALF_PUBLIC: '部分开放',
         PRIVATE: '私有',
         readers: '读者',
+        selectFolder: '选择文件夹',
+        initialFolder: '初始文件夹',
+        selectedFiles: ({ named }: { named: (prop: string) => any }) => {
+            return `已选中 ${named('num')} 个文件`;
+        },
         createUsername: '创建者',
         createTime: '创建时间',
         confirmToDelete: '确定删除吗？',

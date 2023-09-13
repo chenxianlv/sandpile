@@ -1,14 +1,12 @@
 import { defineStore } from 'pinia';
 import type { FileTreeNode } from '@/views/Note/NoteProjectDetail/FileTree/types';
 import {
-    addNoteFolderAPI,
     deleteNoteFileAPI,
     deleteNoteFolderAPI,
     getNoteTextAPI,
     getProjectDetailAPI,
     updateNoteFileAPI,
     updateNoteFileBeforeCloseAPI,
-    uploadNoteFileAPI,
 } from '@/api/note';
 import { computed, onBeforeUnmount, reactive, ref, toRefs, watch } from 'vue';
 import { useLoading } from '@/utils/hooks';
@@ -231,7 +229,6 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
         });
 
         state.projectTreeData = sortProjectTreeData(rootNode).children;
-        console.log(state.projectTreeData);
     }
 
     // 对文件树根据文件名进行排序，返回副本

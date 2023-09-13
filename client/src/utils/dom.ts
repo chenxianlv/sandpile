@@ -25,11 +25,3 @@ export function getLocalStorage(key: string, needParse = true) {
 export function setLocalStorage(key: string, value: any) {
     window.localStorage.setItem(key, JSON.stringify(value));
 }
-
-/**
- * 解析由input元素选择文件夹的结果
- */
-export function parseFileList(files: FileList) {
-    const folderIdMap: SimpleObj<number> = {};
-    const uploadFilePromiseArr = [];
-}

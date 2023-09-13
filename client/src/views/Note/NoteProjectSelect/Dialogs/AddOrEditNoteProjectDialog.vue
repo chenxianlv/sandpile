@@ -9,6 +9,7 @@ import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import UserSelect from '@/components/UserSelect/UserSelect.vue';
 import { i18n } from '@/lang';
 import type { NoteProjectRow } from '@/views/Note/NoteProjectSelect/store';
+import { selectFolder, parseFolder, uploadFolder } from '../../utils';
 
 const $t = i18n.global.t;
 const props = defineProps<{
@@ -65,9 +66,7 @@ const defaultOwnerOptions = ref<Array<UserSummary>>([]);
 const defaultReaderOptions = ref<Array<UserSummary>>([]);
 
 const requestFn = () =>
-    props.mode === 'add'
-        ? addProjectAPI(formData)
-        : updateProjectAPI({ id: props.rowData!.id, ...formData });
+    props.mode === 'add' ? addProject() : updateProjectAPI({ id: props.rowData!.id, ...formData });
 const onOpen = () => {
     if (props.mode === 'add') {
         // 新增项目时，自动选择所有者为当前用户
@@ -88,6 +87,20 @@ const onOpen = () => {
             formData.readers = props.rowData.readers.map((item) => item.id);
         }
     }
+};
+const initFiles = ref<Array<File> | undefined>();
+const selectInitFolder = async () => {
+    initFiles.value = await selectFolder();
+
+    // 若还没填写项目名，自动按照所选文件夹解析
+    if (!initFiles.value) return;
+    const { name } = parseFolder(initFiles.value);
+    if (formData.projectName === '') formData.projectName = name;
+};
+const addProject = async () => {
+    const projectId = (await addProjectAPI(formData)).data.data.id;
+    if (!initFiles.value) return;
+    await uploadFolder(initFiles.value, projectId, -1, true);
 };
 </script>
 
@@ -155,6 +168,16 @@ const onOpen = () => {
                         v-model="formData.readers"
                         :default-options="defaultReaderOptions"
                     ></UserSelect>
+                </el-form-item>
+                <el-form-item
+                    prop="initialFolder"
+                    :label="$t('note.initialFolder')"
+                    v-if="props.mode === 'add'"
+                >
+                    <el-button @click="selectInitFolder">{{ $t('note.selectFolder') }}</el-button>
+                    <span v-if="Object.values(initFiles ?? {}).length" style="margin-left: 10px">{{
+                        $t('note.selectedFiles', { num: Object.values(initFiles ?? {}).length })
+                    }}</span>
                 </el-form-item>
             </el-form>
         </template>
