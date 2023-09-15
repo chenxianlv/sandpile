@@ -62,19 +62,25 @@ public class NoteAuthenticationAOP {
 
         // 获取认证信息
         Authentication authentication = null;
+        UserDTO userDTO = null;
         for (Object arg : args) {
             if (arg instanceof Authentication) {
                 authentication = (Authentication) arg;
                 break;
             }
         }
-        if (authentication == null) {
+        boolean anonymous = (args[0] instanceof GetProjectDetailDTO) || (args[0] instanceof GetNoteTextDTO);
+
+        if (authentication == null && !anonymous) {
             log.error("missing arg \"authentication\" in method " + method.getName());
             throw new Exception("missing arg \"authentication\" in method " + method.getName());
         }
 
-        UserDTO userDTO = (UserDTO) authentication.getPrincipal();
-        if (userDTO == null) {
+        if (authentication != null) {
+            userDTO = (UserDTO) authentication.getPrincipal();
+        }
+
+        if (userDTO == null && !anonymous) {
             throw ResultException.of(ErrorCodeEnum.INSUFFICIENT_PERMISSIONS);
         }
 
@@ -228,7 +234,8 @@ public class NoteAuthenticationAOP {
 
         if (requiredAccessId == null) {
             return true;
-        };
+        }
+        ;
 
         AccessPO requiredAccessPO = accessService.getById(requiredAccessId);
         if (requiredAccessPO == null) {

@@ -15,10 +15,11 @@ public class SandAccessDecisionManager implements AccessDecisionManager {
     @Override
     public void decide(Authentication auth, Object o, Collection<ConfigAttribute> configAttributes) throws AccessDeniedException, InsufficientAuthenticationException {
         Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-
         if (configAttributes == null) return;
 
+        // configAttributes为允许访问的角色
         for (ConfigAttribute attribute : configAttributes) {
+            // authorities为用户拥有的角色
             for (GrantedAuthority authority : authorities) {
                 if (authority.getAuthority().equals(attribute.getAttribute())) {
                     return;
