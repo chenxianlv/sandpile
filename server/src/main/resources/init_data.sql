@@ -55,7 +55,8 @@ VALUES (1, 1),
 INSERT INTO `user_role`(`id`, `role_name`, `create_user_id`, `remark`)
 VALUES (1, 'root', 1, '超级用户，拥有所有权限'),
        (2, 'manager', 1, '管理员，拥有编辑任意用户笔记项目的权限'),
-       (3, 'normalUser', 1, '普通用户，无法对其他用户的笔记项目进行操作，允许查看开放的笔记项目');
+       (3, 'normalUser', 1, '普通用户，无法对其他用户的笔记项目进行操作，允许查看开放的笔记项目'),
+       (4, 'ROLE_ANONYMOUS', 1, '匿名用户，即未登录用户');
 
 INSERT INTO `user_access`(`id`, `access_name`, `access_url`, `create_user_id`, `remark`)
 VALUES (10001, 'listUserSummaries', '/api/user/listUserSummaries', 1, '根据id或用户名查询用户概况'),
@@ -91,4 +92,6 @@ VALUES (1, 10001),
        (3, 20001),
        (3, 20003),
        (3, 20005),
-       (3, 20006);
+       (3, 20006),
+
+       (4, 20006);

@@ -3,9 +3,9 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
+import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.util.TokenUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 @AllArgsConstructor
 public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticationFilter {
@@ -36,6 +37,8 @@ public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticatio
 
     private UserDetailsService userDetailsService;
 
+    private final SecurityBeanConfig securityBeanConfig;
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String tokenHeader = environment.getProperty("token.header", "");
@@ -47,12 +50,18 @@ public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticatio
 
         if (path.matches(".*login$")) {
             chain.doFilter(request, response);
+            return;
         }
 
         try {
             String authToken = httpRequest.getHeader(tokenHeader);
 
             if (authToken == null) {
+                // 匿名访问接口无法查询到token时，直接返回不报错
+                if (Arrays.asList(securityBeanConfig.anonymousUrl).contains(path)) {
+                    chain.doFilter(request, response);
+                    return;
+                }
                 throw ResultException.of(ErrorCodeEnum.LOG_IN_FIRST);
             }
 

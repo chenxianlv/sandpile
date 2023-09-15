@@ -9,8 +9,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityBeanConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    public String[] anonymousUrl = new String[]{
+            "/api/note/listProjects",
+            "/api/note/getProjectDetail",
+            "/api/note/getNoteText"
+    };
 
 }

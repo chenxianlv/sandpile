@@ -2,9 +2,9 @@ package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.common.ResponseVO;
 import org.sand.common.ResultException;
+import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.util.TokenUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 @AllArgsConstructor
 @Configuration
@@ -49,6 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
 
+    private final SecurityBeanConfig securityBeanConfig;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -72,12 +74,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 object.setAccessDecisionManager(sandAccessDecisionManager);
                 return object;
             }
-        }).anyRequest().authenticated();
+        });
+        // 配置匿名访问的url
+        Arrays.stream(securityBeanConfig.anonymousUrl).forEach((url)->{
+            try {
+                http.authorizeRequests().antMatchers(url).anonymous();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        http.authorizeRequests().anyRequest().authenticated();
 
         http.exceptionHandling()
                 .accessDeniedHandler(sandAccessDeniedHandler)
-                .authenticationEntryPoint(((request, response, authException) ->
-                        unauthorizedErrorResponse(response, ResultException.of(ErrorCodeEnum.LOG_IN_FIRST))));
+                .authenticationEntryPoint((request, response, authException) -> {
+                    unauthorizedErrorResponse(response, ResultException.of(ErrorCodeEnum.LOG_IN_FIRST));
+                });
 
         http.formLogin()
                 .loginProcessingUrl(baseUrl + "/base/login")
@@ -91,13 +103,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(sandLogoutSuccessHandler)
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)
-                .deleteCookies(environment.getProperty("server.servlet.session.cookie.name"," "));
+                .deleteCookies(environment.getProperty("server.servlet.session.cookie.name", " "));
 
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS); // 关闭session
 
         http.addFilterBefore(
-                new SandAuthenticationTokenFilter(environment, objectMapper, tokenUtils, userDetailsService),
+                new SandAuthenticationTokenFilter(environment, objectMapper, tokenUtils, userDetailsService, securityBeanConfig),
                 UsernamePasswordAuthenticationFilter.class
         ); // token验证
     }
