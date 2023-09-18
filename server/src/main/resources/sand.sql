@@ -9,7 +9,7 @@
 #     `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 #     `create_user_id` BIGINT             NULL COMMENT '创建用户的ID',
 #     `update_time`    TIMESTAMP          NULL COMMENT '修改时间',
-#     `update_user_id` BIGINT             NULL COMMENT '修改用户的ID',
+#     `update_user_id` BIGINT UNSIGNED             NULL COMMENT '修改用户的ID',
 #     `remark`         VARCHAR(500)       NULL COMMENT '备注',
 #     PRIMARY KEY (`id`)
 # ) COMMENT '菜单表';
@@ -32,9 +32,9 @@ CREATE TABLE `note_project_info`
     `openness`       INT             NOT NULL COMMENT '项目开放程度，枚举值（1【完全开放，所有用户包括匿名用户均可查看】、2【部分开放，仅读者及所有者可以查看】、3【私有，仅所有者可以查看】）',
     `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
     `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT          NULL COMMENT '创建用户的ID',
+    `create_user_id` BIGINT UNSIGNED NULL COMMENT '创建用户的ID',
     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
-    `update_user_id` BIGINT          NULL COMMENT '修改用户的ID',
+    `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改用户的ID',
     `remark`         VARCHAR(500)    NULL COMMENT '备注',
     PRIMARY KEY (`id`)
 ) COMMENT '笔记项目表';
@@ -50,9 +50,9 @@ CREATE TABLE `note_info`
     `folder_id`      BIGINT          NULL COMMENT '所属笔记文件夹的id',
     `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
     `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT          NULL COMMENT '创建用户的ID',
+    `create_user_id` BIGINT UNSIGNED NULL COMMENT '创建用户的ID',
     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
-    `update_user_id` BIGINT          NULL COMMENT '修改用户的ID',
+    `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改用户的ID',
     `remark`         VARCHAR(500)    NULL COMMENT '备注',
     PRIMARY KEY (`id`)
 ) COMMENT '笔记文件表';
@@ -66,9 +66,9 @@ CREATE TABLE `note_folder_info`
     `folder_id`      BIGINT          NULL COMMENT '所属笔记文件夹的id',
     `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
     `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT          NULL COMMENT '创建用户的ID',
+    `create_user_id` BIGINT UNSIGNED NULL COMMENT '创建用户的ID',
     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
-    `update_user_id` BIGINT          NULL COMMENT '修改用户的ID',
+    `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改用户的ID',
     `remark`         VARCHAR(500)    NULL COMMENT '备注',
     PRIMARY KEY (`id`)
 ) COMMENT '笔记文件夹表';
@@ -93,34 +93,33 @@ CREATE TABLE `note_project_reader`
     PRIMARY KEY (`id`)
 ) COMMENT '笔记项目读者表（对于部分开放的项目，读者有权查看，一个项目可以有多个读者）';
 
-DROP TABLE IF EXISTS `system_params`;
-CREATE TABLE `system_params`
-(
-    `id`             BIGINT UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT COMMENT '系统参数id',
-    `param_key`      VARCHAR(255)    NOT NULL COMMENT '参数名',
-    `param_value`    VARCHAR(500)    NULL COMMENT '参数值',
-    `description`    VARCHAR(500)    NULL COMMENT '参数描述',
-    `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
-    `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT          NULL COMMENT '创建用户的ID',
-    `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
-    `update_user_id` BIGINT          NULL COMMENT '修改用户的ID',
-    `remark`         VARCHAR(500)    NULL COMMENT '备注',
-    PRIMARY KEY (`id`)
-) COMMENT '系统配置参数表';
-
+# DROP TABLE IF EXISTS `system_params`;
+# CREATE TABLE `system_params`
+# (
+#     `id`             BIGINT UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT COMMENT '系统参数id',
+#     `param_key`      VARCHAR(255)    NOT NULL COMMENT '参数名',
+#     `param_value`    VARCHAR(500)    NULL COMMENT '参数值',
+#     `description`    VARCHAR(500)    NULL COMMENT '参数描述',
+#     `delete_flag`    BOOLEAN   DEFAULT FALSE COMMENT '是否逻辑删除',
+#     `create_time`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+#     `create_user_id` BIGINT UNSIGNED NULLCOMMENT '创建用户的ID',
+#     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
+#     `update_user_id` BIGINT UNSIGNED          NULL COMMENT '修改用户的ID',
+#     `remark`         VARCHAR(500)    NULL COMMENT '备注',
+#     PRIMARY KEY (`id`)
+# ) COMMENT '系统配置参数表';
 
 DROP TABLE IF EXISTS `user_user`;
 CREATE TABLE `user_user`
 (
     `id`             BIGINT UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
-    `user_account`   VARCHAR(50)     NOT NULL COMMENT '用户账号（登录用）',
-    `user_name`      VARCHAR(50)     NOT NULL COMMENT '用户名（展示用）',
-    `user_password`  VARCHAR(255)    NOT NULL COMMENT '密码',
+    `username`   VARCHAR(50)     NOT NULL COMMENT '用户名（登录用）',
+    `nickname`      VARCHAR(50)     NOT NULL COMMENT '昵称（展示用）',
+    `password`  VARCHAR(255)    NOT NULL COMMENT '密码',
     `lock_flag`      BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被锁定',
     `delete_flag`    BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被删除',
     `create_time`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建者ID',
+    `create_user_id` BIGINT UNSIGNED NULL COMMENT '创建者ID',
     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
     `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改者ID',
     `remark`         VARCHAR(255)    NULL COMMENT '备注',
@@ -134,7 +133,7 @@ CREATE TABLE `user_role`
     `role_name`      VARCHAR(50)     NOT NULL COMMENT '角色名',
     `delete_flag`    BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被删除',
     `create_time`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建者ID',
+    `create_user_id` BIGINT UNSIGNED NULL COMMENT '创建者ID',
     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
     `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改者ID',
     `remark`         VARCHAR(255)    NULL COMMENT '备注',
@@ -149,7 +148,7 @@ CREATE TABLE `user_access`
     `access_url`     VARCHAR(255)    NULL COMMENT '资源路径，用于spring security自动检验；该项为空则表示需自定义逻辑进行鉴权',
     `delete_flag`    BOOLEAN         NOT NULL DEFAULT 0 COMMENT '是否被删除',
     `create_time`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `create_user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建者ID',
+    `create_user_id` BIGINT UNSIGNED NULL COMMENT '创建者ID',
     `update_time`    TIMESTAMP       NULL COMMENT '修改时间',
     `update_user_id` BIGINT UNSIGNED NULL COMMENT '修改者ID',
     `remark`         VARCHAR(255)    NULL COMMENT '备注',

@@ -14,6 +14,8 @@ public class SecurityBeanConfig {
     }
 
     public String[] anonymousUrl = new String[]{
+            "/api/user/login",
+            "/api/user/signup",
             "/api/note/listProjects",
             "/api/note/getProjectDetail",
             "/api/note/getNoteText"

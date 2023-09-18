@@ -3,6 +3,15 @@ declare namespace ApiReq {
         export interface ListUserSummariesAPI {
             pattern: string;
         }
+        export interface LoginAPI {
+            username: string;
+            password: string;
+        }
+        export interface SignupAPI {
+            username: string;
+            nickname: string;
+            password: string;
+        }
     }
     export namespace Note {
         export interface AddProjectAPI {

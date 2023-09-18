@@ -224,6 +224,40 @@
             ],
             "type": "object"
         },
+        "ApiReq.User.LoginAPI": {
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "password",
+                "username"
+            ],
+            "type": "object"
+        },
+        "ApiReq.User.SignupAPI": {
+            "properties": {
+                "nickname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "nickname",
+                "password",
+                "username"
+            ],
+            "type": "object"
+        },
         "Blob": {
             "properties": {
                 "prototype": {

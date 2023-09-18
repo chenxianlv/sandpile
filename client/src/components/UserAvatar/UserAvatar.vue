@@ -2,7 +2,7 @@
 import { ArrowDown } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/userStore';
 import { useLoginStore } from '@/views/Base/LoginDialog/store';
-import { logoutAPI } from '@/api/base';
+import { logoutAPI } from '@/api/user';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 import { ElMessageBox } from 'element-plus';
@@ -41,14 +41,14 @@ const logout = () => {
 
 <template>
     <div class="user-avatar">
-        <el-button @click="loginStore.open()" v-if="userStore.username === undefined"
+        <el-button @click="loginStore.open()" v-if="userStore.nickname === undefined"
             >{{ $t('user.login') }}
         </el-button>
         <template v-else>
             <el-popover placement="bottom-end" trigger="hover" ref="popoverRef">
                 <template #reference>
                     <span class="profile">
-                        <span>{{ userStore.username }}</span>
+                        <span>{{ userStore.nickname }}</span>
                         <el-icon><ArrowDown /></el-icon>
                     </span>
                 </template>

@@ -14,7 +14,7 @@ export default {
          * 请求该数组内的url，响应有错误时，不会交由axios拦截器进行统一错误处理
          * url值即为调用axios方法时传入的url属性，不包含baseUrl
          */
-        CUSTOM_ERROR_HANDLE_URL: [],
+        CUSTOM_ERROR_HANDLE_URL: ['/user/signup', '/user/login'],
 
         /**
          * 在开发模式下，校验每个请求的请求体data的类型

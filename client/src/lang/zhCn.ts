@@ -39,6 +39,7 @@ const messages = {
         11004: '请先登录',
         11005: '用户名或密码错误',
         11006: '权限不足',
+        11007: '用户名已被使用',
         12001: '连接FTP服务器失败',
         12002: 'FTP服务器创建文件失败',
         13001: '参数校验未通过',
@@ -54,10 +55,14 @@ const messages = {
     },
     user: {
         login: '登录',
+        signup: '注册',
+        goToLogin: '前往登录',
+        goToSignup: '前往注册',
         logout: '退出登录',
         logoutConfirm: '确认要退出登录吗？当前未提交的变更可能会丢失',
-        inputUserIdOrUserName: '请输入用户ID或用户名',
-        account: '账号',
+        inputUserIdOrNickname: '请输入用户ID或昵称',
+        username: '用户名',
+        nickname: '昵称',
         password: '密码',
         loginFailed: '登录失败',
     },
@@ -81,7 +86,7 @@ const messages = {
         selectedFiles: ({ named }: { named: (prop: string) => any }) => {
             return `已选中 ${named('num')} 个文件`;
         },
-        createUsername: '创建者',
+        createUserNickname: '创建者',
         createTime: '创建时间',
         confirmToDelete: '确定删除吗？',
         deleteProjectConfirm: ({ named }: { named: (prop: string) => any }) =>

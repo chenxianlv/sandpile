@@ -3,7 +3,7 @@ import baseConfig from '@/config/base';
 import { getLocalStorage, setLocalStorage } from '@/utils/dom';
 
 interface UserInfo {
-    username?: string;
+    nickname?: string;
     id?: number;
     token?: string;
     authList: number[];
@@ -12,7 +12,7 @@ interface UserInfo {
 export const useUserStore = defineStore('user', {
     state: () => {
         const user: UserInfo = {
-            username: undefined,
+            nickname: undefined,
             id: undefined,
             token: undefined,
             authList: [],

@@ -21,9 +21,9 @@ public class SandUserDetailsServiceImpl implements UserDetailsService {
     private RoleService roleService;
 
     @Override
-    public UserDetails loadUserByUsername(String userAccount) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        UserPO userPO = userService.getByUserAccount(userAccount);
+        UserPO userPO = userService.getByUsername(username);
 
         if (userPO == null) {
             throw new UsernameNotFoundException("User not found");

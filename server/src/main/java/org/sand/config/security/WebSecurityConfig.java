@@ -92,14 +92,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 });
 
         http.formLogin()
-                .loginProcessingUrl(baseUrl + "/base/login")
-                .usernameParameter("account")
+                .loginProcessingUrl(baseUrl + "/user/login")
+                .usernameParameter("username")
                 .passwordParameter("password")
                 .successHandler(sandAuthenticationSuccessHandler)
                 .failureHandler(sandAuthenticationFailureHandler);
 
         http.logout()
-                .logoutUrl(baseUrl + "/base/logout")
+                .logoutUrl(baseUrl + "/user/logout")
                 .logoutSuccessHandler(sandLogoutSuccessHandler)
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)

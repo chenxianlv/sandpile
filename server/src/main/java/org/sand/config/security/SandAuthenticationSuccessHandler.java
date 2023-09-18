@@ -49,12 +49,12 @@ public class SandAuthenticationSuccessHandler implements AuthenticationSuccessHa
         response.setStatus(HttpStatus.OK.value());
         response.setHeader("Content-Type","application/json;charset=utf-8");
 
-        UserPO userPO =  userService.getByUserAccount(((UserDetails) authentication.getPrincipal()).getUsername());
+        UserPO userPO =  userService.getByUsername(((UserDetails) authentication.getPrincipal()).getUsername());
         UserLoginVO userLoginVO = new UserLoginVO();
         BeanUtils.copyProperties(userPO, userLoginVO);
 
         // 设置token
-        userLoginVO.setToken(tokenUtils.buildJWT(userPO.getUserAccount()));
+        userLoginVO.setToken(tokenUtils.buildJWT(userPO.getUsername()));
 
         // 设置权限列表
         List<RolePO> rolePOs = roleService.listRolesByUserId(userPO.getId());

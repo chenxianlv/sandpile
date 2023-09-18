@@ -19,7 +19,7 @@ public class DBUtils {
 
     public void updateCreateInfo(BasicTablePO po, Authentication authentication) {
         if (authentication != null) {
-            UserPO userPO = userService.getByUserAccount(authentication.getName());
+            UserPO userPO = userService.getByUsername(authentication.getName());
             po.setCreateUserId(userPO.getId());
         } else {
             po.setCreateUserId(0L);
@@ -31,7 +31,7 @@ public class DBUtils {
 
     public void updateUpdateInfo(BasicTablePO po, Authentication authentication) {
         if (authentication != null) {
-            UserPO userPO = userService.getByUserAccount(authentication.getName());
+            UserPO userPO = userService.getByUsername(authentication.getName());
             po.setUpdateUserId(userPO.getId());
         } else {
             po.setCreateUserId(0L);

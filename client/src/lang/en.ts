@@ -37,10 +37,11 @@ const messages = {
     errorCode: {
         11001: 'Invalid authentication information',
         11002: 'Expired authentication information',
-        11003: 'Account is empty',
+        11003: 'Username is empty',
         11004: 'Please log in first',
-        11005: 'Wrong user name or password',
+        11005: 'Wrong username or password',
         11006: 'Insufficient permissions',
+        11007: 'Username existed',
         12001: 'Failed to connect to FTP server',
         12002: 'FTP server failed to create file',
         13001: 'Parameter verification failed',
@@ -56,11 +57,15 @@ const messages = {
     },
     user: {
         login: 'Log in',
+        signup: 'Sign up',
+        goToLogin: 'Go to log in',
+        goToSignup: 'Go to sign up',
         logout: 'Log out',
         logoutConfirm:
             'Are you sure you want to log out? Currently uncommitted changes may be lost',
-        inputUserIdOrUserName: 'Please enter user ID or username',
-        account: 'Account',
+        inputUserIdOrNickname: 'Please enter user ID or nickname',
+        username: 'Username',
+        nickname: 'Nickname',
         password: 'Password',
         loginFailed: 'Login failed',
     },
@@ -84,7 +89,7 @@ Private: only owner can read.`,
         selectedFiles: ({ named }: { named: (prop: string) => any }) => {
             return `${named('num')} files selected`;
         },
-        createUsername: 'Create user name',
+        createUserNickname: 'Create user nickname',
         createTime: 'Create time',
         confirmToDelete: 'Confirm to delete?',
         deleteProjectConfirm: ({ named }: { named: (prop: string) => any }) =>

@@ -48,10 +48,10 @@ public class SandAuthenticationTokenFilter extends UsernamePasswordAuthenticatio
 
         String path = httpRequest.getRequestURI();
 
-        if (path.matches(".*login$")) {
-            chain.doFilter(request, response);
-            return;
-        }
+//        if (path.matches(".*login$")) {
+//            chain.doFilter(request, response);
+//            return;
+//        }
 
         try {
             String authToken = httpRequest.getHeader(tokenHeader);

@@ -78,14 +78,13 @@ public class NoteController {
                     BeanUtils.copyProperties(noteProjectPO, noteProjectVO);
 
                     UserPO userPO = userService.getById(noteProjectPO.getCreateUserId());
-                    noteProjectVO.setCreateUsername(userPO.getUsername());
+                    noteProjectVO.setCreateUserNickname(userPO.getNickname());
 
                     noteProjectVO.setOwners(
                             Arrays.stream(noteProjectOwnerService.listOwnerIdsByProjectId(noteProjectPO.getId())).map(userId -> {
                                 UserPO owner = userService.getById(userId);
                                 UserSummaryVO userVO = new UserSummaryVO();
                                 BeanUtils.copyProperties(owner, userVO);
-                                userVO.setUsername(owner.getUsername());
                                 return userVO;
                             }).collect(Collectors.toList())
                     );
@@ -94,7 +93,6 @@ public class NoteController {
                                 UserPO owner = userService.getById(userId);
                                 UserSummaryVO userVO = new UserSummaryVO();
                                 BeanUtils.copyProperties(owner, userVO);
-                                userVO.setUsername(owner.getUsername());
                                 return userVO;
                             }).collect(Collectors.toList())
                     );

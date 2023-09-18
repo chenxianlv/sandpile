@@ -31,7 +31,7 @@ public class SandAuthenticationFailureHandler implements AuthenticationFailureHa
         response.setHeader("Content-Type", "application/json;charset=utf-8");
 
         PrintWriter out = response.getWriter();
-        out.write(objectMapper.writeValueAsString(ResponseVO.error(ResultException.of(ErrorCodeEnum.WRONG_ACCOUNT_OR_PASSWORD))));
+        out.write(objectMapper.writeValueAsString(ResponseVO.error(ResultException.of(ErrorCodeEnum.WRONG_USERNAME_OR_PASSWORD))));
         out.flush();
         out.close();
 
