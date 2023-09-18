@@ -15,11 +15,11 @@ public class UserDTO implements UserDetails {
 
     private Long id;
 
-    private String userAccount;
-
     private String username;
 
-    private String userPassword;
+    private String nickname;
+
+    private String password;
 
     private List<RolePO> roleList;
 
@@ -36,12 +36,12 @@ public class UserDTO implements UserDetails {
 
     @Override
     public String getPassword() {
-        return userPassword;
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return userAccount;
+        return username;
     }
 
     @Override

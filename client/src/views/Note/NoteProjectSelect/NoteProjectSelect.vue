@@ -30,7 +30,7 @@ const filterString = ref<string>('');
 const noteProjectsAfterFilter = computed(() => {
     return store.noteProjects.filter((project) => {
         if (project.projectName?.includes(filterString.value)) return true;
-        if (project.createUsername?.includes(filterString.value)) return true;
+        if (project.createUserNickname?.includes(filterString.value)) return true;
         if (project.createTimeStr?.includes(filterString.value)) return true;
     });
 });
@@ -84,8 +84,8 @@ const getProjectRequiredEditAuthList = (data: NoteProjectRow) => {
                     :width="350"
                 ></el-table-column>
                 <el-table-column
-                    prop="createUsername"
-                    :label="$t('note.createUsername')"
+                    prop="createUserNickname"
+                    :label="$t('note.createUserNickname')"
                 ></el-table-column>
                 <el-table-column
                     prop="createTimeStr"

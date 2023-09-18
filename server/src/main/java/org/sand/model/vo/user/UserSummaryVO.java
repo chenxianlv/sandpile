@@ -7,6 +7,6 @@ public class UserSummaryVO {
 
     private Long id;
 
-    private String username;
+    private String nickname;
 
 }

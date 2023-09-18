@@ -65,7 +65,7 @@ const requestFn = (pattern: string) => {
         :model-value="props.modelValue"
         @update:model-value="(val) => emit('update:modelValue', val)"
         class="user_select"
-        :placeholder="$t('user.inputUserIdOrUserName')"
+        :placeholder="$t('user.inputUserIdOrNickname')"
         filterable
         remote
         multiple
@@ -80,9 +80,9 @@ const requestFn = (pattern: string) => {
             v-for="item in userList"
             :key="item.id"
             :value="item.id"
-            :label="`${item.username} (${item.id})`"
+            :label="`${item.nickname} (${item.id})`"
         >
-            <span class="option_item_left">{{ item.username }}</span>
+            <span class="option_item_left">{{ item.nickname }}</span>
             <span class="option_item_right">{{ item.id }}</span>
         </el-option>
     </el-select>

@@ -34,14 +34,14 @@ public class TokenUtils {
     /**
      * 生成Token
      */
-    public String buildJWT(String account) {
+    public String buildJWT(String username) {
         try {
             // 创建一个32-byte的密匙
             MACSigner macSigner = new MACSigner(SECRET);
             // 建立payload 载体
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .expirationTime(new Date(System.currentTimeMillis()))
-                    .claim("ACCOUNT", account)
+                    .claim("USERNAME", username)
                     .build();
 
             // 建立签名
@@ -79,12 +79,12 @@ public class TokenUtils {
             }
 
             //获取载体中的数据
-            Object account = jwt.getJWTClaimsSet().getClaim("ACCOUNT");
+            Object username = jwt.getJWTClaimsSet().getClaim("USERNAME");
             //是否有openUid
-            if (Objects.isNull(account)){
-                throw ResultException.of(ErrorCodeEnum.ACCOUNT_EMPTY);
+            if (Objects.isNull(username)){
+                throw ResultException.of(ErrorCodeEnum.USERNAME_EMPTY);
             }
-            return account.toString();
+            return username.toString();
         } catch (ParseException | JOSEException e) {
             throw ResultException.of(ErrorCodeEnum.INVALID_TOKEN);
         }

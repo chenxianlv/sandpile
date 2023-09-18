@@ -4,10 +4,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import org.sand.common.ResponseVO;
+import org.sand.common.ResultException;
+import org.sand.common.constDefine.ErrorCodeEnum;
 import org.sand.model.dto.user.ListUsersDTO;
+import org.sand.model.dto.user.SignupDTO;
 import org.sand.model.po.user.UserPO;
-import org.sand.model.vo.user.UserSummaryVO;
 import org.sand.model.vo.user.ListUserSummariesVO;
+import org.sand.model.vo.user.UserSummaryVO;
 import org.sand.service.user.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
@@ -36,11 +39,22 @@ public class UserController {
         listUserSummariesVO.setUsers(userPOs.stream().map(userPO -> {
             UserSummaryVO userVO = new UserSummaryVO();
             BeanUtils.copyProperties(userPO, userVO);
-            userVO.setUsername(userPO.getUsername());
             return userVO;
         }).collect(Collectors.toList()));
 
         return ResponseVO.success(listUserSummariesVO);
+    }
+
+    @ApiOperation("创建用户")
+    @PostMapping("/signup")
+    public ResponseVO<?> signup(@Validated  @RequestBody SignupDTO dto) throws ResultException {
+        UserPO userPO = userService.signupUser(dto);
+
+        if (userPO == null) {
+            throw ResultException.of(ErrorCodeEnum.MODEL_ADD_FAILED);
+        }
+
+        return ResponseVO.success();
     }
 
 }

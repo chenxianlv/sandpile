@@ -70,8 +70,8 @@ const requestFn = () =>
 const onOpen = () => {
     if (props.mode === 'add') {
         // 新增项目时，自动选择所有者为当前用户
-        if (userStore.id !== undefined && userStore.username !== undefined) {
-            defaultOwnerOptions.value = [{ id: userStore.id, username: userStore.username }];
+        if (userStore.id !== undefined && userStore.nickname !== undefined) {
+            defaultOwnerOptions.value = [{ id: userStore.id, nickname: userStore.nickname }];
             formData.owners = [userStore.id];
         }
     } else {

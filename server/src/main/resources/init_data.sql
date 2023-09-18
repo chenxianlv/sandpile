@@ -47,16 +47,17 @@ VALUES (1, 1),
        (4, 1),
        (5, 1);
 
-# # admin的密码为1234，若要自定义密码，需在前端用想要的用户名和密码登录，查看发送请求中的password字段，将密码复制至EncryptTest类中进行加密，把加密后的密码作为数据库的user_password字段的值即可
-# INSERT INTO `user_user`(`id`, `user_account`, `user_name`, `user_password`, `create_user_id`)
-# VALUES (1, 'admin', 'administrator', '$2a$10$hbCVGHiRIfjtfrywxZRMU.ue0dhu8CmYo.iLQ4oIaZxkL1AJGfv.C', 1);
-# #        (2, 'XXX', 'XXX', 'XXX', 1);
+# admin的密码为1234，若要自定义密码，需在前端用想要的用户名和密码登录，查看发送请求中的password字段，将密码复制至EncryptTest类中进行加密，把加密后的密码作为数据库的user_password字段的值即可
+INSERT INTO `user_user`(`id`, `username`, `nickname`, `password`)
+VALUES (1, 'admin', 'administrator', '$2a$10$hbCVGHiRIfjtfrywxZRMU.ue0dhu8CmYo.iLQ4oIaZxkL1AJGfv.C');
+#        (2, 'XXX', 'XXX', 'XXX');
 
 INSERT INTO `user_role`(`id`, `role_name`, `create_user_id`, `remark`)
 VALUES (1, 'root', 1, '超级用户，拥有所有权限'),
-       (2, 'manager', 1, '管理员，拥有编辑任意用户笔记项目的权限'),
-       (3, 'normalUser', 1, '普通用户，无法对其他用户的笔记项目进行操作，允许查看开放的笔记项目'),
-       (4, 'ROLE_ANONYMOUS', 1, '匿名用户，即未登录用户');
+       (2, 'ROLE_ANONYMOUS', 1, '匿名用户，即未登录用户'),
+       (3, 'manager', 1, '管理员，拥有编辑任意用户笔记项目的权限'),
+       (4, 'normalUser', 1, '普通用户，无法对其他用户的笔记项目进行操作，允许查看开放的笔记项目')
+;
 
 INSERT INTO `user_access`(`id`, `access_name`, `access_url`, `create_user_id`, `remark`)
 VALUES (10001, 'listUserSummaries', '/api/user/listUserSummaries', 1, '根据id或用户名查询用户概况'),
@@ -80,18 +81,19 @@ VALUES (1, 10001),
        (1, 20005),
        (1, 20006),
 
-       (2, 10001),
-       (2, 20001),
-       (2, 20002),
-       (2, 20003),
-       (2, 20004),
-       (2, 20005),
        (2, 20006),
 
        (3, 10001),
        (3, 20001),
+       (3, 20002),
        (3, 20003),
+       (3, 20004),
        (3, 20005),
        (3, 20006),
 
-       (4, 20006);
+       (4, 10001),
+       (4, 20001),
+       (4, 20003),
+       (4, 20005),
+       (4, 20006)
+;

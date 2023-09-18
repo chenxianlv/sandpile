@@ -1,8 +1,14 @@
 declare namespace ApiRes {
     export namespace User {
         export interface UserSummary {
-            username: string;
+            nickname: string;
             id: number;
+        }
+        export interface LoginAPI {
+            id: number;
+            nickname: string;
+            token: string;
+            authList: number[];
         }
         export interface ListUserSummariesAPI {
             users?: Array<UserSummary>;
@@ -15,7 +21,7 @@ declare namespace ApiRes {
             owners: Array<ApiRes.User.UserSummary>;
             readers: Array<ApiRes.User.UserSummary>;
             openness: number;
-            createUsername: string;
+            createUserNickname: string;
             createTime: number;
         }
 

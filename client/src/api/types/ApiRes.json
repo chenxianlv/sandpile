@@ -146,7 +146,7 @@
                 "createTime": {
                     "type": "number"
                 },
-                "createUsername": {
+                "createUserNickname": {
                     "type": "string"
                 },
                 "id": {
@@ -173,7 +173,7 @@
             },
             "required": [
                 "createTime",
-                "createUsername",
+                "createUserNickname",
                 "id",
                 "openness",
                 "owners",
@@ -236,18 +236,44 @@
             },
             "type": "object"
         },
+        "ApiRes.User.LoginAPI": {
+            "properties": {
+                "authList": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "authList",
+                "id",
+                "nickname",
+                "token"
+            ],
+            "type": "object"
+        },
         "ApiRes.User.UserSummary": {
             "properties": {
                 "id": {
                     "type": "number"
                 },
-                "username": {
+                "nickname": {
                     "type": "string"
                 }
             },
             "required": [
                 "id",
-                "username"
+                "nickname"
             ],
             "type": "object"
         }
