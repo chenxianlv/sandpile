@@ -1,17 +1,11 @@
 import { defineStore } from 'pinia';
 import baseConfig from '@/config/base';
 import { getLocalStorage, setLocalStorage } from '@/utils/dom';
-
-interface UserInfo {
-    nickname?: string;
-    id?: number;
-    token?: string;
-    authList: number[];
-}
+import { loginAPI, logoutAPI } from '@/api/user';
 
 export const useUserStore = defineStore('user', {
     state: () => {
-        const user: UserInfo = {
+        const user: Partial<ApiRes.User.LoginAPI> = {
             nickname: undefined,
             id: undefined,
             token: undefined,
@@ -23,19 +17,26 @@ export const useUserStore = defineStore('user', {
             Object.assign(user, userStorage);
         }
 
-        return user;
+        return {
+            ...user,
+            loginDialogVisible: false,
+        };
     },
     actions: {
-        login(user: UserInfo) {
-            this.$patch(user);
-            setLocalStorage(baseConfig.storage.USER_PROP_NAME, user);
+        async login(formData: ApiReq.User.LoginAPI) {
+            const res = await loginAPI(formData);
+            const data = res.data?.data ?? {};
+            this.$patch(data);
+            setLocalStorage(baseConfig.storage.USER_PROP_NAME, data);
+            return res;
         },
-        logout() {
+        async logout() {
+            await logoutAPI();
             window.localStorage.removeItem(baseConfig.storage.USER_PROP_NAME);
             this.$reset();
         },
         authenticate(requiredAuthIdArr: number[]) {
-            return requiredAuthIdArr.every((authId) => this.authList.includes(authId));
+            return requiredAuthIdArr.every((authId) => this.authList?.includes(authId) ?? false);
         },
     },
 });

@@ -3,7 +3,6 @@ import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 import baseConfig from '@/config/base';
 import { useUserStore } from '@/stores/userStore';
-import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { getLocalStorage } from '@/utils/dom';
 import { i18n } from '@/lang';
 
@@ -81,7 +80,7 @@ baseRequest.interceptors.response.use(
 
         if (res?.status === 401) {
             useUserStore().logout();
-            useLoginStore().open();
+            useUserStore().loginDialogVisible = true;
         }
 
         return Promise.reject(error);

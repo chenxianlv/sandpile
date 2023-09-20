@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ArrowDown } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/userStore';
-import { useLoginStore } from '@/views/Base/LoginDialog/store';
-import { logoutAPI } from '@/api/user';
 import { ref } from 'vue';
 import type { PopoverInstance } from 'element-plus';
 import { ElMessageBox } from 'element-plus';
@@ -12,7 +10,6 @@ import { ClickMenu, ClickMenuItem } from '@/components/ClickMenu';
 const $t = i18n.global.t;
 
 const userStore = useUserStore();
-const loginStore = useLoginStore();
 
 const popoverRef = ref<PopoverInstance>();
 const logout = () => {
@@ -26,8 +23,7 @@ const logout = () => {
         cancelButtonText: $t('form.cancel'),
         beforeClose: (action, instance, done) => {
             if (action === 'confirm') {
-                logoutAPI().then(() => {
-                    userStore.logout();
+                userStore.logout().then(() => {
                     done();
                     location.pathname = '/';
                 });
@@ -41,7 +37,9 @@ const logout = () => {
 
 <template>
     <div class="user-avatar">
-        <el-button @click="loginStore.open()" v-if="userStore.nickname === undefined"
+        <el-button
+            @click="userStore.loginDialogVisible = true"
+            v-if="userStore.nickname === undefined"
             >{{ $t('user.login') }}
         </el-button>
         <template v-else>

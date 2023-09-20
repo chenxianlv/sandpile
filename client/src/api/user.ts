@@ -4,7 +4,7 @@ import { validRequest } from '@/api/types/typeValid';
 import { encryptPwd } from '@/utils/crypto';
 import { cloneDeep } from 'lodash-es';
 
-export function loginAPI(data: ApiReq.User.LoginAPI) {
+export function loginAPI(data: ApiReq.User.LoginAPI): NormalResponse<ApiRes.User.LoginAPI> {
     const requestMethod = validRequest('User.LoginAPI', data);
 
     const formData = new FormData();
@@ -21,7 +21,7 @@ export function loginAPI(data: ApiReq.User.LoginAPI) {
     });
 }
 
-export function logoutAPI() {
+export function logoutAPI(): NormalResponse {
     return validRequest('')({
         url: '/user/logout',
         method: 'get',
