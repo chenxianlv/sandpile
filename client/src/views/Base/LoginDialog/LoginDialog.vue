@@ -2,14 +2,14 @@
 import { ref, watch } from 'vue';
 import type { FormInstance, InputInstance } from 'element-plus';
 import { i18n } from '@/lang';
-import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import FormDialog from '@/components/FormDialog/FormDialog.vue';
 import LoginForm from '@/views/Base/LoginDialog/LoginForm.vue';
 import SignupForm from '@/views/Base/LoginDialog/SignupForm.vue';
+import { useUserStore } from '@/stores/userStore';
 
 const $t = i18n.global.t;
-const loginStore = useLoginStore();
 
+const userStore = useUserStore();
 const mode = ref<'login' | 'signup'>('login');
 const loginFormRef = ref<InstanceType<typeof LoginForm>>();
 const signupFormRef = ref<InstanceType<typeof SignupForm>>();
@@ -37,7 +37,7 @@ watch(signupFormRef, (value) => {
 
 <template>
     <FormDialog
-        v-model="loginStore.loginDialogVisible"
+        v-model="userStore.loginDialogVisible"
         :title="mode === 'login' ? $t('user.login') : mode === 'signup' ? $t('user.signup') : ''"
         :formRef="formRef"
         :autoFocusRef="autoFocusRef"

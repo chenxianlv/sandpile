@@ -1,6 +1,4 @@
-declare interface SimpleObj<T> {
-    [prop: string]: T | undefined;
-}
+declare type SimpleObj<T> = Record<number | symbol | string, T>;
 
 declare interface ResponseData<T = undefined> {
     data: T;

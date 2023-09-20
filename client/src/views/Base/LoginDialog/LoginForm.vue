@@ -2,12 +2,9 @@
 import { reactive, ref } from 'vue';
 import type { FormRules, FormInstance, InputInstance } from 'element-plus';
 import { i18n } from '@/lang';
-import { loginAPI } from '@/api/user';
-import { useLoginStore } from '@/views/Base/LoginDialog/store';
 import { useUserStore } from '@/stores/userStore';
 
 const $t = i18n.global.t;
-const loginStore = useLoginStore();
 const userStore = useUserStore();
 
 const props = defineProps<{
@@ -45,16 +42,8 @@ const rules = reactive<FormRules>({
 
 const requestFn = async () => {
     try {
-        const res = await loginAPI(formData);
-        const data = res.data?.data ?? {};
-        console.log(data);
-        userStore.login({
-            nickname: data.nickname,
-            id: data.id,
-            token: data.token,
-            authList: data.authList,
-        });
-        loginStore.close();
+        await userStore.login(formData);
+        userStore.loginDialogVisible = false;
         history.go(0);
     } catch (reason: any) {
         const errorCode = reason?.response?.data?.errorCode || reason?.data?.errorCode;

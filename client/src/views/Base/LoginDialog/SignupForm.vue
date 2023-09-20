@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import type { FormRules, FormInstance, InputInstance } from 'element-plus';
 import { i18n } from '@/lang';
-import { loginAPI, signupAPI } from '@/api/user';
-import { useLoginStore } from '@/views/Base/LoginDialog/store';
+import { signupAPI } from '@/api/user';
 import { useUserStore } from '@/stores/userStore';
 
 const $t = i18n.global.t;
-const loginStore = useLoginStore();
 const userStore = useUserStore();
 
 const props = defineProps<{
@@ -58,11 +56,12 @@ const rules = reactive<FormRules>({
 const requestFn = async () => {
     try {
         await signupAPI(formData);
-        // todo 注册成功自动登录
-        // const data = res.data?.data ?? {};
-        //
-        // loginStore.close();
-        // history.go(0);
+        await userStore.login({
+            username: formData.username,
+            password: formData.password,
+        });
+        userStore.loginDialogVisible = false;
+        history.go(0);
     } catch (reason: any) {
         const errorCode = reason?.response?.data?.errorCode || reason?.data?.errorCode;
         errorInfo.value =
