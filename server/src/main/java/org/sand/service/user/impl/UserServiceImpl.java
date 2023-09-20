@@ -1,7 +1,6 @@
 package org.sand.service.user.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
 import org.sand.common.ResultException;
@@ -38,11 +37,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserPO> implements 
 
     @Override
     public List<UserPO> listUsersByIdOrUsername(String pattern) {
-        QueryWrapper<UserPO> qw = new QueryWrapper<>();
-        qw.like("id", pattern).or()
-                .like("user_name", pattern);
+        LambdaQueryWrapper<UserPO> lqw = new LambdaQueryWrapper<>();
+        lqw.like(UserPO::getId, pattern).or()
+                .like(UserPO::getNickname, pattern);
 //                .orderByAsc("CHAR_LENGTH(user_name)");
-        return list(qw);
+        return list(lqw);
     }
 
     @Override
