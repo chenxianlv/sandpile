@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import { storeReset } from '@/plugins/storeReset';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import '@/styles/cleanUp.less';
@@ -17,8 +18,10 @@ if (import.meta.env.DEV) {
 }
 
 const app = createApp(App);
+const pinia = createPinia();
+pinia.use(storeReset);
 
-app.use(createPinia());
+app.use(pinia);
 app.use(router);
 app.use(ElementPlus);
 app.use(i18n);
