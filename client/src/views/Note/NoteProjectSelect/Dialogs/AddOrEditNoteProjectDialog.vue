@@ -68,6 +68,7 @@ const defaultReaderOptions = ref<Array<UserSummary>>([]);
 const requestFn = () =>
     props.mode === 'add' ? addProject() : updateProjectAPI({ id: props.rowData!.id, ...formData });
 const onOpen = () => {
+    initFiles.value = undefined;
     if (props.mode === 'add') {
         // 新增项目时，自动选择所有者为当前用户
         if (userStore.id !== undefined && userStore.nickname !== undefined) {
