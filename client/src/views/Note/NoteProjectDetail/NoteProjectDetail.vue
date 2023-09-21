@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
@@ -20,8 +20,6 @@ import type { ProjectTreeNode } from '@/views/Note/NoteProjectDetail/store';
 import { ClickMenu, ClickMenuItem, ClickMenuGroup } from '@/components/ClickMenu';
 
 const $t = i18n.global.t;
-window.location.hash = '';
-const projectId = Number(useRoute().params.id);
 
 const {
     loading: parserLoading,
@@ -42,8 +40,6 @@ const {
     selectFileAndUpload,
     selectFolderAndUpload,
 } = store;
-store.projectId = projectId;
-requestProjectDetail();
 
 watch(
     () => store.showingNote,
@@ -62,6 +58,14 @@ watch(
             });
     }
 );
+
+onActivated(() => {
+    window.location.hash = '';
+    store.$reset();
+    store.projectId = Number(useRoute().params.id);
+    requestProjectDetail();
+});
+
 const onSelectChange = (data: ProjectTreeNode) => {
     if (!data.isFile || store.showingNote?.id === data.id) return;
     store.showingNote = data;
@@ -218,13 +222,13 @@ const projectRequiredEditAuthList = computed(() => {
     <AddFileDialog
         v-model="store.addFileDialogVisible"
         :folderId="store.rightClickNodeParentId"
-        :projectId="projectId"
+        :projectId="store.projectId"
         @submit-success="requestProjectDetail()"
     />
     <AddFolderDialog
         v-model="store.addFolderDialogVisible"
         :folderId="store.rightClickNodeParentId"
-        :projectId="projectId"
+        :projectId="store.projectId"
         @submit-success="requestProjectDetail()"
     />
     <RenameNodeDialog

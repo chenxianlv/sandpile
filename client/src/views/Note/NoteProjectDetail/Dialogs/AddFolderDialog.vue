@@ -8,7 +8,7 @@ import FormDialog from '@/components/FormDialog/FormDialog.vue';
 const $t = i18n.global.t;
 const props = defineProps<{
     folderId: number;
-    projectId: number;
+    projectId?: number;
 }>();
 
 const formRef = ref<FormInstance>();
@@ -30,6 +30,7 @@ const rules = reactive<FormRules>({
 });
 
 const requestFn = () =>
+    props.projectId !== undefined &&
     addNoteFolderAPI({ ...formData, folderId: props.folderId, projectId: props.projectId });
 </script>
 
