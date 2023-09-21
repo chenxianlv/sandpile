@@ -183,6 +183,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
             isFile: false,
             children: [],
             parent: null,
+            nodeKey: 'd-1',
         };
         const folderNodes: Array<FolderNode> = [];
 
@@ -195,6 +196,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                 children: [],
                 isFile: false,
                 parent: null,
+                nodeKey: 'd' + item.id,
             });
         });
 
@@ -208,7 +210,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                 console.error('no parent');
                 return;
             }
-            TreeUtil.appendChild(parent, node);
+            TreeUtil.appendChild<FileTreeNode>(parent, node);
         };
 
         folderNodes?.forEach((item) => {
@@ -224,6 +226,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                 children: [],
                 parent: null,
                 isFile: true,
+                nodeKey: 'f' + item.id,
             };
             appendToFolder(noteNode, noteNode.folderId);
         });
@@ -318,7 +321,7 @@ export const useNoteProjectDetailStore = defineStore('noteProjectDetail', functi
                                 ((node.isFile && node.id === state.showingNote?.id) ||
                                     // 打开的笔记是被删除文件夹的后代
                                     (!node.isFile &&
-                                        TreeUtil.findChild(
+                                        TreeUtil.findChild<FileTreeNode>(
                                             node,
                                             (item) => item.id === state.showingNote?.id
                                         )))

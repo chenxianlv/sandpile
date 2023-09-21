@@ -3,10 +3,10 @@
  * interface FileTreeNode extends TreeNode<FileTreeNode> {}
  */
 export interface TreeNode<T extends TreeNode<T>> {
-    children: Array<TreeNode<T>>;
+    children: Array<T>;
 
     // 根节点的parent属性为null
-    parent: TreeNode<T> | null;
+    parent: T | null;
 }
 
 interface IterateCallback<T, U> {

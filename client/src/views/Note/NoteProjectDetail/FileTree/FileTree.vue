@@ -54,21 +54,26 @@ const openContextMenuInBlank = (e: MouseEvent) => {
 const hideContextMenu = () => {
     contextMenuRef.value?.hide();
 };
-const allowDrop = (draggingNode: SimpleObj<any>, dropNode: SimpleObj<any>, type: string) => {
-    if (type !== 'inner' && (dropNode.data.folderId !== -1 || draggingNode.data.folderId === -1)) {
-        return false;
-    } else if (type === 'inner' && dropNode.data.isFile) {
+
+type DropHandler = (
+    draggingNode: { data: T },
+    dropNode: { data: T },
+    type: 'prev' | 'inner' | 'next'
+) => any;
+const allowDrop: DropHandler = (draggingNode, dropNode, type) => {
+    if (type === 'inner' && dropNode.data.isFile) {
         return false;
     }
     return true;
 };
-const handleNodeDrop = (draggingNode: SimpleObj<any>, dropNode: SimpleObj<any>, type: string) => {
-    const newFolderId = type === 'inner' ? dropNode.data.id : dropNode.data.folderId;
-    // emit('nodeChange', draggingNode.data.id, draggingNode.data.isFile, { folderId: newFolderId });
+const handleNodeDrop: DropHandler = (draggingNode, dropNode, type) => {
+    const newFolderId = type === 'inner' ? dropNode.data.id : dropNode.data.parent?.id ?? -1;
 
     const requestApi = draggingNode.data.isFile ? updateNoteFileAPI : updateNoteFolderAPI;
     requestApi({ id: draggingNode.data.id, folderId: newFolderId }).then(() => {});
 };
+// 实时将已展开的节点key同步至default-expanded-keys，防止添加笔记后重新获取data导致文件夹折叠状态重置
+const defaultExpandedKeys = ref<Set<string>>(new Set());
 </script>
 
 <template>
@@ -77,13 +82,15 @@ const handleNodeDrop = (draggingNode: SimpleObj<any>, dropNode: SimpleObj<any>, 
             :data="props.data"
             :draggable="props.draggable"
             :allow-drop="allowDrop"
-            node-key="id"
-            default-expand-all
+            node-key="nodeKey"
+            :default-expanded-keys="Array.from(defaultExpandedKeys.values())"
             highlight-current
             @current-change="handleCurrentChange"
             @node-contextmenu="openContextMenu"
             @click.right="openContextMenuInBlank"
             @node-drop="handleNodeDrop"
+            @node-expand="(node: T) => defaultExpandedKeys.add(node.nodeKey)"
+            @node-collapse="(node: T) => defaultExpandedKeys.delete(node.nodeKey)"
             v-bind="$attrs"
         >
             <template #default="{ data }">
