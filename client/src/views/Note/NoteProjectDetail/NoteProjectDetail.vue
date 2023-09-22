@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onActivated, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ElAside } from 'element-plus';
 import { ArrowLeftBold, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue';
@@ -29,6 +29,7 @@ const {
 
 const asideRef = ref<InstanceType<typeof ElAside> | null>(null);
 const mdTextAreaRef = ref<InstanceType<typeof MarkdownTextarea> | null>(null);
+const mdDisplayRef = ref<InstanceType<typeof MdHtmlDisplay> | null>(null);
 
 const store = useNoteProjectDetailStore();
 const {
@@ -46,6 +47,8 @@ watch(
     (note) => {
         if (note?.id === undefined) {
             store.showingText = '';
+            mdDisplayRef.value?.toTop();
+            mdTextAreaRef.value?.toTop();
             return;
         }
         startParserLoading();
@@ -54,6 +57,8 @@ watch(
                 store.showingText = text;
             })
             .finally(() => {
+                mdDisplayRef.value?.toTop();
+                mdTextAreaRef.value?.toTop();
                 stopParserLoading();
             });
     }
@@ -213,7 +218,11 @@ const projectRequiredEditAuthList = computed(() => {
                             :targetDOM="mdTextAreaRef?.$el"
                             percentage-mode
                         />
-                        <MdHtmlDisplay class="detail-item" :markdown-text="store.showingText" />
+                        <MdHtmlDisplay
+                            class="detail-item"
+                            ref="mdDisplayRef"
+                            :markdown-text="store.showingText"
+                        />
                     </div>
                 </el-main>
             </el-container>

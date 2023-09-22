@@ -58,6 +58,12 @@ const handleCollapseBtnClick = () => {
     menuAutoCollapsedLock = menuCollapsed.value === menuAutoCollapsed.value;
     menuCollapsed.value = !menuCollapsed.value;
 };
+const toTop = () => {
+    containerRef.value && (containerRef.value.scrollTop = 0);
+};
+defineExpose({
+    toTop,
+});
 </script>
 
 <template>
