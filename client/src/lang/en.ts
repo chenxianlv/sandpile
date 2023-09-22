@@ -72,9 +72,12 @@ const messages = {
     note: {
         searchProject: 'Search project',
         addProject: 'Add project',
+        addProjectLabelWidth: '150px',
         editProject: 'Edit project',
         projectName: 'Project name',
         owners: 'Owners',
+        ownersHelpText:
+            'The owner has full edit permissions to the project, including adding, deleting note files or folders, modifying note text, etc.',
         selectAtLeastOneOwner: 'Please select at least one owner',
         openness: 'Openness',
         opennessHelpText: `Fully public: all users including anonymous users can read.
@@ -85,11 +88,13 @@ Private: only owner can read.`,
         PRIVATE: 'Private',
         readers: 'Readers',
         selectFolder: 'Select folder',
-        initialFolder: 'Initial folder',
+        initialFolder: 'Quick creation',
+        initialFolderHelpText:
+            'Select a local folder, use this folder as the project root directory when creating a note project, and upload internal files according to the folder hierarchy.',
         selectedFiles: ({ named }: { named: (prop: string) => any }) => {
             return `${named('num')} files selected`;
         },
-        createUserNickname: 'Create user nickname',
+        createUserNickname: 'Create user',
         createTime: 'Create time',
         confirmToDelete: 'Confirm to delete?',
         deleteProjectConfirm: ({ named }: { named: (prop: string) => any }) =>
