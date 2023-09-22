@@ -118,7 +118,7 @@ const addProject = async () => {
             <el-form
                 @submit.prevent
                 ref="formRef"
-                label-width="120px"
+                :label-width="$t('note.addProjectLabelWidth')"
                 label-position="left"
                 :rules="rules"
                 :model="formData"
@@ -130,14 +130,44 @@ const addProject = async () => {
                         @keydown.enter="submit"
                     ></el-input>
                 </el-form-item>
-                <el-form-item prop="owners" :label="$t('note.owners')">
+                <el-form-item prop="owners">
+                    <template #label>
+                        {{ $t('note.owners') }}
+                        <el-popover placement="top-start" width="300px">
+                            <template #reference>
+                                <el-icon class="icon_button">
+                                    <QuestionFilled />
+                                </el-icon>
+                            </template>
+                            <template #default>
+                                <span style="white-space: pre-wrap">
+                                    {{ $t('note.ownersHelpText') }}
+                                </span>
+                            </template>
+                        </el-popover>
+                    </template>
                     <UserSelect
                         v-model="formData.owners"
                         :default-options="defaultOwnerOptions"
                         ref="ownerSelectRef"
                     ></UserSelect>
                 </el-form-item>
-                <el-form-item prop="openness" :label="$t('note.openness')">
+                <el-form-item prop="openness">
+                    <template #label>
+                        {{ $t('note.openness') }}
+                        <el-popover placement="top-start" width="300px">
+                            <template #reference>
+                                <el-icon class="icon_button">
+                                    <QuestionFilled />
+                                </el-icon>
+                            </template>
+                            <template #default>
+                                <span style="white-space: pre-wrap">
+                                    {{ $t('note.opennessHelpText') }}
+                                </span>
+                            </template>
+                        </el-popover>
+                    </template>
                     <el-radio-group v-model="formData.openness">
                         <el-radio-button
                             v-for="(num, type) in NoteProjectOpennessEnum"
@@ -147,18 +177,6 @@ const addProject = async () => {
                             {{ $t(`note.${type}`) }}
                         </el-radio-button>
                     </el-radio-group>
-                    <el-popover placement="top-end" width="300px">
-                        <template #reference>
-                            <el-icon class="icon_button">
-                                <QuestionFilled />
-                            </el-icon>
-                        </template>
-                        <template #default>
-                            <span style="white-space: pre-wrap">
-                                {{ $t('note.opennessHelpText') }}
-                            </span>
-                        </template>
-                    </el-popover>
                 </el-form-item>
                 <el-form-item
                     prop="readers"
@@ -170,11 +188,22 @@ const addProject = async () => {
                         :default-options="defaultReaderOptions"
                     ></UserSelect>
                 </el-form-item>
-                <el-form-item
-                    prop="initialFolder"
-                    :label="$t('note.initialFolder')"
-                    v-if="props.mode === 'add'"
-                >
+                <el-form-item prop="initialFolder" v-if="props.mode === 'add'">
+                    <template #label>
+                        {{ $t('note.initialFolder') }}
+                        <el-popover placement="top-start" width="300px">
+                            <template #reference>
+                                <el-icon class="icon_button">
+                                    <QuestionFilled />
+                                </el-icon>
+                            </template>
+                            <template #default>
+                                <span style="white-space: pre-wrap">
+                                    {{ $t('note.initialFolderHelpText') }}
+                                </span>
+                            </template>
+                        </el-popover>
+                    </template>
                     <el-button @click="selectInitFolder">{{ $t('note.selectFolder') }}</el-button>
                     <span v-if="Object.values(initFiles ?? {}).length" style="margin-left: 10px">{{
                         $t('note.selectedFiles', { num: Object.values(initFiles ?? {}).length })
@@ -185,4 +214,8 @@ const addProject = async () => {
     </FormDialog>
 </template>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+:deep(.el-form-item__label) {
+    align-items: center;
+}
+</style>

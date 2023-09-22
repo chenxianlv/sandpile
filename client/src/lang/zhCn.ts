@@ -69,20 +69,25 @@ const messages = {
     note: {
         searchProject: '搜索项目',
         addProject: '新建项目',
+        addProjectLabelWidth: '120px',
         editProject: '编辑项目',
         projectName: '项目名称',
         owners: '所有者',
+        ownersHelpText:
+            '所有者拥有对笔记项目的完全编辑权限，包括增删笔记文件或文件夹、修改笔记内容等',
         selectAtLeastOneOwner: '请选择至少一个所有者',
         openness: '开放程度',
-        opennessHelpText: `完全开放：所有用户包括匿名用户均可查看
-部分开放：仅读者及所有者可以查看
-私有：仅所有者可以查看`,
+        opennessHelpText: `完全开放：所有用户包括匿名用户均可阅读
+部分开放：仅读者及所有者可以阅读
+私有：仅所有者可以阅读`,
         FULL_PUBLIC: '完全开放',
         HALF_PUBLIC: '部分开放',
         PRIVATE: '私有',
         readers: '读者',
         selectFolder: '选择文件夹',
-        initialFolder: '初始文件夹',
+        initialFolder: '快捷创建',
+        initialFolderHelpText:
+            '选择本地文件夹，创建笔记项目时，将该文件夹作为项目根目录，并按照文件夹层次结构上传内部文件',
         selectedFiles: ({ named }: { named: (prop: string) => any }) => {
             return `已选中 ${named('num')} 个文件`;
         },
