@@ -24,6 +24,12 @@ const supportTab = (event: KeyboardEvent) => {
     event.preventDefault();
     document.execCommand('insertText', false, '\t');
 };
+const toTop = () => {
+    textareaRef.value && (textareaRef.value.scrollTop = 0);
+};
+defineExpose({
+    toTop,
+});
 </script>
 
 <template>
