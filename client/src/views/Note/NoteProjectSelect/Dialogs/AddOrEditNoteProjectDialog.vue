@@ -69,6 +69,7 @@ const requestFn = () =>
     props.mode === 'add' ? addProject() : updateProjectAPI({ id: props.rowData!.id, ...formData });
 const onOpen = () => {
     initFiles.value = undefined;
+    projectNameAutoFillLock.value = false;
     if (props.mode === 'add') {
         // 新增项目时，自动选择所有者为当前用户
         if (userStore.id !== undefined && userStore.nickname !== undefined) {
@@ -89,6 +90,12 @@ const onOpen = () => {
         }
     }
 };
+
+const projectNameAutoFillLock = ref(false);
+const onProjectNameInput = () => {
+    projectNameAutoFillLock.value = true;
+};
+
 const initFiles = ref<Array<File> | undefined>();
 const selectInitFolder = async () => {
     initFiles.value = await selectFolder();
@@ -96,7 +103,7 @@ const selectInitFolder = async () => {
     // 若还没填写项目名，自动按照所选文件夹解析
     if (!initFiles.value) return;
     const { name } = parseFolder(initFiles.value);
-    if (formData.projectName === '') formData.projectName = name;
+    if (!projectNameAutoFillLock.value) formData.projectName = name;
 };
 const addProject = async () => {
     const projectId = (await addProjectAPI(formData)).data.data.id;
@@ -127,6 +134,7 @@ const addProject = async () => {
                     <el-input
                         ref="autoFocusRef"
                         v-model="formData.projectName"
+                        @input="onProjectNameInput"
                         @keydown.enter="submit"
                     ></el-input>
                 </el-form-item>
