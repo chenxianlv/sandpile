@@ -252,13 +252,17 @@
                 },
                 "token": {
                     "type": "string"
+                },
+                "tokenExpireTime": {
+                    "type": "number"
                 }
             },
             "required": [
                 "authList",
                 "id",
                 "nickname",
-                "token"
+                "token",
+                "tokenExpireTime"
             ],
             "type": "object"
         },

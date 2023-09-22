@@ -8,6 +8,7 @@ declare namespace ApiRes {
             id: number;
             nickname: string;
             token: string;
+            tokenExpireTime: number;
             authList: number[];
         }
         export interface ListUserSummariesAPI {

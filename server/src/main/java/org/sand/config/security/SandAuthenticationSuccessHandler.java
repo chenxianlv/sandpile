@@ -1,7 +1,7 @@
 package org.sand.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.sand.common.ResponseVO;
 import org.sand.model.po.common.BasicTablePO;
 import org.sand.model.po.user.AccessPO;
@@ -13,6 +13,7 @@ import org.sand.service.user.RoleService;
 import org.sand.service.user.UserService;
 import org.sand.util.TokenUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,10 +26,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SandAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserService userService;
@@ -37,9 +39,15 @@ public class SandAuthenticationSuccessHandler implements AuthenticationSuccessHa
 
     private final AccessService accessService;
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     private final TokenUtils tokenUtils;
+
+    /**
+     * 过期时间：毫秒数
+     */
+    @Value("${token.timeout}")
+    private Long EXPIRE_TIME;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -55,6 +63,7 @@ public class SandAuthenticationSuccessHandler implements AuthenticationSuccessHa
 
         // 设置token
         userLoginVO.setToken(tokenUtils.buildJWT(userPO.getUsername()));
+        userLoginVO.setTokenExpireTime(new Date().getTime() + EXPIRE_TIME);
 
         // 设置权限列表
         List<RolePO> rolePOs = roleService.listRolesByUserId(userPO.getId());
