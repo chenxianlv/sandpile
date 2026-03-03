@@ -1,4 +1,0 @@
-target
-**/application-prod.yml
-**/init_user.sql
-**/version_patch.sql
