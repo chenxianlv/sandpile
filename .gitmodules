@@ -1,6 +1,8 @@
 [submodule "client"]
-	path = client
-	url = git@github-cxl:chenxianlv/sandpile-client.git
+  path = client
+  url = git@github.com:chenxianlv/sandpile-client.git
+  branch = 2.0
+
 [submodule "server"]
-	path = server
-	url = git@github-cxl:chenxianlv/sandpile-server.git
+  path = server
+  url = git@github.com:chenxianlv/sandpile-server.git
